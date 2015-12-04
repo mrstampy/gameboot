@@ -76,6 +76,14 @@ public class UserSessionAssist {
 		return session;
 	}
 
+	public boolean isLoggedIn(String userName) throws IllegalStateException {
+		User user = expectedUser(userName);
+
+		UserSession session = userSessionRepo.findByUserAndEndedIsNull(user);
+
+		return session != null;
+	}
+
 	public User logout(String userName) throws IllegalStateException {
 		UserSession session = expected(userName);
 
