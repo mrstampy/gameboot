@@ -3,6 +3,7 @@ package com.github.mrstampy.gameboot.data;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * <a href=
@@ -15,6 +16,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @Configuration
 @EnableJpaRepositories(basePackages = "com.github.mrstampy.gameboot.data")
 @EnableJpaAuditing
+@EnableTransactionManagement
 public class GameBootDataConfiguration {
 
 }

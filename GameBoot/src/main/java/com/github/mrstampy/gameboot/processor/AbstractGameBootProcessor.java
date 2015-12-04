@@ -2,6 +2,8 @@ package com.github.mrstampy.gameboot.processor;
 
 import java.lang.invoke.MethodHandles;
 
+import javax.transaction.Transactional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,6 +14,7 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessage> implements GameBootProcessor<M> {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+	@Transactional
 	@Override
 	public final AbstractGameBootMessage process(M message) throws Exception {
 		log.debug("Processing message {}", message);
