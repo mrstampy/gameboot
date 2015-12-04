@@ -86,7 +86,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
 		log.debug("Login for {} is {}", userName, ok);
 
-		return ok ? success() : failure("Password is invalid");
+		return ok ? success(user) : failure("Password is invalid");
 	}
 
 	private AbstractGameBootMessage updateUser(UserMessage message) {
@@ -99,7 +99,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
 		log.debug("Updated user {}? {}", user, changed);
 
-		return changed ? success("User " + userName + " updated") : failure("User " + userName + " unchanged");
+		return changed ? success(user) : failure(user);
 	}
 
 	private AbstractGameBootMessage deleteUser(UserMessage message) {
@@ -120,7 +120,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
 		log.debug("Created user {}", user);
 
-		return success("User " + user.getUserName() + " created");
+		return success(user);
 	}
 
 	private boolean populateForUpdate(UserMessage message, User user) {
@@ -173,7 +173,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 	}
 
 	private boolean changed(Object in, Object exist) {
-		return !EqualsBuilder.reflectionEquals(in, exist);
+		return !(in == null && exist == null) && !EqualsBuilder.reflectionEquals(in, exist);
 	}
 
 	private User getUser(String userName) {
