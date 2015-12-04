@@ -4,6 +4,8 @@ import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -39,6 +41,14 @@ public class User extends AbstractGameBootEntity {
 	@Temporal(TemporalType.DATE)
 	@JsonFormat(shape = Shape.STRING, pattern = "yyyy/MM/dd")
 	private Date dob;
+
+	public enum UserState {
+		ACTIVE, INACTIVE, DELETED
+	}
+
+	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
+	private UserState state;
 
 	public String getUserName() {
 		return userName;
@@ -86,5 +96,13 @@ public class User extends AbstractGameBootEntity {
 
 	public void setDob(Date dob) {
 		this.dob = dob;
+	}
+
+	public UserState getState() {
+		return state;
+	}
+
+	public void setState(UserState state) {
+		this.state = state;
 	}
 }

@@ -6,6 +6,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.github.mrstampy.gameboot.data.entity.User.UserState;
 
 public class UserMessage extends AbstractGameBootMessage {
 
@@ -20,6 +21,8 @@ public class UserMessage extends AbstractGameBootMessage {
 	private String lastName;
 
 	private String email;
+
+	private UserState state;
 
 	@JsonFormat(shape = Shape.STRING, pattern = "yyyy/MM/dd")
 	private Date dob;
@@ -102,7 +105,8 @@ public class UserMessage extends AbstractGameBootMessage {
 			.append(getFirstName())
 			.append(getLastName())
 			.append(getEmail())
-			.append(getDob());
+			.append(getDob())
+			.append(getState());
 		//@formatter:on
 
 		return tsb.toString();
@@ -114,5 +118,13 @@ public class UserMessage extends AbstractGameBootMessage {
 
 	public void setOldPassword(String oldPassword) {
 		this.oldPassword = oldPassword;
+	}
+
+	public UserState getState() {
+		return state;
+	}
+
+	public void setState(UserState state) {
+		this.state = state;
 	}
 }

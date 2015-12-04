@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.data.assist.UserSessionAssist;
 import com.github.mrstampy.gameboot.data.entity.User;
+import com.github.mrstampy.gameboot.data.entity.User.UserState;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.entity.repository.UserRepository;
 import com.github.mrstampy.gameboot.messages.MessageType;
@@ -55,15 +56,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		case DELETE:
 			break;
 		case UPDATE:
-			//@formatter:off
-			if (isEmpty(message.getNewPassword()) && 
-					isEmpty(message.getEmail()) && 
-					isEmpty(message.getFirstName()) && 
-					isEmpty(message.getLastName()) && 
-					message.getDob() == null) {
-				fail("No user data to update");
-			}
-			//@formatter:on
+			if (noData(message)) fail("No user data to update");
 			break;
 		case LOGOUT:
 			break;
@@ -90,6 +83,17 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		}
 	}
 
+	private boolean noData(UserMessage message) {
+		//@formatter:off
+		return isEmpty(message.getNewPassword()) && 
+				isEmpty(message.getEmail()) && 
+				isEmpty(message.getFirstName()) && 
+				isEmpty(message.getLastName()) && 
+				message.getState() == null &&
+				message.getDob() == null;
+		//@formatter:on
+	}
+
 	private Response logoutUser(UserMessage message) {
 		String userName = message.getUserName();
 
@@ -99,6 +103,13 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 	private Response loginUser(UserMessage message) {
 		String userName = message.getUserName();
 		User user = assist.expectedUser(userName);
+
+		switch (user.getState()) {
+		case ACTIVE:
+			break;
+		default:
+			fail(userName + " is in state " + user.getState());
+		}
 
 		boolean ok = BCrypt.checkpw(message.getNewPassword(), user.getPasswordHash());
 
@@ -130,9 +141,13 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		String userName = message.getUserName();
 		User user = assist.expectedUser(userName);
 
-		userRepo.delete(user.getId());
+		if (assist.isLoggedIn(userName)) assist.logout(userName);
 
-		log.info("Deleted user {}", user);
+		user.setState(UserState.DELETED);
+
+		userRepo.save(user);
+
+		log.info("Set user status for {} to DELETED", user.getUserName());
 
 		return success(user);
 	}
@@ -179,7 +194,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		if (isNotEmpty(message.getNewPassword())) {
 			log.trace("Changing password for {}", userName);
 
-			if (!BCrypt.checkpw(message.getOldPassword(), user.getPasswordHash())) fail("Password is invalid");
+			if (!BCrypt.checkpw(message.getOldPassword(), user.getPasswordHash())) fail("Old Password is invalid");
 
 			setPasswordHash(message, user);
 			changed = true;
@@ -191,6 +206,14 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
 			changed = true;
 			user.setDob(dob);
+		}
+
+		UserState state = message.getState();
+		if (changed(state, user.getState())) {
+			log.trace("Changing state from {} to {} for {}", user.getState(), state, userName);
+
+			changed = true;
+			user.setState(state);
 		}
 
 		return changed;
@@ -208,6 +231,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		user.setFirstName(message.getFirstName());
 		user.setLastName(message.getLastName());
 		user.setUserName(message.getUserName());
+		user.setState(UserState.ACTIVE);
 
 		setPasswordHash(message, user);
 

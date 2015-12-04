@@ -1,5 +1,7 @@
 package com.github.mrstampy.gameboot.messages;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Response extends AbstractGameBootMessage {
 
 	public enum ResponseCode {
@@ -34,6 +36,15 @@ public class Response extends AbstractGameBootMessage {
 
 	public void setResponse(Object... response) {
 		this.response = response;
+	}
+
+	@JsonIgnore
+	public boolean isSuccess() {
+		return isResponseCode(ResponseCode.SUCCESS);
+	}
+
+	private boolean isResponseCode(ResponseCode rc) {
+		return rc == getResponseCode();
 	}
 
 }
