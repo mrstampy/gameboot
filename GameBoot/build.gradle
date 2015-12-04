@@ -43,7 +43,9 @@ dependencies {
     compile('org.hibernate:hibernate-envers:4.3.11.Final')
     compile('org.apache.commons:commons-lang3:3.4')
     
+    compile('javax.cache:cache-api:1.0.0')
     compile('org.ehcache:ehcache:3.0.0.m4')
+    compile('org.terracotta:management-model:2.0.0');
     
     runtime('com.h2database:h2')
     runtime('mysql:mysql-connector-java')
