@@ -31,7 +31,7 @@ public class UserMessage extends AbstractGameBootMessage {
 	private Function function;
 
 	public UserMessage() {
-		super(MessageType.CREATE_USER);
+		super(MessageType.USER);
 	}
 
 	public String getUserName() {

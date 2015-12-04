@@ -32,7 +32,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
 	@Override
 	public MessageType getType() {
-		return MessageType.CREATE_USER;
+		return MessageType.USER;
 	}
 
 	@Override
