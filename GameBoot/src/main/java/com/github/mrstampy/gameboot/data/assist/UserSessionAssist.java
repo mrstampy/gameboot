@@ -1,9 +1,10 @@
 package com.github.mrstampy.gameboot.data.assist;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.lang.invoke.MethodHandles;
 import java.util.Date;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,7 +105,7 @@ public class UserSessionAssist {
 	}
 
 	protected void userNameCheck(String userName) throws IllegalStateException {
-		check(StringUtils.isEmpty(userName), "null username");
+		check(isEmpty(userName), "null username");
 	}
 
 	protected void check(boolean condition, String msg) {
