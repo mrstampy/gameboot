@@ -1,3 +1,43 @@
+/*
+ *              ______                        ____              __ 
+ *             / ____/___ _____ ___  ___     / __ )____  ____  / /_
+ *            / / __/ __ `/ __ `__ \/ _ \   / __  / __ \/ __ \/ __/
+ *           / /_/ / /_/ / / / / / /  __/  / /_/ / /_/ / /_/ / /_  
+ *           \____/\__,_/_/ /_/ /_/\___/  /_____/\____/\____/\__/  
+ *                                                 
+ *                                 .-'\
+ *                              .-'  `/\
+ *                           .-'      `/\
+ *                           \         `/\
+ *                            \         `/\
+ *                             \    _-   `/\       _.--.
+ *                              \    _-   `/`-..--\     )
+ *                               \    _-   `,','  /    ,')
+ *                                `-_   -   ` -- ~   ,','
+ *                                 `-              ,','
+ *                                  \,--.    ____==-~
+ *                                   \   \_-~\
+ *                                    `_-~_.-'
+ *                                     \-~
+ *
+ *
+ * Copyright (C) 2015 Burton Alexander
+ * 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * 
+ */
 package com.github.mrstampy.gameboot.processor.impl;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -25,6 +65,10 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 
+// TODO: Auto-generated Javadoc
+/**
+ * The Class UserMessageProcessor.
+ */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage> {
@@ -36,11 +80,23 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 	@Autowired
 	private UserSessionAssist assist;
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.github.mrstampy.gameboot.processor.GameBootProcessor#getType()
+	 */
 	@Override
 	public MessageType getType() {
 		return MessageType.USER;
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#validate(
+	 * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+	 */
 	@Override
 	protected void validate(UserMessage message) throws Exception {
 		if (message.getFunction() == null) fail("function must be one of CREATE, DELETE, UPDATE, LOGIN");
@@ -64,6 +120,12 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#
+	 * processImpl(com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+	 */
 	@Override
 	protected Response processImpl(UserMessage message) throws Exception {
 		switch (message.getFunction()) {

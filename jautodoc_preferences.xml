@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<jautodoc-preferences>
+    <options>
+        <completeExistingJavadoc>true</completeExistingJavadoc>
+        <keepExistingJavadoc>false</keepExistingJavadoc>
+        <replaceExistingJavadoc>false</replaceExistingJavadoc>
+        <includePublic>true</includePublic>
+        <includeProtected>true</includeProtected>
+        <includePackage>true</includePackage>
+        <includePrivate>false</includePrivate>
+        <includeTypes>true</includeTypes>
+        <includeFields>true</includeFields>
+        <includeMethods>true</includeMethods>
+        <getterSetterOnly>false</getterSetterOnly>
+        <excludeGetterSetter>false</excludeGetterSetter>
+        <excludeOverriding>false</excludeOverriding>
+        <addTodoForAutodoc>true</addTodoForAutodoc>
+        <createDummyComment>true</createDummyComment>
+        <singleLineComment>true</singleLineComment>
+        <useEclipseFormatter>true</useEclipseFormatter>
+        <getterSetterFromField>false</getterSetterFromField>
+        <includeSubPackages>false</includeSubPackages>
+        <getterSetterFromFieldFirst>true</getterSetterFromFieldFirst>
+        <getterSetterFromFieldReplace>false</getterSetterFromFieldReplace>
+        <addHeader>true</addHeader>
+        <replaceHeader>true</replaceHeader>
+        <multiCommentHeader>false</multiCommentHeader>
+        <usePackageInfo>false</usePackageInfo>
+    </options>
+    <tagOrders>
+        <tagOrder>@author</tagOrder>
+        <tagOrder>@version</tagOrder>
+        <tagOrder>@param</tagOrder>
+        <tagOrder>@return</tagOrder>
+        <tagOrder>@throws</tagOrder>
+        <tagOrder>@see</tagOrder>
+        <tagOrder>@since</tagOrder>
+        <tagOrder>@serial</tagOrder>
+        <tagOrder>@serialField</tagOrder>
+        <tagOrder>@serialData</tagOrder>
+        <tagOrder>@deprecated</tagOrder>
+    </tagOrders>
+    <properties/>
+    <replacements>
+        <replacement mode="0" scope="1" shortcut="get">Gets the</replacement>
+        <replacement mode="0" scope="1" shortcut="set">Sets the</replacement>
+        <replacement mode="0" scope="1" shortcut="add">Adds the</replacement>
+        <replacement mode="0" scope="1" shortcut="edit">Edits the</replacement>
+        <replacement mode="0" scope="1" shortcut="remove">Removes the</replacement>
+        <replacement mode="0" scope="1" shortcut="init">Inits the</replacement>
+        <replacement mode="0" scope="1" shortcut="parse">Parses the</replacement>
+        <replacement mode="0" scope="1" shortcut="create">Creates the</replacement>
+        <replacement mode="0" scope="1" shortcut="build">Builds the</replacement>
+        <replacement mode="0" scope="1" shortcut="is">Checks if is</replacement>
+        <replacement mode="0" scope="1" shortcut="print">Prints the</replacement>
+        <replacement mode="0" scope="1" shortcut="has">Checks for</replacement>
+    </replacements>
+    <headerText>/*
+ *              ______                        ____              __ 
+ *             / ____/___ _____ ___  ___     / __ )____  ____  / /_
+ *            / / __/ __ `/ __ `__ \/ _ \   / __  / __ \/ __ \/ __/
+ *           / /_/ / /_/ / / / / / /  __/  / /_/ / /_/ / /_/ / /_  
+ *           \____/\__,_/_/ /_/ /_/\___/  /_____/\____/\____/\__/  
+ *                                                 
+ *                                 .-'\
+ *                              .-'  `/\
+ *                           .-'      `/\
+ *                           \         `/\
+ *                            \         `/\
+ *                             \    _-   `/\       _.--.
+ *                              \    _-   `/`-..--\     )
+ *                               \    _-   `,','  /    ,')
+ *                                `-_   -   ` -- ~   ,','
+ *                                 `-              ,','
+ *                                  \,--.    ____==-~
+ *                                   \   \_-~\
+ *                                    `_-~_.-'
+ *                                     \-~
+ * *
+ * Copyright (C) 2015 Burton Alexander
+ * 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * 
+ */</headerText>
+    <packageDocText>&lt;!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;/head&gt;
+&lt;body&gt;
+  Provides...
+&lt;/body&gt;
+&lt;/html&gt;</packageDocText>
+    <packageInfoText>/**
+ * Provides...
+ */
+package ${package_name};</packageInfoText>
+</jautodoc-preferences>
