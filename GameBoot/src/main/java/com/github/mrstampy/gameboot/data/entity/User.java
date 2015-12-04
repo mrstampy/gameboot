@@ -11,30 +11,30 @@ import javax.persistence.TemporalType;
 import org.hibernate.envers.Audited;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table
 @Audited
 public class User extends AbstractGameBootEntity {
 
-	@Column(unique=true, nullable = false, length = 50)
+	@Column(unique = true, nullable = false, length = 50)
 	private String userName;
-	
+
 	@Column(nullable = false)
 	@JsonIgnore
 	private String passwordHash;
-	
+
 	@Column
 	private String firstName;
-	
+
 	@Column
 	private String lastName;
-	
+
 	@Column
 	private String email;
-	
+
 	@Column
 	@Temporal(TemporalType.DATE)
 	@JsonFormat(shape = Shape.STRING, pattern = "yyyy/MM/dd")

@@ -18,7 +18,7 @@ public abstract class AbstractGameBootEntity {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Integer id;
-	
+
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdTime = new Date();
@@ -38,7 +38,7 @@ public abstract class AbstractGameBootEntity {
 	public void setCreatedTime(Date createdTime) {
 		this.createdTime = createdTime;
 	}
-	
+
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);

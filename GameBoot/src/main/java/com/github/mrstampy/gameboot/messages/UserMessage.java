@@ -12,7 +12,7 @@ public class UserMessage extends AbstractGameBootMessage {
 	private String userName;
 
 	private String newPassword;
-	
+
 	private String oldPassword;
 
 	private String firstName;
@@ -94,7 +94,7 @@ public class UserMessage extends AbstractGameBootMessage {
 	public String toString() {
 		// no passwords in teh logz
 		ToStringBuilder tsb = new ToStringBuilder(this);
-		
+
 		//@formatter:off
 		tsb
 			.append(getUserName())

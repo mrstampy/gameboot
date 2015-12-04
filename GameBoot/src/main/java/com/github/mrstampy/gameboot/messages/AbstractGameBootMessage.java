@@ -9,9 +9,9 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public abstract class AbstractGameBootMessage {
 
 	private Integer id;
-	
+
 	private MessageType type;
-	
+
 	protected AbstractGameBootMessage(MessageType type) {
 		setType(type);
 	}
@@ -31,7 +31,7 @@ public abstract class AbstractGameBootMessage {
 	public void setType(MessageType type) {
 		this.type = type;
 	}
-	
+
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this);

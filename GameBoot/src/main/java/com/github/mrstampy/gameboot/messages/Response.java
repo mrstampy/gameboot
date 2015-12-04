@@ -8,21 +8,15 @@ public class Response extends AbstractGameBootMessage {
 
 	private ResponseCode responseCode;
 
-	private Object response;
+	private Object[] response;
 
 	public Response() {
 		super(MessageType.RESPONSE);
 	}
 
-	public Response(ResponseCode responseCode) {
+	public Response(ResponseCode responseCode, Object... response) {
 		this();
-
 		setResponseCode(responseCode);
-	}
-
-	public Response(ResponseCode responseCode, Object response) {
-		this(responseCode);
-
 		setResponse(response);
 	}
 
@@ -34,11 +28,11 @@ public class Response extends AbstractGameBootMessage {
 		this.responseCode = responseCode;
 	}
 
-	public Object getResponse() {
+	public Object[] getResponse() {
 		return response;
 	}
 
-	public void setResponse(Object response) {
+	public void setResponse(Object... response) {
 		this.response = response;
 	}
 

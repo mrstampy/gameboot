@@ -16,12 +16,13 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 
 	@Transactional
 	@Override
-	public final AbstractGameBootMessage process(M message) throws Exception {
+	public final Response process(M message) throws Exception {
 		log.debug("Processing message {}", message);
 
 		validate(message);
 
-		AbstractGameBootMessage response = processImpl(message);
+		Response response = processImpl(message);
+		response.setId(message.getId());
 
 		log.debug("Created response {} for {}", response, message);
 
@@ -32,20 +33,16 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 		throw new RuntimeException(message);
 	}
 
-	protected Response success() {
-		return new Response(ResponseCode.SUCCESS);
-	}
-
-	protected Response success(Object message) {
+	protected Response success(Object... message) {
 		return new Response(ResponseCode.SUCCESS, message);
 	}
 
-	protected Response failure(Object message) {
+	protected Response failure(Object... message) {
 		return new Response(ResponseCode.FAILURE, message);
 	}
 
 	protected abstract void validate(M message) throws Exception;
 
-	protected abstract AbstractGameBootMessage processImpl(M message) throws Exception;
+	protected abstract Response processImpl(M message) throws Exception;
 
 }

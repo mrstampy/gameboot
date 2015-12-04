@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.repository.UserRepository;
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.MessageType;
+import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 
@@ -65,7 +65,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 	}
 
 	@Override
-	protected AbstractGameBootMessage processImpl(UserMessage message) throws Exception {
+	protected Response processImpl(UserMessage message) throws Exception {
 		switch (message.getFunction()) {
 		case CREATE:
 			return createNewUser(message);
@@ -81,7 +81,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		}
 	}
 
-	private AbstractGameBootMessage loginUser(UserMessage message) {
+	private Response loginUser(UserMessage message) {
 		String userName = message.getUserName();
 		User user = getUser(userName);
 
@@ -92,7 +92,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		return ok ? success(user) : failure("Password is invalid");
 	}
 
-	private AbstractGameBootMessage updateUser(UserMessage message) {
+	private Response updateUser(UserMessage message) {
 		String userName = message.getUserName();
 		User user = getUser(userName);
 
@@ -105,7 +105,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		return changed ? success(user) : failure(user);
 	}
 
-	private AbstractGameBootMessage deleteUser(UserMessage message) {
+	private Response deleteUser(UserMessage message) {
 		String userName = message.getUserName();
 		User user = getUser(userName);
 
@@ -116,7 +116,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		return success("User " + userName + " deleted");
 	}
 
-	private AbstractGameBootMessage createNewUser(UserMessage message) {
+	private Response createNewUser(UserMessage message) {
 		User user = createUser(message);
 
 		user = repository.save(user);
