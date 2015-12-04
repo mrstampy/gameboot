@@ -10,6 +10,8 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
@@ -21,6 +23,7 @@ import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage> {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

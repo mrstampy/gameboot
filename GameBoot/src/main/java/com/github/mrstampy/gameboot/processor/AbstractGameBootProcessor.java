@@ -31,15 +31,15 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 	protected void fail(String message) {
 		throw new RuntimeException(message);
 	}
-	
+
 	protected Response success() {
 		return new Response(ResponseCode.SUCCESS);
 	}
-	
+
 	protected Response success(Object message) {
 		return new Response(ResponseCode.SUCCESS, message);
 	}
-	
+
 	protected Response failure(Object message) {
 		return new Response(ResponseCode.FAILURE, message);
 	}
