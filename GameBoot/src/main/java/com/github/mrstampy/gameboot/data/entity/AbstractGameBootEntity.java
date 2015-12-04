@@ -17,26 +17,26 @@ public abstract class AbstractGameBootEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Integer id;
+	private Long id;
 
 	@Column
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date createdTime = new Date();
+	private Date created = new Date();
 
-	public Integer getId() {
+	public Long getId() {
 		return id;
 	}
 
-	public void setId(Integer id) {
+	public void setId(Long id) {
 		this.id = id;
 	}
 
-	public Date getCreatedTime() {
-		return createdTime;
+	public Date getCreated() {
+		return created;
 	}
 
-	public void setCreatedTime(Date createdTime) {
-		this.createdTime = createdTime;
+	public void setCreated(Date createdTime) {
+		this.created = createdTime;
 	}
 
 	@Override

@@ -15,7 +15,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
+import com.github.mrstampy.gameboot.data.assist.UserSessionAssist;
 import com.github.mrstampy.gameboot.data.entity.User;
+import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.entity.repository.UserRepository;
 import com.github.mrstampy.gameboot.messages.MessageType;
 import com.github.mrstampy.gameboot.messages.Response;
@@ -28,7 +30,10 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Autowired
-	private UserRepository repository;
+	private UserRepository userRepo;
+
+	@Autowired
+	private UserSessionAssist assist;
 
 	@Override
 	public MessageType getType() {
@@ -60,6 +65,8 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 			}
 			//@formatter:on
 			break;
+		case LOGOUT:
+			break;
 		}
 
 	}
@@ -75,53 +82,67 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 			return updateUser(message);
 		case LOGIN:
 			return loginUser(message);
+		case LOGOUT:
+			return logoutUser(message);
 		default:
 			log.error("Inaccessible: UserMessage.function is broken for {}", message);
 			return failure("Should never reach here");
 		}
 	}
 
+	private Response logoutUser(UserMessage message) {
+		String userName = message.getUserName();
+
+		return success(assist.logout(userName));
+	}
+
 	private Response loginUser(UserMessage message) {
 		String userName = message.getUserName();
-		User user = getUser(userName);
+		User user = assist.expectedUser(userName);
 
 		boolean ok = BCrypt.checkpw(message.getNewPassword(), user.getPasswordHash());
 
-		log.debug("Login for {} is {}", userName, ok);
+		log.info("Login for {} is {}", userName, ok);
 
-		return ok ? success(user) : failure("Password is invalid");
+		return ok ? createSession(user) : failure("Password is invalid");
+	}
+
+	private Response createSession(User user) {
+		UserSession session = assist.create(user);
+
+		return success(user, session);
 	}
 
 	private Response updateUser(UserMessage message) {
 		String userName = message.getUserName();
-		User user = getUser(userName);
+		User user = assist.expectedUser(userName);
 
 		boolean changed = populateForUpdate(message, user);
 
-		if (changed) user = repository.save(user);
+		if (changed) user = userRepo.save(user);
 
-		log.debug("Updated user {}? {}", user, changed);
+		log.info("Updated user {}? {}", user, changed);
 
 		return changed ? success(user) : failure(user);
 	}
 
 	private Response deleteUser(UserMessage message) {
 		String userName = message.getUserName();
-		User user = getUser(userName);
+		User user = assist.expectedUser(userName);
 
-		repository.delete(user.getId());
+		userRepo.delete(user.getId());
 
-		log.debug("Deleted user {}", user);
+		log.info("Deleted user {}", user);
 
-		return success("User " + userName + " deleted");
+		return success(user);
 	}
 
 	private Response createNewUser(UserMessage message) {
 		User user = createUser(message);
 
-		user = repository.save(user);
+		user = userRepo.save(user);
 
-		log.debug("Created user {}", user);
+		log.info("Created user {}", user);
 
 		return success(user);
 	}
@@ -177,13 +198,6 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
 	private boolean changed(Object in, Object exist) {
 		return !(in == null && exist == null) && !EqualsBuilder.reflectionEquals(in, exist);
-	}
-
-	private User getUser(String userName) {
-		User user = repository.findByUserName(userName);
-		if (user == null) fail("No user for " + userName);
-
-		return user;
 	}
 
 	private User createUser(UserMessage message) {

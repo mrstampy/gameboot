@@ -25,7 +25,7 @@ public class UserMessage extends AbstractGameBootMessage {
 	private Date dob;
 
 	public enum Function {
-		CREATE, UPDATE, DELETE, LOGIN
+		CREATE, UPDATE, DELETE, LOGIN, LOGOUT
 	}
 
 	private Function function;

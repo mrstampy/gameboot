@@ -19,14 +19,20 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 	public final Response process(M message) throws Exception {
 		log.debug("Processing message {}", message);
 
-		validate(message);
+		try {
+			validate(message);
 
-		Response response = processImpl(message);
-		response.setId(message.getId());
+			Response response = processImpl(message);
+			response.setId(message.getId());
 
-		log.debug("Created response {} for {}", response, message);
+			log.debug("Created response {} for {}", response, message);
 
-		return response;
+			return response;
+		} catch (Exception e) {
+			log.error("Error in processing {}", message, e);
+
+			return new Response(ResponseCode.FAILURE, e.getMessage());
+		}
 	}
 
 	protected void fail(String message) {
