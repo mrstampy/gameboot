@@ -6,6 +6,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import java.lang.invoke.MethodHandles;
 import java.util.Date;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -171,12 +172,8 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		return changed;
 	}
 
-	private boolean changed(String in, String exist) {
-		return (isEmpty(in) && isNotEmpty(exist)) || (isNotEmpty(in) && !in.equals(exist));
-	}
-
-	private boolean changed(Date in, Date existing) {
-		return (in == null && existing != null) || (in != null && !in.equals(existing));
+	private boolean changed(Object in, Object exist) {
+		return !EqualsBuilder.reflectionEquals(in, exist);
 	}
 
 	private User getUser(String userName) {

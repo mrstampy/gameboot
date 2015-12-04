@@ -8,8 +8,11 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.hibernate.envers.Audited;
+
 @Entity
 @Table
+@Audited
 public class User extends AbstractGameBootEntity {
 
 	@Column(unique=true, nullable = false, length = 50)
