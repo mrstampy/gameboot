@@ -39,8 +39,11 @@ dependencies {
     compile('com.vaadin:vaadin-spring-boot-starter:1.0.0')
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-websocket')
+    compile('org.springframework.boot:spring-boot-starter-cache')
     compile('org.hibernate:hibernate-envers:4.3.11.Final')
     compile('org.apache.commons:commons-lang3:3.4')
+    
+    compile('org.ehcache:ehcache:3.0.0.m4')
     
     runtime('com.h2database:h2')
     runtime('mysql:mysql-connector-java')

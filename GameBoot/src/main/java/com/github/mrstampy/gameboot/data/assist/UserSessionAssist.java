@@ -4,10 +4,12 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Date;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.data.entity.User;
@@ -25,17 +27,21 @@ public class UserSessionAssist {
 	@Autowired
 	private UserRepository userRepo;
 
+	@Autowired
+	private ActiveSessions activeSessions;
+
 	public UserSession create(User user) throws IllegalStateException {
 		userCheck(user);
 
-		UserSession session = userSessionRepo.findByUserAndEndedIsNull(user);
+		String userName = user.getUserName();
+		check(activeSessions.hasSession(userName), "Session already exists for " + userName);
 
-		check(session != null, "Session already exists for " + user.getUserName());
-
-		session = new UserSession();
+		UserSession session = new UserSession();
 		session.setUser(user);
 
 		userSessionRepo.save(session);
+
+		activeSessions.addSession(session);
 
 		return session;
 	}
@@ -59,29 +65,26 @@ public class UserSessionAssist {
 	public UserSession expected(User user) throws IllegalStateException {
 		userCheck(user);
 
-		UserSession session = userSessionRepo.findByUserAndEndedIsNull(user);
+		String userName = user.getUserName();
+		check(!activeSessions.hasSession(userName), "No session for " + userName);
 
-		check(session == null, "No session for " + user.getUserName());
-
-		return session;
+		return userSessionRepo.findByUserAndEndedIsNull(user);
 	}
 
 	public UserSession expected(long id) throws IllegalStateException {
 		if (id <= 0) throw new IllegalStateException("Id must be > 0: " + id);
 
-		UserSession session = userSessionRepo.findByIdAndEndedIsNull(id);
+		check(!activeSessions.hasSession(id), "No session for id " + id);
 
-		check(session == null, "No session for id " + id);
-
-		return session;
+		return userSessionRepo.findByIdAndEndedIsNull(id);
 	}
 
-	public boolean isLoggedIn(String userName) throws IllegalStateException {
-		User user = expectedUser(userName);
+	public boolean hasSession(String userName) {
+		return activeSessions.hasSession(userName);
+	}
 
-		UserSession session = userSessionRepo.findByUserAndEndedIsNull(user);
-
-		return session != null;
+	public boolean hasSession(long id) {
+		return activeSessions.hasSession(id);
 	}
 
 	public User logout(String userName) throws IllegalStateException {
@@ -100,12 +103,19 @@ public class UserSessionAssist {
 		return session.getUser();
 	}
 
+	@Cacheable(value = "sessions")
+	public List<UserSession> activeSessions() {
+		return userSessionRepo.findByEndedIsNull();
+	}
+
 	protected void closeSession(UserSession session) {
 		session.setEnded(new Date());
 
-		log.info("User {} logged out", session.getUser().getUserName());
-
 		userSessionRepo.save(session);
+
+		activeSessions.removeSession(session);
+
+		log.info("User {} logged out", session.getUser().getUserName());
 	}
 
 	protected void userCheck(User user) {

@@ -2,6 +2,7 @@ package com.github.mrstampy.gameboot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -15,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @EnableAutoConfiguration
 @ComponentScan(basePackages = "com.github.mrstampy.gameboot")
 @EnableAspectJAutoProxy(proxyTargetClass = true)
+@EnableCaching
 public class GameBoot {
 
 	@Bean

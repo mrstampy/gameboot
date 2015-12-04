@@ -141,7 +141,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		String userName = message.getUserName();
 		User user = assist.expectedUser(userName);
 
-		if (assist.isLoggedIn(userName)) assist.logout(userName);
+		if (assist.hasSession(userName)) assist.logout(userName);
 
 		user.setState(UserState.DELETED);
 
