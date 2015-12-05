@@ -1,28 +1,53 @@
+<!-- 
+===================================================================================
+	EhCache configuration for GameBoot
+	
+	Used to minimize database hits for heavily used data (sessions, active games etc).
+	
+	The default is 15 second expiry time for the cache.
+	
+	@see src/main/resources/application.properties
+===================================================================================
+#
+# Copyright (C) 2015 Burton Alexander
+# 
+# This program is free software; you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free Software
+# Foundation; either version 2 of the License, or (at your option) any later
+# version.
+# 
+# This program is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+# FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+# details.
+# 
+# You should have received a copy of the GNU General Public License along with
+# this program; if not, write to the Free Software Foundation, Inc., 51
+# Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ -->
 <ehcache:config xmlns:ehcache="http://www.ehcache.org/v3"
 	xmlns:jcache="http://www.ehcache.org/v3/jsr107">
 
 	<ehcache:service>
-
 		<jcache:defaults>
 			<jcache:cache name="services" template="gameBootCacheTemplate" />
 		</jcache:defaults>
-
 	</ehcache:service>
 
+	<!-- @see com.github.mrstampy.gameboot.data.assist.ActiveSessions -->
 	<ehcache:cache alias="sessions" uses-template="gameBootCacheTemplate">
-
 		<ehcache:heap size="1" unit="entries" />
-
 	</ehcache:cache>
 
+	<!-- Template cache region, LRU eviction, 15 seconds TTL -->
 	<ehcache:cache-template name="gameBootCacheTemplate">
-
+	
 		<ehcache:expiry>
 			<ehcache:ttl unit="seconds">15</ehcache:ttl>
 		</ehcache:expiry>
-
+		
 		<ehcache:eviction-prioritizer>LRU</ehcache:eviction-prioritizer>
-
+		
 	</ehcache:cache-template>
 
 </ehcache:config>
