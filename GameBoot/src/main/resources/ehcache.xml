@@ -34,7 +34,7 @@
 		</jcache:defaults>
 	</ehcache:service>
 
-	<!-- @see com.github.mrstampy.gameboot.data.assist.ActiveSessions -->
+	<!-- @see com.github.mrstampy.gameboot.data.assist.UserSessionAssist -->
 	<ehcache:cache alias="sessions" uses-template="gameBootCacheTemplate">
 		<ehcache:heap size="1" unit="entries" />
 	</ehcache:cache>
