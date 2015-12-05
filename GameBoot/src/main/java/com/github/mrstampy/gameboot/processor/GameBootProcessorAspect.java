@@ -99,7 +99,7 @@ public class GameBootProcessorAspect {
 	 * @throws Throwable
 	 *           the throwable
 	 */
-	@Around("this(com.github.mrstampy.gameboot.processor.GameBootProcessor) && execution(!void *.*(..))")
+	@Around("this(com.github.mrstampy.gameboot.processor.GameBootProcessor) && execution(com.github.mrstampy.gameboot.messages.Response *.*(..))")
 	public Object metrics(ProceedingJoinPoint pjp) throws Throwable {
 		Context ctx = helper.startTimer(PROCESS_TIMER);
 
