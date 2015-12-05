@@ -154,7 +154,7 @@ public class MetricsHelper {
 	public Context startTimer(String key) {
 		Timer t = timers.get(key);
 
-		if (t == null) throw new IllegalArgumentException("No timer for key {}" + key);
+		if (t == null) throw new IllegalArgumentException("No timer for key " + key);
 
 		Context ctx = t.time();
 
