@@ -65,6 +65,9 @@ import com.github.mrstampy.gameboot.data.entity.repository.UserSessionRepository
 public class UserSessionAssist {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+	/** The Constant SESSIONS_KEY. */
+	public static final String SESSIONS_KEY = "ActiveSessions";
+
 	@Autowired
 	private UserSessionRepository userSessionRepo;
 
@@ -73,6 +76,8 @@ public class UserSessionAssist {
 
 	@Autowired
 	private ActiveSessions activeSessions;
+
+	private String sessionsKey = SESSIONS_KEY;
 
 	/**
 	 * Creates the.
@@ -229,9 +234,18 @@ public class UserSessionAssist {
 	 *
 	 * @return the list
 	 */
-	@Cacheable(value = "sessions")
+	@Cacheable(cacheNames = "sessions", key = "target.sessionsKey")
 	public List<UserSession> activeSessions() {
 		return userSessionRepo.findByEndedIsNull();
+	}
+
+	/**
+	 * Gets the sessions key.
+	 *
+	 * @return the sessions key
+	 */
+	public String getSessionsKey() {
+		return sessionsKey;
 	}
 
 	/**
