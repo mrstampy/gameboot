@@ -47,6 +47,8 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
+import co.paralleluniverse.springframework.boot.security.autoconfigure.web.FiberSecureSpringBootApplication;
+
 // TODO: Auto-generated Javadoc
 /**
  * The Class GameBoot.
@@ -56,6 +58,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 @ComponentScan(basePackages = "com.github.mrstampy.gameboot")
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableCaching
+@FiberSecureSpringBootApplication
 public class GameBoot {
 
 	/**

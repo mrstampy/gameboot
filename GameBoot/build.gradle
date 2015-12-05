@@ -83,6 +83,10 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-websocket')
     compile('org.springframework.boot:spring-boot-starter-cache')
     
+    compile('co.paralleluniverse:comsat-spring-boot:0.5.0')
+    compile('co.paralleluniverse:comsat-spring-boot-security:0.5.0')
+    compile('co.paralleluniverse:quasar-core:0.7.3')
+    
     compile('com.vaadin:vaadin-spring-boot-starter:1.0.0')
     compile('org.hibernate:hibernate-envers:4.3.11.Final')
     
