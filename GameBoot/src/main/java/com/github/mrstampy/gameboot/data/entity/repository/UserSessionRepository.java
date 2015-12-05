@@ -77,6 +77,6 @@ public interface UserSessionRepository extends CrudRepository<UserSession, Long>
 	 *
 	 * @return the list
 	 */
-	@Query("SELECT us FROM UserSession us JOIN FETCH us.user WHERE us.ended is null")
+	@Query("SELECT us FROM UserSession us JOIN FETCH us.user WHERE us.ended is null ORDER BY us.created DESC")
 	List<UserSession> findByEndedIsNull();
 }
