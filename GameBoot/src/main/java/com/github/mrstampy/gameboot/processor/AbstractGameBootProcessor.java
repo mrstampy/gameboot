@@ -72,8 +72,8 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 	@Override
 	public final Response process(M message) throws Exception {
 		log.debug("Processing message {}", message);
-		
-		if(message == null) fail("Null message");
+
+		if (message == null) fail("Null message");
 
 		try {
 			validate(message);

@@ -84,10 +84,11 @@ public class GameBootProcessorAspect {
 	@PostConstruct
 	public void postConstruct() throws Exception {
 		helper.timer(PROCESS_TIMER, AbstractGameBootProcessor.class, "process", "timer");
-		helper.counter(ALERT_REQUESTS, AbstractGameBootProcessor.class, "failed", "requests");
-		helper.counter(INFO_REQUESTS, AbstractGameBootProcessor.class, "failed", "requests");
-		helper.counter(SUCCESS_REQUESTS, AbstractGameBootProcessor.class, "failed", "requests");
-		helper.counter(WARNING_REQUESTS, AbstractGameBootProcessor.class, "failed", "requests");
+		helper.counter(FAILED_REQUESTS, AbstractGameBootProcessor.class, "failed", "requests");
+		helper.counter(ALERT_REQUESTS, AbstractGameBootProcessor.class, "alert", "requests");
+		helper.counter(INFO_REQUESTS, AbstractGameBootProcessor.class, "info", "requests");
+		helper.counter(SUCCESS_REQUESTS, AbstractGameBootProcessor.class, "success", "requests");
+		helper.counter(WARNING_REQUESTS, AbstractGameBootProcessor.class, "warning", "requests");
 	}
 
 	/**

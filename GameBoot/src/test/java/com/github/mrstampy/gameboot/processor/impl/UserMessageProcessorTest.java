@@ -45,16 +45,26 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.lang.invoke.MethodHandles;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import javax.transaction.Transactional;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Timer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.GameBoot;
 import com.github.mrstampy.gameboot.data.assist.ActiveSessions;
 import com.github.mrstampy.gameboot.data.assist.UserSessionAssist;
@@ -67,6 +77,7 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.messages.UserMessage.Function;
+import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -75,6 +86,7 @@ import com.github.mrstampy.gameboot.messages.UserMessage.Function;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(GameBoot.class)
 public class UserMessageProcessorTest {
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private static final String PASSWORD = "password";
 
@@ -96,6 +108,12 @@ public class UserMessageProcessorTest {
 
 	@Autowired
 	private UserSessionRepository userSessionRepo;
+
+	@Autowired
+	private MetricsHelper helper;
+
+	@Autowired
+	private ObjectMapper mapper;
 
 	private Long userId;
 
@@ -149,6 +167,8 @@ public class UserMessageProcessorTest {
 		}
 
 		userRepo.delete(userId);
+
+		metrics();
 	}
 
 	/**
@@ -255,6 +275,24 @@ public class UserMessageProcessorTest {
 
 		testDelete();
 		assertEquals(0, activeSessions.size());
+	}
+
+	private void metrics() throws Exception {
+		Set<Entry<String, Timer>> timers = helper.getTimers();
+
+		timers.forEach(e -> display(e));
+
+		Set<Entry<String, Counter>> counters = helper.getCounters();
+
+		counters.forEach(e -> display(e));
+	}
+
+	private void display(Entry<String, ?> t) {
+		try {
+			log.debug(mapper.writeValueAsString(t));
+		} catch (JsonProcessingException e) {
+			log.error("Unexpected exception", e);
+		}
 	}
 
 	private void failExpected(UserMessage m, String failMsg) {

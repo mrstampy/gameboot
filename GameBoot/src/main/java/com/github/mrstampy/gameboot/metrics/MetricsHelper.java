@@ -42,7 +42,10 @@ package com.github.mrstampy.gameboot.metrics;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,6 +115,33 @@ public class MetricsHelper {
 	 */
 	public void gauge(Gauge<?> gauge, String key, Class<?> clz, String... qualifiers) {
 		gauges.put(key, registry.register(name(clz, qualifiers), gauge));
+	}
+
+	/**
+	 * Gets the timers.
+	 *
+	 * @return the timers
+	 */
+	public Set<Entry<String, Timer>> getTimers() {
+		return Collections.unmodifiableSet(timers.entrySet());
+	}
+
+	/**
+	 * Gets the counters.
+	 *
+	 * @return the counters
+	 */
+	public Set<Entry<String, Counter>> getCounters() {
+		return Collections.unmodifiableSet(counters.entrySet());
+	}
+
+	/**
+	 * Gets the gauges.
+	 *
+	 * @return the gauges
+	 */
+	public Set<Entry<String, Gauge<?>>> getGauges() {
+		return Collections.unmodifiableSet(gauges.entrySet());
 	}
 
 	/**
