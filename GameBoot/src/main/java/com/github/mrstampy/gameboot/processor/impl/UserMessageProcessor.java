@@ -99,7 +99,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 	 */
 	@Override
 	protected void validate(UserMessage message) throws Exception {
-		if (message.getFunction() == null) fail("function must be one of CREATE, DELETE, UPDATE, LOGIN");
+		if (message.getFunction() == null) fail("function must be one of CREATE, DELETE, UPDATE, LOGIN, LOGOUT");
 
 		if (isEmpty(message.getUserName())) fail("userName must be supplied");
 
