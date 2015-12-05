@@ -91,13 +91,6 @@ public class UserMessage extends AbstractGameBootMessage {
 	private Function function;
 
 	/**
-	 * Instantiates a new user message.
-	 */
-	public UserMessage() {
-		super(MessageType.USER);
-	}
-
-	/**
 	 * Gets the user name.
 	 *
 	 * @return the user name

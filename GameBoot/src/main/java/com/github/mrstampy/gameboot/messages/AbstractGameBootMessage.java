@@ -54,18 +54,6 @@ public abstract class AbstractGameBootMessage {
 
 	private Integer id;
 
-	private MessageType type;
-
-	/**
-	 * Instantiates a new abstract game boot message.
-	 *
-	 * @param type
-	 *          the type
-	 */
-	protected AbstractGameBootMessage(MessageType type) {
-		setType(type);
-	}
-
 	/**
 	 * Gets the id.
 	 *
@@ -83,25 +71,6 @@ public abstract class AbstractGameBootMessage {
 	 */
 	public void setId(Integer id) {
 		this.id = id;
-	}
-
-	/**
-	 * Gets the type.
-	 *
-	 * @return the type
-	 */
-	public MessageType getType() {
-		return type;
-	}
-
-	/**
-	 * Sets the type.
-	 *
-	 * @param type
-	 *          the new type
-	 */
-	public void setType(MessageType type) {
-		this.type = type;
 	}
 
 	/*

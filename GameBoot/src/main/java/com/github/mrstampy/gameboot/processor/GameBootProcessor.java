@@ -41,7 +41,6 @@
 package com.github.mrstampy.gameboot.processor;
 
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
-import com.github.mrstampy.gameboot.messages.MessageType;
 import com.github.mrstampy.gameboot.messages.Response;
 
 // TODO: Auto-generated Javadoc
@@ -52,13 +51,6 @@ import com.github.mrstampy.gameboot.messages.Response;
  *          the generic type
  */
 public interface GameBootProcessor<M extends AbstractGameBootMessage> {
-
-	/**
-	 * Gets the type.
-	 *
-	 * @return the type
-	 */
-	MessageType getType();
 
 	/**
 	 * Process.

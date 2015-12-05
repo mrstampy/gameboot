@@ -73,7 +73,6 @@ public class Response extends AbstractGameBootMessage {
 	 * Instantiates a new response.
 	 */
 	public Response() {
-		super(MessageType.RESPONSE);
 	}
 
 	/**

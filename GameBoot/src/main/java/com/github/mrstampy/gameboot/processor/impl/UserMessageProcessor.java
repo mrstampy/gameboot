@@ -60,7 +60,6 @@ import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.entity.repository.UserRepository;
-import com.github.mrstampy.gameboot.messages.MessageType;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
@@ -79,16 +78,6 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
 	@Autowired
 	private UserSessionAssist assist;
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see com.github.mrstampy.gameboot.processor.GameBootProcessor#getType()
-	 */
-	@Override
-	public MessageType getType() {
-		return MessageType.USER;
-	}
 
 	/*
 	 * (non-Javadoc)
