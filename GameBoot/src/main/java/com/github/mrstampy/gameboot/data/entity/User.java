@@ -50,6 +50,7 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.hibernate.envers.Audited;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -234,5 +235,27 @@ public class User extends AbstractGameBootEntity {
 	 */
 	public void setState(UserState state) {
 		this.state = state;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		ToStringBuilder tsb = new ToStringBuilder(this);
+
+		//@formatter:off
+		tsb
+			.append(getUserName())
+			.append(getFirstName())
+			.append(getLastName())
+			.append(getState())
+			.append(getDob())
+			.append(getEmail());
+		//@formatter:on
+
+		return tsb.toString();
 	}
 }
