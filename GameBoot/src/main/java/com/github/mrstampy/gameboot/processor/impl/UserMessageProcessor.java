@@ -105,7 +105,6 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
 		switch (message.getFunction()) {
 		case LOGIN:
-			if (isEmpty(message.getOldPassword())) fail("old password must be supplied");
 		case CREATE:
 			if (isEmpty(message.getNewPassword())) fail("new password must be supplied");
 			break;
