@@ -1,0 +1,275 @@
+/*
+ *              ______                        ____              __ 
+ *             / ____/___ _____ ___  ___     / __ )____  ____  / /_
+ *            / / __/ __ `/ __ `__ \/ _ \   / __  / __ \/ __ \/ __/
+ *           / /_/ / /_/ / / / / / /  __/  / /_/ / /_/ / /_/ / /_  
+ *           \____/\__,_/_/ /_/ /_/\___/  /_____/\____/\____/\__/  
+ *                                                 
+ *                                 .-'\
+ *                              .-'  `/\
+ *                           .-'      `/\
+ *                           \         `/\
+ *                            \         `/\
+ *                             \    _-   `/\       _.--.
+ *                              \    _-   `/`-..--\     )
+ *                               \    _-   `,','  /    ,')
+ *                                `-_   -   ` -- ~   ,','
+ *                                 `-              ,','
+ *                                  \,--.    ____==-~
+ *                                   \   \_-~\
+ *                                    `_-~_.-'
+ *                                     \-~
+ *
+ *
+ * Copyright (C) 2015 Burton Alexander
+ * 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * 
+ */
+package com.github.mrstampy.gameboot.processor.impl;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
+import javax.transaction.Transactional;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.github.mrstampy.gameboot.GameBoot;
+import com.github.mrstampy.gameboot.data.assist.ActiveSessions;
+import com.github.mrstampy.gameboot.data.assist.UserSessionAssist;
+import com.github.mrstampy.gameboot.data.entity.User;
+import com.github.mrstampy.gameboot.data.entity.User.UserState;
+import com.github.mrstampy.gameboot.data.entity.UserSession;
+import com.github.mrstampy.gameboot.data.entity.repository.UserRepository;
+import com.github.mrstampy.gameboot.data.entity.repository.UserSessionRepository;
+import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.messages.UserMessage;
+import com.github.mrstampy.gameboot.messages.UserMessage.Function;
+
+// TODO: Auto-generated Javadoc
+/**
+ * The Class UserMessageProcessorTest.
+ */
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(GameBoot.class)
+public class UserMessageProcessorTest {
+
+	private static final String PASSWORD = "password";
+
+	private static final String BAD_PASSWORD = "BADpassword";
+
+	private static final String TEST_USER = "testuser";
+
+	@Autowired
+	private UserMessageProcessor processor;
+
+	@Autowired
+	private UserSessionAssist assist;
+
+	@Autowired
+	private ActiveSessions activeSessions;
+
+	@Autowired
+	private UserRepository userRepo;
+
+	@Autowired
+	private UserSessionRepository userSessionRepo;
+
+	private Long userId;
+
+	private Long sessionId;
+
+	/**
+	 * Before.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
+	@Before
+	public void before() throws Exception {
+		failExpected(null, "Null message");
+
+		UserMessage m = new UserMessage();
+
+		failExpected(m, "Empty message");
+
+		m.setFunction(Function.CREATE);
+		failExpected(m, "No username/password");
+
+		m.setUserName(TEST_USER);
+		failExpected(m, "No password");
+
+		m.setNewPassword(PASSWORD);
+
+		Response r = processor.process(m);
+
+		assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+		assertNotNull(r.getResponse());
+		assertEquals(1, r.getResponse().length);
+		assertTrue(r.getResponse()[0] instanceof User);
+
+		User user = (User) r.getResponse()[0];
+		userId = user.getId();
+	}
+
+	/**
+	 * After.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
+	@After
+	public void after() throws Exception {
+		if (sessionId != null) {
+			if (assist.hasSession(sessionId)) assist.logout(sessionId);
+
+			userSessionRepo.delete(sessionId);
+		}
+
+		userRepo.delete(userId);
+	}
+
+	/**
+	 * Test login.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
+	@Test
+	@Transactional
+	public void testLogin() throws Exception {
+		UserMessage m = new UserMessage();
+
+		m.setFunction(Function.LOGIN);
+		m.setUserName(TEST_USER);
+		m.setNewPassword(BAD_PASSWORD);
+
+		failExpected(m, "Bad password");
+
+		m.setNewPassword(PASSWORD);
+
+		Response r = processor.process(m);
+
+		assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+
+		assertNotNull(r.getResponse());
+		assertEquals(2, r.getResponse().length);
+
+		assertTrue(r.getResponse()[0] instanceof User);
+		assertTrue(r.getResponse()[1] instanceof UserSession);
+
+		UserSession session = (UserSession) r.getResponse()[1];
+		sessionId = session.getId();
+
+		failExpected(m, "User logged in");
+	}
+
+	/**
+	 * Test logout.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
+	@Test
+	@Transactional
+	public void testLogout() throws Exception {
+		UserMessage m = new UserMessage();
+
+		m.setFunction(Function.LOGOUT);
+		m.setUserName(TEST_USER);
+
+		failExpected(m, "Not logged in");
+
+		testLogin();
+
+		Response r = processor.process(m);
+
+		assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+
+		assertNotNull(r.getResponse());
+		assertEquals(1, r.getResponse().length);
+
+		assertTrue(r.getResponse()[0] instanceof User);
+	}
+
+	/**
+	 * Test delete.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
+	@Test
+	@Transactional
+	public void testDelete() throws Exception {
+		UserMessage m = new UserMessage();
+
+		m.setFunction(Function.DELETE);
+		m.setUserName(TEST_USER);
+
+		Response r = processor.process(m);
+
+		assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+
+		assertNotNull(r.getResponse());
+		assertEquals(1, r.getResponse().length);
+
+		assertTrue(r.getResponse()[0] instanceof User);
+
+		User user = (User) r.getResponse()[0];
+		assertEquals(UserState.DELETED, user.getState());
+	}
+
+	/**
+	 * Test delete logged in.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
+	@Test
+	@Transactional
+	public void testDeleteLoggedIn() throws Exception {
+		testLogin();
+		assertEquals(1, activeSessions.size());
+
+		testDelete();
+		assertEquals(0, activeSessions.size());
+	}
+
+	private void failExpected(UserMessage m, String failMsg) {
+		try {
+			Response r = processor.process(m);
+			switch (r.getResponseCode()) {
+			case SUCCESS:
+				fail(failMsg);
+				break;
+			default:
+				break;
+			}
+		} catch (RuntimeException expected) {
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+	}
+}

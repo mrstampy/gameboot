@@ -107,4 +107,13 @@ public class ActiveSessions {
 	public Collection<Long> getSessionIds() {
 		return sessions.values();
 	}
+
+	/**
+	 * Size.
+	 *
+	 * @return the int
+	 */
+	public int size() {
+		return sessions.size();
+	}
 }
