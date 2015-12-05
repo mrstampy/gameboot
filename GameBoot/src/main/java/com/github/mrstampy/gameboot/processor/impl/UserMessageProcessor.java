@@ -46,6 +46,8 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import java.lang.invoke.MethodHandles;
 import java.util.Date;
 
+import javax.annotation.PostConstruct;
+
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +55,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
+import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.data.assist.UserSessionAssist;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
@@ -60,6 +63,7 @@ import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.entity.repository.UserRepository;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.UserMessage;
+import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 
 // TODO: Auto-generated Javadoc
@@ -68,6 +72,18 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
  */
 @Component
 public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage> {
+	private static final String USER_UPDATE_COUNTER = "UserUpdateCounter";
+
+	private static final String USER_DELETE_COUNTER = "UserDeleteCounter";
+
+	private static final String USER_CREATE_COUNTER = "UserCreateCounter";
+
+	private static final String USER_LOGOUT_COUNTER = "UserLogoutCounter";
+
+	private static final String USER_LOGIN_COUNTER = "UserLoginCounter";
+
+	private static final String USER_TIMER = "UserTImer";
+
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	@Autowired
@@ -75,6 +91,25 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
 	@Autowired
 	private UserSessionAssist assist;
+
+	@Autowired
+	private MetricsHelper helper;
+
+	/**
+	 * Post construct.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
+	@PostConstruct
+	public void postConstruct() throws Exception {
+		helper.timer(USER_TIMER, UserMessageProcessor.class, "user", "process", "timer");
+		helper.counter(USER_LOGIN_COUNTER, UserMessageProcessor.class, "login", "counter");
+		helper.counter(USER_LOGOUT_COUNTER, UserMessageProcessor.class, "logout", "counter");
+		helper.counter(USER_CREATE_COUNTER, UserMessageProcessor.class, "create", "counter");
+		helper.counter(USER_DELETE_COUNTER, UserMessageProcessor.class, "delete", "counter");
+		helper.counter(USER_UPDATE_COUNTER, UserMessageProcessor.class, "update", "counter");
+	}
 
 	/*
 	 * (non-Javadoc)
@@ -113,20 +148,30 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 	 */
 	@Override
 	protected Response processImpl(UserMessage message) throws Exception {
-		switch (message.getFunction()) {
-		case CREATE:
-			return createNewUser(message);
-		case DELETE:
-			return deleteUser(message);
-		case UPDATE:
-			return updateUser(message);
-		case LOGIN:
-			return loginUser(message);
-		case LOGOUT:
-			return logoutUser(message);
-		default:
-			log.error("Inaccessible: UserMessage.function is broken for {}", message);
-			return failure("Should never reach here");
+		Context ctx = helper.startTimer(USER_TIMER);
+		try {
+			switch (message.getFunction()) {
+			case CREATE:
+				helper.incr(USER_CREATE_COUNTER);
+				return createNewUser(message);
+			case DELETE:
+				helper.incr(USER_DELETE_COUNTER);
+				return deleteUser(message);
+			case UPDATE:
+				helper.incr(USER_UPDATE_COUNTER);
+				return updateUser(message);
+			case LOGIN:
+				helper.incr(USER_LOGIN_COUNTER);
+				return loginUser(message);
+			case LOGOUT:
+				helper.incr(USER_LOGOUT_COUNTER);
+				return logoutUser(message);
+			default:
+				log.error("Inaccessible: UserMessage.function is broken for {}", message);
+				return failure("Should never reach here");
+			}
+		} finally {
+			ctx.stop();
 		}
 	}
 

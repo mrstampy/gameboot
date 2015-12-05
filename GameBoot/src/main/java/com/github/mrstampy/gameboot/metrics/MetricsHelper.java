@@ -38,99 +38,124 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.assist;
+package com.github.mrstampy.gameboot.metrics;
 
-import java.util.Collection;
+import static com.codahale.metrics.MetricRegistry.name;
+
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.data.entity.UserSession;
-import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.codahale.metrics.Timer.Context;;
 
 // TODO: Auto-generated Javadoc
 /**
- * The Class ActiveSessions.
+ * The Class MetricsHelper.
  */
 @Component
-public class ActiveSessions {
-
-	private static final String ACTIVE_SESSIONS = "ActiveSessions";
-
-	private Map<String, Long> sessions = new ConcurrentHashMap<>();
+public class MetricsHelper {
 
 	@Autowired
-	private MetricsHelper helper;
+	private MetricRegistry registry;
+
+	private Map<String, Timer> timers = new ConcurrentHashMap<>();
+
+	private Map<String, Counter> counters = new ConcurrentHashMap<>();
+
+	private Map<String, Gauge<?>> gauges = new ConcurrentHashMap<>();
 
 	/**
-	 * Post construct.
+	 * Counter.
 	 *
-	 * @throws Exception
-	 *           the exception
+	 * @param key
+	 *          the key
+	 * @param clz
+	 *          the clz
+	 * @param qualifiers
+	 *          the qualifiers
 	 */
-	public void postConstruct() throws Exception {
-		helper.gauge(() -> sessions.size(), ACTIVE_SESSIONS, ActiveSessions.class, "active", "sessions");
+	public void counter(String key, Class<?> clz, String... qualifiers) {
+		counters.put(key, registry.counter(name(clz, qualifiers)));
 	}
 
 	/**
-	 * Adds the session.
+	 * Timer.
 	 *
-	 * @param session
-	 *          the session
+	 * @param key
+	 *          the key
+	 * @param clz
+	 *          the clz
+	 * @param qualifiers
+	 *          the qualifiers
 	 */
-	public void addSession(UserSession session) {
-		sessions.put(session.getUser().getUserName(), session.getId());
+	public void timer(String key, Class<?> clz, String... qualifiers) {
+		timers.put(key, registry.timer(name(clz, qualifiers)));
 	}
 
 	/**
-	 * Checks for session.
+	 * Gauge.
 	 *
-	 * @param userName
-	 *          the user name
-	 * @return true, if successful
+	 * @param gauge
+	 *          the gauge
+	 * @param key
+	 *          the key
+	 * @param clz
+	 *          the clz
+	 * @param qualifiers
+	 *          the qualifiers
 	 */
-	public boolean hasSession(String userName) {
-		return sessions.containsKey(userName);
+	public void gauge(Gauge<?> gauge, String key, Class<?> clz, String... qualifiers) {
+		gauges.put(key, registry.register(name(clz, qualifiers), gauge));
 	}
 
 	/**
-	 * Checks for session.
+	 * Start timer.
 	 *
-	 * @param id
-	 *          the id
-	 * @return true, if successful
+	 * @param key
+	 *          the key
+	 * @return the context
 	 */
-	public boolean hasSession(long id) {
-		return sessions.containsValue(id);
+	public Context startTimer(String key) {
+		Timer t = timers.get(key);
+
+		if (t == null) throw new IllegalArgumentException("No timer for key {}" + key);
+
+		Context ctx = t.time();
+
+		return ctx;
 	}
 
 	/**
-	 * Removes the session.
+	 * Incr.
 	 *
-	 * @param session
-	 *          the session
+	 * @param key
+	 *          the key
 	 */
-	public void removeSession(UserSession session) {
-		sessions.remove(session.getUser().getUserName());
+	public void incr(String key) {
+		getCounter(key).inc();
 	}
 
 	/**
-	 * Gets the session ids.
+	 * Decr.
 	 *
-	 * @return the session ids
+	 * @param key
+	 *          the key
 	 */
-	public Collection<Long> getSessionIds() {
-		return sessions.values();
+	public void decr(String key) {
+		getCounter(key).dec();
 	}
 
-	/**
-	 * Size.
-	 *
-	 * @return the int
-	 */
-	public int size() {
-		return sessions.size();
+	private Counter getCounter(String key) {
+		Counter c = counters.get(key);
+
+		if (c == null) throw new IllegalArgumentException("No counter for key " + key);
+
+		return c;
 	}
 }

@@ -42,6 +42,8 @@ dependencies {
     compile('org.springframework.boot:spring-boot-starter-cache')
     compile('org.hibernate:hibernate-envers:4.3.11.Final')
     compile('org.apache.commons:commons-lang3:3.4')
+    compile('io.dropwizard.metrics:metrics-core:3.1.2')
+    compile('io.dropwizard.metrics:metrics-jvm:3.1.2')
     
     compile('javax.cache:cache-api:1.0.0')
     compile('org.ehcache:ehcache:3.0.0.m4')

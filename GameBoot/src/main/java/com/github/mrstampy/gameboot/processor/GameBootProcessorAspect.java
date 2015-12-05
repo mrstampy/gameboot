@@ -38,28 +38,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.assist;
+package com.github.mrstampy.gameboot.processor;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.PostConstruct;
 
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.data.entity.UserSession;
+import com.codahale.metrics.Timer.Context;
+import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 // TODO: Auto-generated Javadoc
 /**
- * The Class ActiveSessions.
+ * The Class GameBootProcessorAspect.
  */
+@Aspect
 @Component
-public class ActiveSessions {
+public class GameBootProcessorAspect {
 
-	private static final String ACTIVE_SESSIONS = "ActiveSessions";
+	private static final String PROCESS_TIMER = "ProcessTimer";
 
-	private Map<String, Long> sessions = new ConcurrentHashMap<>();
+	private static final String FAILED_REQUESTS = "FailedRequests";
+
+	private static final String ALERT_REQUESTS = "AlertRequests";
+
+	private static final String INFO_REQUESTS = "InfoRequests";
+
+	private static final String SUCCESS_REQUESTS = "SuccessRequests";
+
+	private static final String WARNING_REQUESTS = "WarningRequests";
 
 	@Autowired
 	private MetricsHelper helper;
@@ -70,67 +81,54 @@ public class ActiveSessions {
 	 * @throws Exception
 	 *           the exception
 	 */
+	@PostConstruct
 	public void postConstruct() throws Exception {
-		helper.gauge(() -> sessions.size(), ACTIVE_SESSIONS, ActiveSessions.class, "active", "sessions");
+		helper.timer(PROCESS_TIMER, AbstractGameBootProcessor.class, "process", "timer");
+		helper.counter(ALERT_REQUESTS, AbstractGameBootProcessor.class, "failed", "requests");
+		helper.counter(INFO_REQUESTS, AbstractGameBootProcessor.class, "failed", "requests");
+		helper.counter(SUCCESS_REQUESTS, AbstractGameBootProcessor.class, "failed", "requests");
+		helper.counter(WARNING_REQUESTS, AbstractGameBootProcessor.class, "failed", "requests");
 	}
 
 	/**
-	 * Adds the session.
+	 * Metrics.
 	 *
-	 * @param session
-	 *          the session
+	 * @param pjp
+	 *          the pjp
+	 * @return the object
+	 * @throws Throwable
+	 *           the throwable
 	 */
-	public void addSession(UserSession session) {
-		sessions.put(session.getUser().getUserName(), session.getId());
-	}
+	@Around("this(com.github.mrstampy.gameboot.processor.GameBootProcessor) && execution(!void *.*(..))")
+	public Object metrics(ProceedingJoinPoint pjp) throws Throwable {
+		Context ctx = helper.startTimer(PROCESS_TIMER);
 
-	/**
-	 * Checks for session.
-	 *
-	 * @param userName
-	 *          the user name
-	 * @return true, if successful
-	 */
-	public boolean hasSession(String userName) {
-		return sessions.containsKey(userName);
-	}
+		try {
+			Response r = (Response) pjp.proceed();
 
-	/**
-	 * Checks for session.
-	 *
-	 * @param id
-	 *          the id
-	 * @return true, if successful
-	 */
-	public boolean hasSession(long id) {
-		return sessions.containsValue(id);
-	}
+			switch (r.getResponseCode()) {
+			case FAILURE:
+				helper.incr(FAILED_REQUESTS);
+				break;
+			case ALERT:
+				helper.incr(ALERT_REQUESTS);
+				break;
+			case INFO:
+				helper.incr(INFO_REQUESTS);
+				break;
+			case SUCCESS:
+				helper.incr(SUCCESS_REQUESTS);
+				break;
+			case WARNING:
+				helper.incr(WARNING_REQUESTS);
+				break;
+			default:
+				break;
+			}
 
-	/**
-	 * Removes the session.
-	 *
-	 * @param session
-	 *          the session
-	 */
-	public void removeSession(UserSession session) {
-		sessions.remove(session.getUser().getUserName());
-	}
-
-	/**
-	 * Gets the session ids.
-	 *
-	 * @return the session ids
-	 */
-	public Collection<Long> getSessionIds() {
-		return sessions.values();
-	}
-
-	/**
-	 * Size.
-	 *
-	 * @return the int
-	 */
-	public int size() {
-		return sessions.size();
+			return r;
+		} finally {
+			ctx.stop();
+		}
 	}
 }
