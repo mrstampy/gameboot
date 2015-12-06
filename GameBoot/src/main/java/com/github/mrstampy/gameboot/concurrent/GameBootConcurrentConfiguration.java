@@ -52,6 +52,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
@@ -63,6 +64,7 @@ import co.paralleluniverse.fibers.FiberForkJoinScheduler;
  * The Class GameBootConcurrentConfiguration.
  */
 @Configuration
+@EnableScheduling
 public class GameBootConcurrentConfiguration {
 
 	@Value("${quasar.fiber.scheduler.pool.size}")
