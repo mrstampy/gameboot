@@ -51,7 +51,7 @@ public class GameBootThreadFactory implements ThreadFactory {
 
 	private boolean daemon = true;
 
-	private String name;
+	private String name = "GameBoot Thread Factory";
 
 	private ThreadGroup group;
 
