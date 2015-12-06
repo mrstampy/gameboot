@@ -121,12 +121,12 @@ public class FiberCreator {
 	 *
 	 * @param <T>
 	 *          the generic type
-	 * @param sr
-	 *          the sr
+	 * @param sc
+	 *          the sc
 	 * @return the fiber
 	 */
-	public <T> Fiber<T> newFiber(SuspendableCallable<T> sr) {
-		return new Fiber<>(fiberExecutorScheduler, sr);
+	public <T> Fiber<T> newFiber(SuspendableCallable<T> sc) {
+		return new Fiber<>(fiberExecutorScheduler, sc);
 	}
 
 	/**
@@ -136,12 +136,12 @@ public class FiberCreator {
 	 *          the generic type
 	 * @param name
 	 *          the name
-	 * @param sr
-	 *          the sr
+	 * @param sc
+	 *          the sc
 	 * @return the fiber
 	 */
-	public <T> Fiber<T> newFiber(String name, SuspendableCallable<T> sr) {
-		return new Fiber<>(name, fiberExecutorScheduler, sr);
+	public <T> Fiber<T> newFiber(String name, SuspendableCallable<T> sc) {
+		return new Fiber<>(name, fiberExecutorScheduler, sc);
 	}
 
 	/**
@@ -151,12 +151,12 @@ public class FiberCreator {
 	 *          the generic type
 	 * @param fiber
 	 *          the fiber
-	 * @param sr
-	 *          the sr
+	 * @param sc
+	 *          the sc
 	 * @return the fiber
 	 */
-	public <T> Fiber<T> newFiber(Fiber<T> fiber, SuspendableCallable<T> sr) {
-		return new Fiber<>(fiber, fiberExecutorScheduler, sr);
+	public <T> Fiber<T> newFiber(Fiber<T> fiber, SuspendableCallable<T> sc) {
+		return new Fiber<>(fiber, fiberExecutorScheduler, sc);
 	}
 
 	/**
@@ -218,12 +218,12 @@ public class FiberCreator {
 	 *
 	 * @param <T>
 	 *          the generic type
-	 * @param sr
+	 * @param sc
 	 *          the sr
 	 * @return the fiber
 	 */
-	public <T> Fiber<T> newFiberForkJoin(SuspendableCallable<T> sr) {
-		return new Fiber<>(fiberForkJoinScheduler, sr);
+	public <T> Fiber<T> newFiberForkJoin(SuspendableCallable<T> sc) {
+		return new Fiber<>(fiberForkJoinScheduler, sc);
 	}
 
 	/**
@@ -233,12 +233,12 @@ public class FiberCreator {
 	 *          the generic type
 	 * @param name
 	 *          the name
-	 * @param sr
-	 *          the sr
+	 * @param sc
+	 *          the sc
 	 * @return the fiber
 	 */
-	public <T> Fiber<T> newFiberForkJoin(String name, SuspendableCallable<T> sr) {
-		return new Fiber<>(name, fiberForkJoinScheduler, sr);
+	public <T> Fiber<T> newFiberForkJoin(String name, SuspendableCallable<T> sc) {
+		return new Fiber<>(name, fiberForkJoinScheduler, sc);
 	}
 
 	/**
@@ -248,11 +248,11 @@ public class FiberCreator {
 	 *          the generic type
 	 * @param fiber
 	 *          the fiber
-	 * @param sr
-	 *          the sr
+	 * @param sc
+	 *          the sc
 	 * @return the fiber
 	 */
-	public <T> Fiber<T> newFiberForkJoin(Fiber<T> fiber, SuspendableCallable<T> sr) {
-		return new Fiber<>(fiber, fiberForkJoinScheduler, sr);
+	public <T> Fiber<T> newFiberForkJoin(Fiber<T> fiber, SuspendableCallable<T> sc) {
+		return new Fiber<>(fiber, fiberForkJoinScheduler, sc);
 	}
 }
