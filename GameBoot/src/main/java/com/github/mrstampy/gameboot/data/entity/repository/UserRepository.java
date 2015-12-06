@@ -40,7 +40,9 @@
  */
 package com.github.mrstampy.gameboot.data.entity.repository;
 
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import com.github.mrstampy.gameboot.data.entity.User;
 
@@ -58,5 +60,25 @@ public interface UserRepository extends CrudRepository<User, Long> {
 	 * @return the user
 	 */
 	User findByUserName(String userName);
+
+	/**
+	 * Find by user name with friends.
+	 *
+	 * @param userName
+	 *          the user name
+	 * @return the user
+	 */
+	@Query("SELECT u FROM User u JOIN FETCH u.friends WHERE u.userName = :userName")
+	User findByUserNameWithFriends(@Param("userName") String userName);
+
+	/**
+	 * Find by user name with blocked.
+	 *
+	 * @param userName
+	 *          the user name
+	 * @return the user
+	 */
+	@Query("SELECT u FROM User u JOIN FETCH u.blocked WHERE u.userName = :userName")
+	User findByUserNameWithBlocked(@Param("userName") String userName);
 
 }
