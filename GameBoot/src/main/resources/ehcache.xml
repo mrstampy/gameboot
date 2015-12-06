@@ -6,6 +6,8 @@
 	
 	The default is 15 second expiry time for the cache.
 	
+	http://www.ehcache.org/documentation/3.0/107.html
+	
 	@see src/main/resources/application.properties
 ===================================================================================
 #
