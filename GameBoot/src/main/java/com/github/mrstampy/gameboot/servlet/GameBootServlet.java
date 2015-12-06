@@ -42,13 +42,14 @@ package com.github.mrstampy.gameboot.servlet;
 
 import java.io.IOException;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.context.embedded.ServletRegistrationBean;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import co.paralleluniverse.fibers.Suspendable;
@@ -59,13 +60,37 @@ import co.paralleluniverse.fibers.servlet.FiberHttpServlet;
  * The Class GameBootServlet.
  */
 @WebServlet
-@Component
 public class GameBootServlet extends FiberHttpServlet {
 
 	private static final long serialVersionUID = 5717054170484010018L;
 
-	@Autowired
 	private DispatcherServlet dispatcherServlet;
+
+	/**
+	 * Post construct.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
+	@PostConstruct
+	public void postConstruct() throws Exception {
+		ServletRegistrationBean bean = new ServletRegistrationBean(this, "/*");
+
+		bean.setName("GameBootServlet");
+		bean.setOrder(1);
+		bean.setEnabled(true);
+	}
+
+	/**
+	 * Sets the dispatcher servlet.
+	 *
+	 * @param dispatcherServlet
+	 *          the new dispatcher servlet
+	 */
+	@Autowired
+	public void setDispatcherServlet(DispatcherServlet dispatcherServlet) {
+		this.dispatcherServlet = dispatcherServlet;
+	}
 
 	/*
 	 * (non-Javadoc)

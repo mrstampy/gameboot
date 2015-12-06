@@ -61,7 +61,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.github.mrstampy.gameboot.GameBoot;
+import com.github.mrstampy.gameboot.TestConfiguration;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
@@ -73,7 +73,7 @@ import com.github.mrstampy.gameboot.data.entity.repository.UserSessionRepository
  * The Class UserSessionAssistTest.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(GameBoot.class)
+@SpringApplicationConfiguration(TestConfiguration.class)
 public class UserSessionAssistTest {
 
 	private static final String SESSIONS_CACHE_NAME = "sessions";

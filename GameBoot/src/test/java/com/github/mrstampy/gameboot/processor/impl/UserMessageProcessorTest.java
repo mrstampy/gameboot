@@ -67,7 +67,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.mrstampy.gameboot.GameBoot;
+import com.github.mrstampy.gameboot.TestConfiguration;
 import com.github.mrstampy.gameboot.data.assist.ActiveSessions;
 import com.github.mrstampy.gameboot.data.assist.UserSessionAssist;
 import com.github.mrstampy.gameboot.data.entity.User;
@@ -86,7 +86,7 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
  * The Class UserMessageProcessorTest.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(GameBoot.class)
+@SpringApplicationConfiguration(TestConfiguration.class)
 public class UserMessageProcessorTest {
 	private static final UserState NEW_STATE = UserState.INACTIVE;
 
