@@ -85,6 +85,7 @@ dependencies {
     
     compile('co.paralleluniverse:comsat-spring-boot:0.5.0')
     compile('co.paralleluniverse:comsat-spring-boot-security:0.5.0')
+    compile('co.paralleluniverse:comsat-servlet:0.5.0')
     compile('co.paralleluniverse:quasar-core:0.7.3')
     
     compile('com.vaadin:vaadin-spring-boot-starter:1.0.0')

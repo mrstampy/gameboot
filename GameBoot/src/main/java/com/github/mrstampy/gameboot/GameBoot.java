@@ -43,9 +43,14 @@ package com.github.mrstampy.gameboot;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.context.embedded.ServletRegistrationBean;
+import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -54,6 +59,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.Primary;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootThreadFactory;
+import com.github.mrstampy.gameboot.servlet.GameBootServlet;
 
 import co.paralleluniverse.fibers.FiberExecutorScheduler;
 import co.paralleluniverse.fibers.FiberForkJoinScheduler;
@@ -69,6 +75,7 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableCaching
 @FiberSecureSpringBootApplication
+@ServletComponentScan
 public class GameBoot {
 
 	@Value("${quasar.fiber.scheduler.pool.size}")
@@ -77,11 +84,23 @@ public class GameBoot {
 	@Value("${quasar.fiber.fj.scheduler.pool.size}")
 	private int forkPoolSize;
 
+	@Autowired
+	private GameBootServlet servlet;
+
+	@PostConstruct
+	public void postConstruct() throws Exception {
+		ServletRegistrationBean bean = new ServletRegistrationBean(servlet, "/*");
+
+		bean.setName("GameBootServlet");
+		bean.setOrder(1);
+		bean.setEnabled(true);
+	}
+
 	@Bean
 	@Primary
 	public FiberExecutorScheduler fiberExecutorScheduler() {
 		String name = "Fiber Scheduler";
-		
+
 		GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
 		Executor exe = Executors.newFixedThreadPool(poolSize, factory);
