@@ -87,6 +87,12 @@ public class GameBoot {
 	@Autowired
 	private GameBootServlet servlet;
 
+	/**
+	 * Post construct.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
 	@PostConstruct
 	public void postConstruct() throws Exception {
 		ServletRegistrationBean bean = new ServletRegistrationBean(servlet, "/*");
@@ -96,6 +102,11 @@ public class GameBoot {
 		bean.setEnabled(true);
 	}
 
+	/**
+	 * Fiber executor scheduler.
+	 *
+	 * @return the fiber executor scheduler
+	 */
 	@Bean
 	@Primary
 	public FiberExecutorScheduler fiberExecutorScheduler() {
@@ -108,6 +119,11 @@ public class GameBoot {
 		return new FiberExecutorScheduler(name, exe, null, true);
 	}
 
+	/**
+	 * Fiber fork join scheduler.
+	 *
+	 * @return the fiber fork join scheduler
+	 */
 	@Bean
 	@Primary
 	public FiberForkJoinScheduler fiberForkJoinScheduler() {
