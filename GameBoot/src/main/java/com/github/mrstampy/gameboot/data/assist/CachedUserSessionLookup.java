@@ -123,7 +123,7 @@ public class CachedUserSessionLookup {
 			String noSession = "No session for " + id;
 
 			check(id == null, "No session id specified");
-			
+
 			check(!activeSessions.hasSession(id), noSession);
 
 			List<UserSession> sessions = assist.activeSessions();
@@ -136,6 +136,28 @@ public class CachedUserSessionLookup {
 		} finally {
 			ctx.stop();
 		}
+	}
+
+	/**
+	 * Checks for session.
+	 *
+	 * @param userName
+	 *          the user name
+	 * @return true, if successful
+	 */
+	public boolean hasSession(String userName) {
+		return activeSessions.hasSession(userName);
+	}
+
+	/**
+	 * Checks for session.
+	 *
+	 * @param id
+	 *          the id
+	 * @return true, if successful
+	 */
+	public boolean hasSession(long id) {
+		return activeSessions.hasSession(id);
 	}
 
 	private Optional<UserSession> find(List<UserSession> sessions, Predicate<UserSession> p) {
