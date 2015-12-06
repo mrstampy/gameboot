@@ -71,90 +71,12 @@ public class GameBootServlet extends FiberHttpServlet {
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * co.paralleluniverse.fibers.servlet.FiberHttpServlet#doTrace(javax.servlet.
+	 * co.paralleluniverse.fibers.servlet.FiberHttpServlet#service(javax.servlet.
 	 * http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
 	@Suspendable
 	@Override
-	protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		dispatcherServlet.service(req, resp);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * co.paralleluniverse.fibers.servlet.FiberHttpServlet#doOptions(javax.servlet
-	 * .http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	@Suspendable
-	@Override
-	protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		dispatcherServlet.service(req, resp);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * co.paralleluniverse.fibers.servlet.FiberHttpServlet#doDelete(javax.servlet.
-	 * http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	@Suspendable
-	@Override
-	protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		dispatcherServlet.service(req, resp);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * co.paralleluniverse.fibers.servlet.FiberHttpServlet#doPut(javax.servlet.
-	 * http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	@Suspendable
-	@Override
-	protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		dispatcherServlet.service(req, resp);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * co.paralleluniverse.fibers.servlet.FiberHttpServlet#doPost(javax.servlet.
-	 * http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	@Suspendable
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		dispatcherServlet.service(req, resp);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * co.paralleluniverse.fibers.servlet.FiberHttpServlet#doHead(javax.servlet.
-	 * http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	@Suspendable
-	@Override
-	protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		dispatcherServlet.service(req, resp);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * co.paralleluniverse.fibers.servlet.FiberHttpServlet#doGet(javax.servlet.
-	 * http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
-	@Suspendable
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		dispatcherServlet.service(req, resp);
 	}
 
