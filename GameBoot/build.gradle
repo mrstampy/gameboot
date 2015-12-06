@@ -20,9 +20,9 @@
                                      `_-~_.-'
                                       \-~
 
-	Gradle Build file for GameBoot.
+  Gradle Build file for GameBoot.
 	
-	Create a distribution by invoking 'gradle clean distZip'.
+  Create a distribution by invoking 'gradle clean distZip'.
 	
   Copyright (C) 2015 Burton Alexander
   
