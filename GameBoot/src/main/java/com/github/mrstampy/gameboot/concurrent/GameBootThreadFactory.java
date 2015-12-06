@@ -38,70 +38,113 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot;
+package com.github.mrstampy.gameboot.concurrent;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-
-import com.github.mrstampy.gameboot.concurrent.GameBootThreadFactory;
-
-import co.paralleluniverse.fibers.FiberExecutorScheduler;
-import co.paralleluniverse.fibers.FiberForkJoinScheduler;
-import co.paralleluniverse.springframework.boot.security.autoconfigure.web.FiberSecureSpringBootApplication;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 // TODO: Auto-generated Javadoc
 /**
- * The Class GameBoot.
+ * A factory for creating GameBootThread objects.
  */
-@Configuration
-@EnableAutoConfiguration
-@ComponentScan(basePackages = "com.github.mrstampy.gameboot")
-@EnableAspectJAutoProxy(proxyTargetClass = true)
-@EnableCaching
-@FiberSecureSpringBootApplication
-public class GameBoot {
+public class GameBootThreadFactory implements ThreadFactory {
 
-	@Value("${quasar.fiber.scheduler.pool.size}")
-	private int poolSize;
+	private boolean daemon = true;
 
-	@Value("${quasar.fiber.fj.scheduler.pool.size}")
-	private int forkPoolSize;
+	private String name;
 
-	@Bean
-	public FiberExecutorScheduler fiberExecutorScheduler() {
-		String name = "Fiber Scheduler";
-		
-		GameBootThreadFactory factory = new GameBootThreadFactory(name);
+	private ThreadGroup group;
 
-		Executor exe = Executors.newFixedThreadPool(poolSize, factory);
+	private AtomicInteger count = new AtomicInteger(1);
 
-		return new FiberExecutorScheduler(name, exe, null, true);
-	}
-
-	@Bean
-	public FiberForkJoinScheduler fiberForkJoinScheduler() {
-		String name = "Fiber Fork Join Scheduler";
-
-		return new FiberForkJoinScheduler(name, forkPoolSize, null, true);
+	/**
+	 * Instantiates a new game boot thread factory.
+	 */
+	public GameBootThreadFactory() {
 	}
 
 	/**
-	 * The main method.
+	 * Instantiates a new game boot thread factory.
 	 *
-	 * @param args
-	 *          the arguments
+	 * @param name
+	 *          the name
 	 */
-	public static void main(String[] args) {
-		SpringApplication.run(GameBoot.class, args);
+	public GameBootThreadFactory(String name) {
+		this.name = name;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
+	 */
+	@Override
+	public Thread newThread(Runnable r) {
+		int nbr = count.getAndIncrement();
+
+		String tn = nbr == 1 ? name : name + "-" + nbr;
+		Thread thread = group == null ? new Thread(r, tn) : new Thread(group, r, tn);
+
+		thread.setDaemon(daemon);
+
+		return thread;
+	}
+
+	/**
+	 * Checks if is daemon.
+	 *
+	 * @return true, if is daemon
+	 */
+	public boolean isDaemon() {
+		return daemon;
+	}
+
+	/**
+	 * Gets the name.
+	 *
+	 * @return the name
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Gets the group.
+	 *
+	 * @return the group
+	 */
+	public ThreadGroup getGroup() {
+		return group;
+	}
+
+	/**
+	 * Sets the daemon.
+	 *
+	 * @param daemon
+	 *          the new daemon
+	 */
+	public void setDaemon(boolean daemon) {
+		this.daemon = daemon;
+	}
+
+	/**
+	 * Sets the name.
+	 *
+	 * @param name
+	 *          the new name
+	 */
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	/**
+	 * Sets the group.
+	 *
+	 * @param group
+	 *          the new group
+	 */
+	public void setGroup(ThreadGroup group) {
+		this.group = group;
 	}
 
 }
