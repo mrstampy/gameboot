@@ -301,7 +301,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		}
 
 		UserState state = message.getState();
-		if (changed(state, user.getState())) {
+		if (state != null && changed(state, user.getState())) {
 			log.trace("Changing state from {} to {} for {}", user.getState(), state, userName);
 
 			changed = true;

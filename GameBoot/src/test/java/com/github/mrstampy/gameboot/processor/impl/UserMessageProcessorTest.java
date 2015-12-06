@@ -41,11 +41,13 @@
 package com.github.mrstampy.gameboot.processor.impl;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Date;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -93,6 +95,8 @@ public class UserMessageProcessorTest {
 	private static final String BAD_PASSWORD = "BADpassword";
 
 	private static final String TEST_USER = "testuser";
+
+	private static final String BAD_USER = "baduser";
 
 	@Autowired
 	private UserMessageProcessor processor;
@@ -188,7 +192,12 @@ public class UserMessageProcessorTest {
 
 		failExpected(m, "Bad password");
 
+		m.setUserName(BAD_USER);
 		m.setNewPassword(PASSWORD);
+
+		failExpected(m, "Bad user");
+
+		m.setUserName(TEST_USER);
 
 		Response r = processor.process(m);
 
@@ -277,6 +286,118 @@ public class UserMessageProcessorTest {
 		assertEquals(0, activeSessions.size());
 	}
 
+	/**
+	 * Test update.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
+	@Test
+	@Transactional
+	public void testUpdate() throws Exception {
+		User user = userRepo.findOne(userId);
+
+		UserMessage m = new UserMessage();
+
+		m.setFunction(Function.UPDATE);
+		m.setUserName(TEST_USER);
+
+		failExpected(m, "No user data changed");
+
+		user = emailTest(user, m);
+
+		user = dobTest(user, m);
+
+		user = firstNameTest(user, m);
+
+		user = lastNameTest(user, m);
+
+		user = userStateTest(user, m);
+
+		passwordTest(user, m);
+	}
+
+	private void passwordTest(User user, UserMessage m) throws Exception {
+		m.setOldPassword(BAD_PASSWORD);
+		m.setNewPassword(PASSWORD);
+
+		failExpected(m, "Wrong password for password change");
+
+		m.setOldPassword(PASSWORD);
+		m.setNewPassword(BAD_PASSWORD);
+
+		String oldHash = user.getPasswordHash();
+
+		user = updateCheck(processor.process(m));
+		assertNotEquals(oldHash, user.getPasswordHash());
+	}
+
+	private User userStateTest(User user, UserMessage m) throws Exception {
+		UserState state = UserState.INACTIVE;
+		assertNotEquals(state, user.getState());
+		m.setState(state);
+
+		user = updateCheck(processor.process(m));
+		assertEquals(state, user.getState());
+		m.setState(null);
+		return user;
+	}
+
+	private User lastNameTest(User user, UserMessage m) throws Exception {
+		String lastName = "last";
+		assertNotEquals(lastName, user.getLastName());
+		m.setLastName(lastName);
+
+		user = updateCheck(processor.process(m));
+		assertEquals(lastName, user.getLastName());
+		m.setLastName(null);
+		return user;
+	}
+
+	private User firstNameTest(User user, UserMessage m) throws Exception {
+		String firstName = "first";
+		assertNotEquals(firstName, user.getFirstName());
+		m.setFirstName(firstName);
+
+		user = updateCheck(processor.process(m));
+		assertEquals(firstName, user.getFirstName());
+		m.setFirstName(null);
+		return user;
+	}
+
+	private User dobTest(User user, UserMessage m) throws Exception {
+		Date dob = new Date();
+		assertNotEquals(dob, user.getDob());
+		m.setDob(dob);
+
+		user = updateCheck(processor.process(m));
+		assertEquals(dob, user.getDob());
+		m.setDob(null);
+		return user;
+	}
+
+	private User emailTest(User user, UserMessage m) throws Exception {
+		String email = "bling.blah@yada.com";
+		assertNotEquals(email, user.getEmail());
+		m.setEmail(email);
+
+		user = updateCheck(processor.process(m));
+		assertEquals(email, user.getEmail());
+		m.setEmail(null);
+		return user;
+	}
+
+	private User updateCheck(Response r) {
+		assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+
+		assertNotNull(r.getResponse());
+		assertEquals(1, r.getResponse().length);
+
+		assertTrue(r.getResponse()[0] instanceof User);
+
+		return (User) r.getResponse()[0];
+	}
+
 	private void metrics() throws Exception {
 		Set<Entry<String, Timer>> timers = helper.getTimers();
 
@@ -299,10 +420,10 @@ public class UserMessageProcessorTest {
 		try {
 			Response r = processor.process(m);
 			switch (r.getResponseCode()) {
-			case SUCCESS:
-				fail(failMsg);
+			case FAILURE:
 				break;
 			default:
+				fail(failMsg);
 				break;
 			}
 		} catch (RuntimeException expected) {
