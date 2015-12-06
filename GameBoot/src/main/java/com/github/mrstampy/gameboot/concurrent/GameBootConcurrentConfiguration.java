@@ -60,7 +60,7 @@ import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 
 // TODO: Auto-generated Javadoc
 /**
- * The Class ConcurrentConfiguration.
+ * The Class GameBootConcurrentConfiguration.
  */
 @Configuration
 public class GameBootConcurrentConfiguration {
