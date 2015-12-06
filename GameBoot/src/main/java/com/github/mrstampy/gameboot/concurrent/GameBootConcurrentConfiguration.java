@@ -63,7 +63,7 @@ import co.paralleluniverse.fibers.FiberForkJoinScheduler;
  * The Class ConcurrentConfiguration.
  */
 @Configuration
-public class ConcurrentConfiguration {
+public class GameBootConcurrentConfiguration {
 
 	@Value("${quasar.fiber.scheduler.pool.size}")
 	private int poolSize;
