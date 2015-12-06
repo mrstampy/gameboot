@@ -41,11 +41,14 @@
 package com.github.mrstampy.gameboot.data.entity;
 
 import java.util.Date;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
@@ -86,6 +89,12 @@ public class User extends AbstractGameBootEntity {
 	@Temporal(TemporalType.DATE)
 	@JsonFormat(shape = Shape.STRING, pattern = "yyyy/MM/dd")
 	private Date dob;
+
+	@OneToMany(fetch = FetchType.LAZY)
+	private List<User> friends;
+
+	@OneToMany(fetch = FetchType.LAZY)
+	private List<User> blocked;
 
 	/**
 	 * The Enum UserState.
@@ -257,5 +266,43 @@ public class User extends AbstractGameBootEntity {
 		//@formatter:on
 
 		return tsb.toString();
+	}
+
+	/**
+	 * Gets the friends.
+	 *
+	 * @return the friends
+	 */
+	public List<User> getFriends() {
+		return friends;
+	}
+
+	/**
+	 * Sets the friends.
+	 *
+	 * @param friends
+	 *          the new friends
+	 */
+	public void setFriends(List<User> friends) {
+		this.friends = friends;
+	}
+
+	/**
+	 * Gets the blocked.
+	 *
+	 * @return the blocked
+	 */
+	public List<User> getBlocked() {
+		return blocked;
+	}
+
+	/**
+	 * Sets the blocked.
+	 *
+	 * @param blocked
+	 *          the new blocked
+	 */
+	public void setBlocked(List<User> blocked) {
+		this.blocked = blocked;
 	}
 }
