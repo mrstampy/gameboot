@@ -301,7 +301,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 		}
 
 		UserState state = message.getState();
-		if (state != null && changed(state, user.getState())) {
+		if (changed(state, user.getState())) {
 			log.trace("Changing state from {} to {} for {}", user.getState(), state, userName);
 
 			changed = true;
@@ -312,7 +312,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 	}
 
 	private boolean changed(Object in, Object exist) {
-		return !(in == null && exist == null) && !EqualsBuilder.reflectionEquals(in, exist);
+		return in != null && !EqualsBuilder.reflectionEquals(in, exist);
 	}
 
 	private User createUser(UserMessage message) {

@@ -88,6 +88,16 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(GameBoot.class)
 public class UserMessageProcessorTest {
+	private static final UserState NEW_STATE = UserState.INACTIVE;
+
+	private static final String NEW_LAST = "last";
+
+	private static final String NEW_FIRST = "first";
+
+	private static final Date NEW_DOB = new Date();
+
+	private static final String NEW_EMAIL = "bling.blah@yada.com";
+
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private static final String PASSWORD = "password";
@@ -307,14 +317,30 @@ public class UserMessageProcessorTest {
 		user = emailTest(user, m);
 
 		user = dobTest(user, m);
+		assertEquals(NEW_EMAIL, user.getEmail());
 
 		user = firstNameTest(user, m);
+		assertEquals(NEW_EMAIL, user.getEmail());
+		assertEquals(NEW_DOB, user.getDob());
 
 		user = lastNameTest(user, m);
+		assertEquals(NEW_EMAIL, user.getEmail());
+		assertEquals(NEW_DOB, user.getDob());
+		assertEquals(NEW_FIRST, user.getFirstName());
 
 		user = userStateTest(user, m);
+		assertEquals(NEW_EMAIL, user.getEmail());
+		assertEquals(NEW_DOB, user.getDob());
+		assertEquals(NEW_FIRST, user.getFirstName());
+		assertEquals(NEW_LAST, user.getLastName());
 
 		passwordTest(user, m);
+
+		assertEquals(NEW_EMAIL, user.getEmail());
+		assertEquals(NEW_DOB, user.getDob());
+		assertEquals(NEW_FIRST, user.getFirstName());
+		assertEquals(NEW_LAST, user.getLastName());
+		assertEquals(NEW_STATE, user.getState());
 	}
 
 	private void passwordTest(User user, UserMessage m) throws Exception {
@@ -333,7 +359,7 @@ public class UserMessageProcessorTest {
 	}
 
 	private User userStateTest(User user, UserMessage m) throws Exception {
-		UserState state = UserState.INACTIVE;
+		UserState state = NEW_STATE;
 		assertNotEquals(state, user.getState());
 		m.setState(state);
 
@@ -344,7 +370,7 @@ public class UserMessageProcessorTest {
 	}
 
 	private User lastNameTest(User user, UserMessage m) throws Exception {
-		String lastName = "last";
+		String lastName = NEW_LAST;
 		assertNotEquals(lastName, user.getLastName());
 		m.setLastName(lastName);
 
@@ -355,7 +381,7 @@ public class UserMessageProcessorTest {
 	}
 
 	private User firstNameTest(User user, UserMessage m) throws Exception {
-		String firstName = "first";
+		String firstName = NEW_FIRST;
 		assertNotEquals(firstName, user.getFirstName());
 		m.setFirstName(firstName);
 
@@ -366,7 +392,7 @@ public class UserMessageProcessorTest {
 	}
 
 	private User dobTest(User user, UserMessage m) throws Exception {
-		Date dob = new Date();
+		Date dob = NEW_DOB;
 		assertNotEquals(dob, user.getDob());
 		m.setDob(dob);
 
@@ -377,7 +403,7 @@ public class UserMessageProcessorTest {
 	}
 
 	private User emailTest(User user, UserMessage m) throws Exception {
-		String email = "bling.blah@yada.com";
+		String email = NEW_EMAIL;
 		assertNotEquals(email, user.getEmail());
 		m.setEmail(email);
 
