@@ -60,7 +60,6 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.codahale.metrics.Counter;
 import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -236,10 +235,6 @@ public class CachedUserSessionLookupTest {
 		Set<Entry<String, Timer>> timers = helper.getTimers();
 
 		timers.stream().filter(e -> isMetric(e.getKey())).forEach(e -> display(e));
-
-		Set<Entry<String, Counter>> counters = helper.getCounters();
-
-		counters.stream().filter(e -> isMetric(e.getKey())).forEach(e -> display(e));
 	}
 
 	private boolean isMetric(String key) {
