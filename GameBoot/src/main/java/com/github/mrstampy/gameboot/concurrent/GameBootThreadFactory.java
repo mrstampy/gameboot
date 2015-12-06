@@ -40,14 +40,20 @@
  */
 package com.github.mrstampy.gameboot.concurrent;
 
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 // TODO: Auto-generated Javadoc
 /**
  * A factory for creating GameBootThread objects.
  */
 public class GameBootThreadFactory implements ThreadFactory {
+	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
 	private boolean daemon = true;
 
@@ -57,10 +63,17 @@ public class GameBootThreadFactory implements ThreadFactory {
 
 	private AtomicInteger count = new AtomicInteger(1);
 
-	/**
-	 * Instantiates a new game boot thread factory.
-	 */
-	public GameBootThreadFactory() {
+	private UncaughtExceptionHandler handler;
+
+	static {
+		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+
+			@Override
+			public void uncaughtException(Thread t, Throwable e) {
+				log.error("Uncaught exception in thread {}", t.getName(), e);
+			}
+
+		});
 	}
 
 	/**
@@ -86,6 +99,7 @@ public class GameBootThreadFactory implements ThreadFactory {
 		Thread thread = group == null ? new Thread(r, tn) : new Thread(group, r, tn);
 
 		thread.setDaemon(daemon);
+		if (handler != null) thread.setUncaughtExceptionHandler(handler);
 
 		return thread;
 	}
@@ -145,6 +159,25 @@ public class GameBootThreadFactory implements ThreadFactory {
 	 */
 	public void setGroup(ThreadGroup group) {
 		this.group = group;
+	}
+
+	/**
+	 * Gets the handler.
+	 *
+	 * @return the handler
+	 */
+	public UncaughtExceptionHandler getHandler() {
+		return handler;
+	}
+
+	/**
+	 * Sets the handler.
+	 *
+	 * @param handler
+	 *          the new handler
+	 */
+	public void setHandler(UncaughtExceptionHandler handler) {
+		this.handler = handler;
 	}
 
 }
