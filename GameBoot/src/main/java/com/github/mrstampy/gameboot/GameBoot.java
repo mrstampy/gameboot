@@ -40,25 +40,15 @@
  */
 package com.github.mrstampy.gameboot;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.context.annotation.Primary;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import com.github.mrstampy.gameboot.concurrent.GameBootThreadFactory;
-
-import co.paralleluniverse.fibers.FiberExecutorScheduler;
-import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 import co.paralleluniverse.springframework.boot.security.autoconfigure.web.FiberSecureSpringBootApplication;
 
 // TODO: Auto-generated Javadoc
@@ -74,42 +64,6 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
 @ServletComponentScan
 @EnableWebMvc
 public class GameBoot {
-
-	@Value("${quasar.fiber.scheduler.pool.size}")
-	private int poolSize;
-
-	@Value("${quasar.fiber.fj.scheduler.pool.size}")
-	private int forkPoolSize;
-
-	/**
-	 * Fiber executor scheduler.
-	 *
-	 * @return the fiber executor scheduler
-	 */
-	@Bean
-	@Primary
-	public FiberExecutorScheduler fiberExecutorScheduler() {
-		String name = "Fiber Scheduler";
-
-		GameBootThreadFactory factory = new GameBootThreadFactory(name);
-
-		Executor exe = Executors.newFixedThreadPool(poolSize, factory);
-
-		return new FiberExecutorScheduler(name, exe, null, true);
-	}
-
-	/**
-	 * Fiber fork join scheduler.
-	 *
-	 * @return the fiber fork join scheduler
-	 */
-	@Bean
-	@Primary
-	public FiberForkJoinScheduler fiberForkJoinScheduler() {
-		String name = "Fiber Fork Join Scheduler";
-
-		return new FiberForkJoinScheduler(name, forkPoolSize, null, true);
-	}
 
 	/**
 	 * The main method.
