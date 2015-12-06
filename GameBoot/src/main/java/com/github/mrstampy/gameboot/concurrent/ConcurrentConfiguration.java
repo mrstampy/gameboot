@@ -40,6 +40,8 @@
  */
 package com.github.mrstampy.gameboot.concurrent;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -75,15 +77,27 @@ public class ConcurrentConfiguration {
 	@Value("${task.executor.pool.size}")
 	private int taskExecutorPoolSize;
 
+	@Value("${task.scheduler.name}")
+	private String taskSchedulerName;
+
+	@Value("${task.executor.name}")
+	private String taskExecutorName;
+
+	@Value("${quasar.fiber.scheduler.name}")
+	private String fiberExecutorName;
+
+	@Value("${quasar.fiber.fj.scheduler.name}")
+	private String fiberForkJoinName;
+
 	/**
- * Task scheduler.
- *
- * @return the task scheduler
- */
+	 * Task scheduler.
+	 *
+	 * @return the task scheduler
+	 */
 	@Bean
 	@Primary
 	public TaskScheduler taskScheduler() {
-		String name = "GameBoot Task Scheduler";
+		String name = isEmpty(taskSchedulerName) ? "GameBoot Task Scheduler" : taskSchedulerName;
 
 		GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
@@ -93,14 +107,14 @@ public class ConcurrentConfiguration {
 	}
 
 	/**
- * Task executor.
- *
- * @return the task executor
- */
+	 * Task executor.
+	 *
+	 * @return the task executor
+	 */
 	@Bean
 	@Primary
 	public TaskExecutor taskExecutor() {
-		String name = "GameBoot Task Executor";
+		String name = isEmpty(taskExecutorName) ? "GameBoot Task Executor" : taskExecutorName;
 
 		GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
@@ -117,7 +131,7 @@ public class ConcurrentConfiguration {
 	@Bean
 	@Primary
 	public FiberExecutorScheduler fiberExecutorScheduler() {
-		String name = "Fiber Scheduler";
+		String name = isEmpty(fiberExecutorName) ? "Fiber Scheduler" : fiberExecutorName;
 
 		GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
@@ -134,7 +148,7 @@ public class ConcurrentConfiguration {
 	@Bean
 	@Primary
 	public FiberForkJoinScheduler fiberForkJoinScheduler() {
-		String name = "Fiber Fork Join Scheduler";
+		String name = isEmpty(fiberForkJoinName) ? "Fiber Fork Join Scheduler" : fiberForkJoinName;
 
 		return new FiberForkJoinScheduler(name, forkPoolSize, null, true);
 	}
