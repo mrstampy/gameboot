@@ -65,6 +65,22 @@ public class GameBootThreadFactory implements ThreadFactory {
 
 	private UncaughtExceptionHandler handler;
 
+	private ClassLoader classLoader;
+
+	/**
+	 * The Enum Priority.
+	 */
+	public enum Priority {
+		/** The max. */
+		MAX,
+		/** The min. */
+		MIN,
+		/** The default. */
+		DEFAULT;
+	}
+
+	private Priority priority = Priority.DEFAULT;
+
 	static {
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 
@@ -83,7 +99,20 @@ public class GameBootThreadFactory implements ThreadFactory {
 	 *          the name
 	 */
 	public GameBootThreadFactory(String name) {
-		this.name = name;
+		setName(name);
+	}
+
+	/**
+	 * Instantiates a new game boot thread factory.
+	 *
+	 * @param name
+	 *          the name
+	 * @param priority
+	 *          the priority
+	 */
+	public GameBootThreadFactory(String name, Priority priority) {
+		setName(name);
+		setPriority(priority);
 	}
 
 	/*
@@ -99,7 +128,25 @@ public class GameBootThreadFactory implements ThreadFactory {
 		Thread thread = group == null ? new Thread(r, tn) : new Thread(group, r, tn);
 
 		thread.setDaemon(daemon);
+
 		if (handler != null) thread.setUncaughtExceptionHandler(handler);
+		if (classLoader != null) thread.setContextClassLoader(classLoader);
+
+		if (priority == null) {
+			thread.setPriority(Thread.NORM_PRIORITY);
+		} else {
+			switch (priority) {
+			case MAX:
+				thread.setPriority(Thread.MAX_PRIORITY);
+				break;
+			case MIN:
+				thread.setPriority(Thread.MIN_PRIORITY);
+				break;
+			default:
+				thread.setPriority(Thread.NORM_PRIORITY);
+				break;
+			}
+		}
 
 		return thread;
 	}
@@ -178,6 +225,44 @@ public class GameBootThreadFactory implements ThreadFactory {
 	 */
 	public void setHandler(UncaughtExceptionHandler handler) {
 		this.handler = handler;
+	}
+
+	/**
+	 * Gets the class loader.
+	 *
+	 * @return the class loader
+	 */
+	public ClassLoader getClassLoader() {
+		return classLoader;
+	}
+
+	/**
+	 * Sets the class loader.
+	 *
+	 * @param classLoader
+	 *          the new class loader
+	 */
+	public void setClassLoader(ClassLoader classLoader) {
+		this.classLoader = classLoader;
+	}
+
+	/**
+	 * Gets the priority.
+	 *
+	 * @return the priority
+	 */
+	public Priority getPriority() {
+		return priority;
+	}
+
+	/**
+	 * Sets the priority.
+	 *
+	 * @param priority
+	 *          the new priority
+	 */
+	public void setPriority(Priority priority) {
+		this.priority = priority;
 	}
 
 }
