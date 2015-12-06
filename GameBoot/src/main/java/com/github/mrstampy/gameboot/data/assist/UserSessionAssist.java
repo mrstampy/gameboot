@@ -46,16 +46,20 @@ import java.lang.invoke.MethodHandles;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
+import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.entity.repository.UserRepository;
 import com.github.mrstampy.gameboot.data.entity.repository.UserSessionRepository;
+import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 // TODO: Auto-generated Javadoc
 /**
@@ -64,9 +68,13 @@ import com.github.mrstampy.gameboot.data.entity.repository.UserSessionRepository
 @Component
 public class UserSessionAssist {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+	
+	public static final String SESSIONS_CACHE = "sessions";
 
 	/** The Constant SESSIONS_KEY. */
 	public static final String SESSIONS_KEY = "ActiveSessions";
+
+	private static final String UNCACHED_SESSION_TIMER = "UncachedSessionTimer";
 
 	@Autowired
 	private UserSessionRepository userSessionRepo;
@@ -77,7 +85,21 @@ public class UserSessionAssist {
 	@Autowired
 	private ActiveSessions activeSessions;
 
+	@Autowired
+	private MetricsHelper helper;
+
 	private String sessionsKey = SESSIONS_KEY;
+
+	/**
+	 * Post construct.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
+	@PostConstruct
+	public void postConstruct() throws Exception {
+		helper.timer(UNCACHED_SESSION_TIMER, UserSessionAssist.class, "uncached", "session", "timer");
+	}
 
 	/**
 	 * Creates the.
@@ -242,9 +264,14 @@ public class UserSessionAssist {
 	 *
 	 * @return the list
 	 */
-	@Cacheable(cacheNames = "sessions", key = "target.sessionsKey")
+	@Cacheable(cacheNames = SESSIONS_CACHE, key = "target.sessionsKey")
 	public List<UserSession> activeSessions() {
-		return userSessionRepo.findByEndedIsNull();
+		Context ctx = helper.startTimer(UNCACHED_SESSION_TIMER);
+		try {
+			return userSessionRepo.findByEndedIsNull();
+		} finally {
+			ctx.stop();
+		}
 	}
 
 	/**
