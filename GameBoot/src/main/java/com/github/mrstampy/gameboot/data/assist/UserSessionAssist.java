@@ -135,7 +135,15 @@ public class UserSessionAssist {
 	public UserSession expected(String userName) throws IllegalStateException {
 		userNameCheck(userName);
 
-		return expected(expectedUser(userName));
+		String noSession = "No session for " + userName;
+
+		check(!activeSessions.hasSession(userName), noSession);
+
+		UserSession session = userSessionRepo.findByUserNameAndEndedIsNull(userName);
+
+		check(session == null, noSession);
+
+		return session;
 	}
 
 	/**

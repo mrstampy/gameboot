@@ -44,6 +44,7 @@ import java.util.List;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
 
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
@@ -64,13 +65,24 @@ public interface UserSessionRepository extends CrudRepository<UserSession, Long>
 	UserSession findByUserAndEndedIsNull(User user);
 
 	/**
+	 * Find by user name and ended is null.
+	 *
+	 * @param userName
+	 *          the user name
+	 * @return the user session
+	 */
+	@Query("SELECT us FROM UserSession us JOIN FETCH us.user WHERE us.ended is null AND us.user.userName = :userName")
+	UserSession findByUserNameAndEndedIsNull(@Param("userName") String userName);
+
+	/**
 	 * Find by id and ended is null.
 	 *
 	 * @param id
 	 *          the id
 	 * @return the user session
 	 */
-	UserSession findByIdAndEndedIsNull(Long id);
+	@Query("SELECT us FROM UserSession us JOIN FETCH us.user WHERE us.id = :id")
+	UserSession findByIdAndEndedIsNull(@Param("id") Long id);
 
 	/**
 	 * Find by ended is null.
