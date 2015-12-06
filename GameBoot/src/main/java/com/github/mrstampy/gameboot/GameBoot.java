@@ -51,6 +51,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Primary;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootThreadFactory;
 
@@ -77,6 +78,7 @@ public class GameBoot {
 	private int forkPoolSize;
 
 	@Bean
+	@Primary
 	public FiberExecutorScheduler fiberExecutorScheduler() {
 		String name = "Fiber Scheduler";
 		
@@ -88,6 +90,7 @@ public class GameBoot {
 	}
 
 	@Bean
+	@Primary
 	public FiberForkJoinScheduler fiberForkJoinScheduler() {
 		String name = "Fiber Fork Join Scheduler";
 
