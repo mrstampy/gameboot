@@ -43,6 +43,7 @@ package com.github.mrstampy.gameboot.concurrent;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -56,6 +57,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
+import co.paralleluniverse.concurrent.util.CompletableExecutorService;
+import co.paralleluniverse.concurrent.util.CompletableExecutors;
+import co.paralleluniverse.concurrent.util.CompletableScheduledExecutorService;
 import co.paralleluniverse.fibers.FiberExecutorScheduler;
 import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 
@@ -67,17 +71,23 @@ import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 @EnableScheduling
 public class GameBootConcurrentConfiguration {
 
-	@Value("${quasar.fiber.scheduler.pool.size}")
-	private int poolSize;
-
-	@Value("${quasar.fiber.fj.scheduler.pool.size}")
-	private int forkPoolSize;
-
 	@Value("${task.scheduler.pool.size}")
 	private int taskSchedulerPoolSize;
 
 	@Value("${task.executor.pool.size}")
 	private int taskExecutorPoolSize;
+
+	@Value("${pu.fiber.scheduler.pool.size}")
+	private int fiberPoolSize;
+
+	@Value("${pu.fiber.fj.scheduler.pool.size}")
+	private int fiberForkJoinPoolSize;
+
+	@Value("${pu.completeable.executor.pool.size}")
+	private int completeablePoolSize;
+
+	@Value("${pu.completeable.scheduled.pool.size}")
+	private int completeableScheduledPoolSize;
 
 	@Value("${task.scheduler.name}")
 	private String taskSchedulerName;
@@ -85,11 +95,17 @@ public class GameBootConcurrentConfiguration {
 	@Value("${task.executor.name}")
 	private String taskExecutorName;
 
-	@Value("${quasar.fiber.scheduler.name}")
+	@Value("${pu.fiber.scheduler.name}")
 	private String fiberExecutorName;
 
-	@Value("${quasar.fiber.fj.scheduler.name}")
+	@Value("${pu.fiber.fj.scheduler.name}")
 	private String fiberForkJoinName;
+
+	@Value("${pu.completeable.executor.name}")
+	private String completeableExecutorName;
+
+	@Value("${pu.completeable.scheduled.name}")
+	private String completeableScheduledExecutorName;
 
 	/**
 	 * Task scheduler.
@@ -126,6 +142,41 @@ public class GameBootConcurrentConfiguration {
 	}
 
 	/**
+	 * Completable executor service.
+	 *
+	 * @return the completable executor service
+	 */
+	@Bean
+	@Primary
+	public CompletableExecutorService completableExecutorService() {
+		String name = isEmpty(completeableExecutorName) ? "Completeable Executor" : completeableExecutorName;
+
+		GameBootThreadFactory factory = new GameBootThreadFactory(name);
+
+		ExecutorService exe = Executors.newFixedThreadPool(completeablePoolSize, factory);
+
+		return CompletableExecutors.completableDecorator(exe);
+	}
+
+	/**
+	 * Completable scheduled executor service.
+	 *
+	 * @return the completable scheduled executor service
+	 */
+	@Bean
+	@Primary
+	public CompletableScheduledExecutorService completableScheduledExecutorService() {
+		String name = isEmpty(completeableScheduledExecutorName) ? "Completeable Scheduled Executor"
+				: completeableScheduledExecutorName;
+
+		GameBootThreadFactory factory = new GameBootThreadFactory(name);
+
+		ScheduledExecutorService exe = Executors.newScheduledThreadPool(completeableScheduledPoolSize, factory);
+
+		return CompletableExecutors.completableDecorator(exe);
+	}
+
+	/**
 	 * Fiber executor scheduler.
 	 *
 	 * @return the fiber executor scheduler
@@ -137,7 +188,7 @@ public class GameBootConcurrentConfiguration {
 
 		GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
-		Executor exe = Executors.newFixedThreadPool(poolSize, factory);
+		Executor exe = Executors.newFixedThreadPool(fiberPoolSize, factory);
 
 		return new FiberExecutorScheduler(name, exe, null, true);
 	}
@@ -152,7 +203,7 @@ public class GameBootConcurrentConfiguration {
 	public FiberForkJoinScheduler fiberForkJoinScheduler() {
 		String name = isEmpty(fiberForkJoinName) ? "Fiber Fork Join Scheduler" : fiberForkJoinName;
 
-		return new FiberForkJoinScheduler(name, forkPoolSize, null, true);
+		return new FiberForkJoinScheduler(name, fiberForkJoinPoolSize, null, true);
 	}
 
 }
