@@ -107,7 +107,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    * @return the response
    */
   protected Response gameBootErrorResponse(M message, Exception e) {
-    log.error("Error in processing {}", message, e);
+    log.error("Error in processing {} : {}", message, e.getMessage());
 
     return new Response(ResponseCode.FAILURE, e.getMessage());
   }
