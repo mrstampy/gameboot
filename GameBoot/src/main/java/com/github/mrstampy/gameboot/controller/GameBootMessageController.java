@@ -70,8 +70,8 @@ import com.github.mrstampy.gameboot.processor.GameBootProcessor;
  * <br>
  * <br>
  * GameBoot enforces one {@link GameBootProcessor} per
- * {@link AbstractGameBootMessage}. This class is intended to be subclassed as
- * necessary to process additional message types.
+ * {@link AbstractGameBootMessage}. Implement a different
+ * {@link MessageClassFinder} to process alternative messages.
  */
 @Component
 public class GameBootMessageController {
@@ -89,7 +89,7 @@ public class GameBootMessageController {
 
   @Autowired
   private MetricsHelper helper;
-  
+
   @Autowired
   private MessageClassFinder finder;
 
