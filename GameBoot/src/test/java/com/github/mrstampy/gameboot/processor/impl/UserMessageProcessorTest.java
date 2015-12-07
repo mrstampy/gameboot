@@ -197,12 +197,12 @@ public class UserMessageProcessorTest {
 
     m.setFunction(Function.LOGIN);
     m.setUserName(TEST_USER);
-    m.setNewPassword(BAD_PASSWORD);
+    m.setOldPassword(BAD_PASSWORD);
 
     failExpected(m, "Bad password");
 
     m.setUserName(BAD_USER);
-    m.setNewPassword(PASSWORD);
+    m.setOldPassword(PASSWORD);
 
     failExpected(m, "Bad user");
 
