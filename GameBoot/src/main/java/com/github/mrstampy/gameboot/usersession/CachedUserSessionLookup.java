@@ -54,6 +54,7 @@ import org.springframework.stereotype.Component;
 import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 /**
@@ -97,10 +98,10 @@ public class CachedUserSessionLookup {
    * @param userName
    *          the user name
    * @return the user session
-   * @throws IllegalStateException
-   *           the illegal state exception
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
    */
-  public UserSession expected(String userName) throws IllegalStateException {
+  public UserSession expected(String userName) throws GameBootRuntimeException {
     Context ctx = helper.startTimer(CACHED_SESSION_TIMER);
 
     try {
@@ -128,10 +129,10 @@ public class CachedUserSessionLookup {
    * @param id
    *          the id
    * @return the user session
-   * @throws IllegalStateException
-   *           the illegal state exception
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
    */
-  public UserSession expected(Long id) throws IllegalStateException {
+  public UserSession expected(Long id) throws GameBootRuntimeException {
     Context ctx = helper.startTimer(CACHED_SESSION_TIMER);
 
     try {
@@ -185,6 +186,6 @@ public class CachedUserSessionLookup {
   }
 
   private void check(boolean condition, String msg) {
-    if (condition) throw new IllegalStateException(msg);
+    if (condition) throw new GameBootRuntimeException(msg);
   }
 }

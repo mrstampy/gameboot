@@ -57,7 +57,8 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.codahale.metrics.Timer.Context;;
+import com.codahale.metrics.Timer.Context;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;;
 
 /**
  * The {@link MetricRegistry} has an excellent naming standard which defines the
@@ -95,7 +96,7 @@ public class MetricsHelper {
    *          the qualifiers
    */
   public void counter(String key, Class<?> clz, String... qualifiers) {
-    if (counters.containsKey(key)) throw new IllegalStateException(key + " already exists");
+    if (counters.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
     counters.put(key, registry.counter(name(clz, qualifiers)));
   }
 
@@ -110,7 +111,7 @@ public class MetricsHelper {
    *          the qualifiers
    */
   public void timer(String key, Class<?> clz, String... qualifiers) {
-    if (timers.containsKey(key)) throw new IllegalStateException(key + " already exists");
+    if (timers.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
     timers.put(key, registry.timer(name(clz, qualifiers)));
   }
 
@@ -127,7 +128,7 @@ public class MetricsHelper {
    *          the qualifiers
    */
   public void gauge(Gauge<?> gauge, String key, Class<?> clz, String... qualifiers) {
-    if (gauges.containsKey(key)) throw new IllegalStateException(key + " already exists");
+    if (gauges.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
     gauges.put(key, registry.register(name(clz, qualifiers), gauge));
   }
 

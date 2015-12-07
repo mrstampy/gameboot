@@ -64,10 +64,10 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.github.mrstampy.gameboot.TestConfiguration;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
+import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
-import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
-import com.github.mrstampy.gameboot.data.entity.UserSession;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 
 /**
  * The Class UserSessionAssistTest.
@@ -142,9 +142,9 @@ public class UserSessionAssistTest {
   @Test
   @Transactional
   public void testExpectedUser() throws Exception {
-    illegalStateExpected(() -> assist.expectedUser(null), "Null user name");
-    illegalStateExpected(() -> assist.expectedUser(" "), "Blank user name");
-    illegalStateExpected(() -> assist.expectedUser(NON_EXISTENT), "non existent user name");
+    gameBootExpected(() -> assist.expectedUser(null), "Null user name");
+    gameBootExpected(() -> assist.expectedUser(" "), "Blank user name");
+    gameBootExpected(() -> assist.expectedUser(NON_EXISTENT), "non existent user name");
 
     User user = assist.expectedUser(USER_NAME);
 
@@ -160,11 +160,11 @@ public class UserSessionAssistTest {
   @Test
   @Transactional
   public void testExpectedSession() throws Exception {
-    illegalStateExpected(() -> assist.create(null), "Null user");
-    illegalStateExpected(() -> assist.expected((String) null), "Null user name");
-    illegalStateExpected(() -> assist.expected(" "), "Blank user name");
-    illegalStateExpected(() -> assist.expected(0), "Zero id");
-    illegalStateExpected(() -> assist.expected(-1), "Negative id");
+    gameBootExpected(() -> assist.create(null), "Null user");
+    gameBootExpected(() -> assist.expected((String) null), "Null user name");
+    gameBootExpected(() -> assist.expected(" "), "Blank user name");
+    gameBootExpected(() -> assist.expected(0), "Zero id");
+    gameBootExpected(() -> assist.expected(-1), "Negative id");
 
     assertFalse(assist.hasSession(Long.MAX_VALUE));
     assertFalse(assist.hasSession(NON_EXISTENT));
@@ -176,7 +176,7 @@ public class UserSessionAssistTest {
     assertTrue(assist.hasSession(sessionId));
     assertTrue(assist.hasSession(USER_NAME));
 
-    illegalStateExpected(() -> assist.create(user), "Session exists");
+    gameBootExpected(() -> assist.create(user), "Session exists");
 
     UserSession same = assist.expected(sessionId);
     assertEquals(sessionId, same.getId());
@@ -270,11 +270,11 @@ public class UserSessionAssistTest {
     return session;
   }
 
-  private void illegalStateExpected(Runnable r, String failMsg) {
+  private void gameBootExpected(Runnable r, String failMsg) {
     try {
       r.run();
       fail(failMsg);
-    } catch (IllegalStateException expected) {
+    } catch (GameBootRuntimeException expected) {
     }
   }
 

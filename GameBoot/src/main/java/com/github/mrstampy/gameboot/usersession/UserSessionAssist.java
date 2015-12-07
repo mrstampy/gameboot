@@ -59,12 +59,13 @@ import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 /**
  * The Class UserSessionAssist provides methods to look up {@link User}s and
  * {@link UserSession}s from the database, failing with
- * {@link IllegalStateException}s should the records not exist.
+ * {@link GameBootRuntimeException}s should the records not exist.
  */
 @Component
 public class UserSessionAssist {
@@ -109,10 +110,10 @@ public class UserSessionAssist {
    * @param user
    *          the user
    * @return the user session
-   * @throws IllegalStateException
-   *           the illegal state exception
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
    */
-  public UserSession create(User user) throws IllegalStateException {
+  public UserSession create(User user) throws GameBootRuntimeException {
     userCheck(user);
 
     String userName = user.getUserName();
@@ -134,10 +135,10 @@ public class UserSessionAssist {
    * @param userName
    *          the user name
    * @return the user
-   * @throws IllegalStateException
-   *           the illegal state exception
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
    */
-  public User expectedUser(String userName) throws IllegalStateException {
+  public User expectedUser(String userName) throws GameBootRuntimeException {
     userNameCheck(userName);
 
     User user = userRepo.findByUserName(userName);
@@ -153,10 +154,10 @@ public class UserSessionAssist {
    * @param userName
    *          the user name
    * @return the user session
-   * @throws IllegalStateException
-   *           the illegal state exception
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
    */
-  public UserSession expected(String userName) throws IllegalStateException {
+  public UserSession expected(String userName) throws GameBootRuntimeException {
     userNameCheck(userName);
 
     String noSession = "No session for " + userName;
@@ -176,10 +177,10 @@ public class UserSessionAssist {
    * @param user
    *          the user
    * @return the user session
-   * @throws IllegalStateException
-   *           the illegal state exception
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
    */
-  public UserSession expected(User user) throws IllegalStateException {
+  public UserSession expected(User user) throws GameBootRuntimeException {
     userCheck(user);
 
     String userName = user.getUserName();
@@ -194,11 +195,11 @@ public class UserSessionAssist {
    * @param id
    *          the id
    * @return the user session
-   * @throws IllegalStateException
-   *           the illegal state exception
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
    */
-  public UserSession expected(long id) throws IllegalStateException {
-    if (id <= 0) throw new IllegalStateException("Id must be > 0: " + id);
+  public UserSession expected(long id) throws GameBootRuntimeException {
+    if (id <= 0) throw new GameBootRuntimeException("Id must be > 0: " + id);
 
     check(!activeSessions.hasSession(id), "No session for id " + id);
 
@@ -235,10 +236,10 @@ public class UserSessionAssist {
    * @param userName
    *          the user name
    * @return the user
-   * @throws IllegalStateException
-   *           the illegal state exception
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
    */
-  public User logout(String userName) throws IllegalStateException {
+  public User logout(String userName) throws GameBootRuntimeException {
     UserSession session = expected(userName);
 
     closeSession(session);
@@ -252,10 +253,10 @@ public class UserSessionAssist {
    * @param id
    *          the id
    * @return the user
-   * @throws IllegalStateException
-   *           the illegal state exception
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
    */
-  public User logout(Long id) throws IllegalStateException {
+  public User logout(Long id) throws GameBootRuntimeException {
     UserSession session = expected(id);
 
     closeSession(session);
@@ -313,10 +314,10 @@ public class UserSessionAssist {
    *
    * @param user
    *          the user
-   * @throws IllegalStateException
-   *           the illegal state exception
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
    */
-  protected void userCheck(User user) throws IllegalStateException {
+  protected void userCheck(User user) throws GameBootRuntimeException {
     check(user == null, "null user");
   }
 
@@ -325,10 +326,10 @@ public class UserSessionAssist {
    *
    * @param userName
    *          the user name
-   * @throws IllegalStateException
-   *           the illegal state exception
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
    */
-  protected void userNameCheck(String userName) throws IllegalStateException {
+  protected void userNameCheck(String userName) throws GameBootRuntimeException {
     check(isEmpty(userName), "null username");
   }
 
@@ -341,6 +342,6 @@ public class UserSessionAssist {
    *          the msg
    */
   protected void check(boolean condition, String msg) {
-    if (condition) throw new IllegalStateException(msg);
+    if (condition) throw new GameBootRuntimeException(msg);
   }
 }

@@ -47,6 +47,7 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
@@ -84,25 +85,30 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
       log.debug("Created response {} for {}", response, message);
 
       return response;
-    } catch (Exception e) {
+    } catch (GameBootRuntimeException e) {
       log.error("Error in processing {}", message, e);
 
       return new Response(ResponseCode.FAILURE, e.getMessage());
+    } catch (Exception e) {
+      log.error("Error in processing {}", message, e);
+
+      return new Response(ResponseCode.FAILURE, "An unexpected error has occurred");
     }
   }
 
   /**
-   * Fail, throwing a {@link RuntimeException} with the specified message. The
-   * exception is caught by the {@link #process(AbstractGameBootMessage)}
-   * implementation which after logging returns a failure response.
+   * Fail, throwing a {@link GameBootRuntimeException} with the specified
+   * message. The exception is caught by the
+   * {@link #process(AbstractGameBootMessage)} implementation which after
+   * logging returns a failure response.
    *
    * @param message
    *          the message
    * @throws RuntimeException
-   *           the runtime exception
+   *           the game boot runtime exception
    */
-  protected void fail(String message) throws RuntimeException {
-    throw new RuntimeException(message);
+  protected void fail(String message) throws GameBootRuntimeException {
+    throw new GameBootRuntimeException(message);
   }
 
   /**

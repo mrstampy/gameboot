@@ -66,12 +66,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.TestConfiguration;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
+import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
-import com.github.mrstampy.gameboot.data.entity.UserSession;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
-import com.github.mrstampy.gameboot.usersession.CachedUserSessionLookup;
-import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 
 /**
  * The Class CachedUserSessionLookupTest.
@@ -158,10 +157,10 @@ public class CachedUserSessionLookupTest {
   @Test
   @Transactional
   public void testExceptions() throws Exception {
-    illegalStateExpected(() -> lookup.expected(NON_EXISTENT), "No session for username");
-    illegalStateExpected(() -> lookup.expected((String) null), "Null username");
-    illegalStateExpected(() -> lookup.expected((Long) null), "Null id");
-    illegalStateExpected(() -> lookup.expected(Long.MAX_VALUE), "No session for id");
+    gameBootExcpected(() -> lookup.expected(NON_EXISTENT), "No session for username");
+    gameBootExcpected(() -> lookup.expected((String) null), "Null username");
+    gameBootExcpected(() -> lookup.expected((Long) null), "Null id");
+    gameBootExcpected(() -> lookup.expected(Long.MAX_VALUE), "No session for id");
   }
 
   /**
@@ -210,11 +209,11 @@ public class CachedUserSessionLookupTest {
     }
   }
 
-  private void illegalStateExpected(Runnable r, String failMsg) {
+  private void gameBootExcpected(Runnable r, String failMsg) {
     try {
       r.run();
       fail(failMsg);
-    } catch (IllegalStateException expected) {
+    } catch (GameBootRuntimeException expected) {
     }
   }
 
