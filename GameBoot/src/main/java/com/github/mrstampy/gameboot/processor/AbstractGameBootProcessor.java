@@ -47,6 +47,7 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
@@ -86,14 +87,29 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 
       return response;
     } catch (GameBootRuntimeException e) {
-      log.error("Error in processing {}", message, e);
-
-      return new Response(ResponseCode.FAILURE, e.getMessage());
+      return gameBootErrorResponse(message, e);
+    } catch (GameBootException e) {
+      return gameBootErrorResponse(message, e);
     } catch (Exception e) {
       log.error("Error in processing {}", message, e);
 
       return new Response(ResponseCode.FAILURE, "An unexpected error has occurred");
     }
+  }
+
+  /**
+   * Game boot error response.
+   *
+   * @param message
+   *          the message
+   * @param e
+   *          the e
+   * @return the response
+   */
+  protected Response gameBootErrorResponse(M message, Exception e) {
+    log.error("Error in processing {}", message, e);
+
+    return new Response(ResponseCode.FAILURE, e.getMessage());
   }
 
   /**
@@ -104,7 +120,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    *
    * @param message
    *          the message
-   * @throws RuntimeException
+   * @throws GameBootRuntimeException
    *           the game boot runtime exception
    */
   protected void fail(String message) throws GameBootRuntimeException {
