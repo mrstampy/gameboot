@@ -57,9 +57,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 
-import co.paralleluniverse.concurrent.util.CompletableExecutorService;
-import co.paralleluniverse.concurrent.util.CompletableExecutors;
-import co.paralleluniverse.concurrent.util.CompletableScheduledExecutorService;
 import co.paralleluniverse.fibers.FiberExecutorScheduler;
 import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 
@@ -82,11 +79,11 @@ public class GameBootConcurrentConfiguration {
 	@Value("${pu.fiber.fj.scheduler.pool.size}")
 	private int fiberForkJoinPoolSize;
 
-	@Value("${pu.completeable.executor.pool.size}")
-	private int completeablePoolSize;
+	@Value("${executor.pool.size}")
+	private int executorPoolSize;
 
-	@Value("${pu.completeable.scheduled.pool.size}")
-	private int completeableScheduledPoolSize;
+	@Value("${scheduler.pool.size}")
+	private int schedulerPoolSize;
 
 	@Value("${task.scheduler.name}")
 	private String taskSchedulerName;
@@ -100,11 +97,11 @@ public class GameBootConcurrentConfiguration {
 	@Value("${pu.fiber.fj.scheduler.name}")
 	private String fiberForkJoinName;
 
-	@Value("${pu.completeable.executor.name}")
-	private String completeableExecutorName;
+	@Value("${executor.name}")
+	private String executorName;
 
-	@Value("${pu.completeable.scheduled.name}")
-	private String completeableScheduledExecutorName;
+	@Value("${scheduler.name}")
+	private String schedulerName;
 
 	/**
 	 * Task scheduler.
@@ -147,14 +144,12 @@ public class GameBootConcurrentConfiguration {
 	 */
 	@Bean
 	@Primary
-	public CompletableExecutorService completableExecutorService() {
-		String name = isEmpty(completeableExecutorName) ? "Completeable Executor" : completeableExecutorName;
+	public ExecutorService completableExecutorService() {
+		String name = isEmpty(executorName) ? "Completeable Executor" : executorName;
 
 		GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
-		ExecutorService exe = Executors.newFixedThreadPool(completeablePoolSize, factory);
-
-		return CompletableExecutors.completableDecorator(exe);
+		return Executors.newFixedThreadPool(executorPoolSize, factory);
 	}
 
 	/**
@@ -164,15 +159,12 @@ public class GameBootConcurrentConfiguration {
 	 */
 	@Bean
 	@Primary
-	public CompletableScheduledExecutorService completableScheduledExecutorService() {
-		String name = isEmpty(completeableScheduledExecutorName) ? "Completeable Scheduled Executor"
-				: completeableScheduledExecutorName;
+	public ScheduledExecutorService completableScheduledExecutorService() {
+		String name = isEmpty(schedulerName) ? "Completeable Scheduled Executor" : schedulerName;
 
 		GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
-		ScheduledExecutorService exe = Executors.newScheduledThreadPool(completeableScheduledPoolSize, factory);
-
-		return CompletableExecutors.completableDecorator(exe);
+		return Executors.newScheduledThreadPool(schedulerPoolSize, factory);
 	}
 
 	/**
