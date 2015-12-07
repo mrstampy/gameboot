@@ -138,13 +138,13 @@ public class GameBootConcurrentConfiguration {
   }
 
   /**
-   * Completable executor service.
+   * Executor service.
    *
-   * @return the completable executor service
+   * @return the executor service
    */
   @Bean
   @Primary
-  public ExecutorService completableExecutorService() {
+  public ExecutorService executorService() {
     String name = isEmpty(executorName) ? "GameBoot Executor" : executorName;
 
     GameBootThreadFactory factory = new GameBootThreadFactory(name);
@@ -153,13 +153,13 @@ public class GameBootConcurrentConfiguration {
   }
 
   /**
-   * Completable scheduled executor service.
+   * Scheduled executor service.
    *
-   * @return the completable scheduled executor service
+   * @return the scheduled executor service
    */
   @Bean
   @Primary
-  public ScheduledExecutorService completableScheduledExecutorService() {
+  public ScheduledExecutorService scheduledExecutorService() {
     String name = isEmpty(schedulerName) ? "GameBoot Scheduled Executor" : schedulerName;
 
     GameBootThreadFactory factory = new GameBootThreadFactory(name);
