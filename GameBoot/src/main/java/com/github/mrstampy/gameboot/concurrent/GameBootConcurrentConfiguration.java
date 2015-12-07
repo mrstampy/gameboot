@@ -171,6 +171,7 @@ public class GameBootConcurrentConfiguration {
 	 * Fiber executor scheduler.
 	 *
 	 * @return the fiber executor scheduler
+	 * @see FiberCreator
 	 */
 	@Bean
 	@Primary
@@ -188,6 +189,7 @@ public class GameBootConcurrentConfiguration {
 	 * Fiber fork join scheduler.
 	 *
 	 * @return the fiber fork join scheduler
+	 * @see FiberCreator
 	 */
 	@Bean
 	@Primary
