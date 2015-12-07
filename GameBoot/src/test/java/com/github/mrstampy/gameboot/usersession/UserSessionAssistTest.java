@@ -38,13 +38,16 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.assist;
+package com.github.mrstampy.gameboot.usersession;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.lang.invoke.MethodHandles;
-import java.util.Map.Entry;
-import java.util.Set;
+import java.util.List;
 
 import javax.transaction.Transactional;
 
@@ -52,43 +55,32 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.codahale.metrics.Timer;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.TestConfiguration;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
 import com.github.mrstampy.gameboot.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
-import com.github.mrstampy.gameboot.data.entity.UserSession;
-import com.github.mrstampy.gameboot.metrics.MetricsHelper;
-import com.github.mrstampy.gameboot.usersession.CachedUserSessionLookup;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
+import com.github.mrstampy.gameboot.data.entity.UserSession;
 
 /**
- * The Class CachedUserSessionLookupTest.
+ * The Class UserSessionAssistTest.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(TestConfiguration.class)
-public class CachedUserSessionLookupTest {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public class UserSessionAssistTest {
+
+	private static final String SESSIONS_CACHE_NAME = UserSessionAssist.SESSIONS_CACHE;
 
 	private static final String NON_EXISTENT = "usertest";
 
 	private static final String USER_NAME = "testuser";
-
-	private static final int METRICS_ITR = 100;
-
-	@Autowired
-	private CachedUserSessionLookup lookup;
 
 	@Autowired
 	private UserSessionAssist assist;
@@ -100,17 +92,11 @@ public class CachedUserSessionLookupTest {
 	private UserSessionRepository userSessionRepo;
 
 	@Autowired
-	private MetricsHelper helper;
+	private CacheManager cacheManager;
 
-	@Autowired
-	private ObjectMapper mapper;
-
-	private User user;
+	private Long userId;
 
 	private Long sessionId;
-
-	@Autowired
-	private CacheManager cacheManager;
 
 	private Cache cache;
 
@@ -124,11 +110,9 @@ public class CachedUserSessionLookupTest {
 	public void before() throws Exception {
 		User user = createUser();
 
-		this.user = userRepo.save(user);
+		user = userRepo.save(user);
 
-		createSession(user);
-
-		cache = cacheManager.getCache(UserSessionAssist.SESSIONS_CACHE);
+		userId = user.getId();
 	}
 
 	/**
@@ -146,68 +130,144 @@ public class CachedUserSessionLookupTest {
 
 		sessionId = null;
 
-		userRepo.delete(user);
+		userRepo.delete(userId);
 	}
 
 	/**
-	 * Test exceptions.
+	 * Test expected user.
 	 *
 	 * @throws Exception
 	 *           the exception
 	 */
 	@Test
 	@Transactional
-	public void testExceptions() throws Exception {
-		illegalStateExpected(() -> lookup.expected(NON_EXISTENT), "No session for username");
-		illegalStateExpected(() -> lookup.expected((String) null), "Null username");
-		illegalStateExpected(() -> lookup.expected((Long) null), "Null id");
-		illegalStateExpected(() -> lookup.expected(Long.MAX_VALUE), "No session for id");
+	public void testExpectedUser() throws Exception {
+		illegalStateExpected(() -> assist.expectedUser(null), "Null user name");
+		illegalStateExpected(() -> assist.expectedUser(" "), "Blank user name");
+		illegalStateExpected(() -> assist.expectedUser(NON_EXISTENT), "non existent user name");
+
+		User user = assist.expectedUser(USER_NAME);
+
+		assertEquals(userId, user.getId());
 	}
 
 	/**
-	 * Metrics with session id.
+	 * Test expected session.
 	 *
 	 * @throws Exception
 	 *           the exception
 	 */
 	@Test
 	@Transactional
-	public void metricsWithSessionId() throws Exception {
-		generateUncachedStats();
+	public void testExpectedSession() throws Exception {
+		illegalStateExpected(() -> assist.create(null), "Null user");
+		illegalStateExpected(() -> assist.expected((String) null), "Null user name");
+		illegalStateExpected(() -> assist.expected(" "), "Blank user name");
+		illegalStateExpected(() -> assist.expected(0), "Zero id");
+		illegalStateExpected(() -> assist.expected(-1), "Negative id");
 
-		for (int i = 0; i < METRICS_ITR; i++) {
-			lookup.expected(sessionId);
-		}
+		assertFalse(assist.hasSession(Long.MAX_VALUE));
+		assertFalse(assist.hasSession(NON_EXISTENT));
 
-		metrics();
+		User user = assist.expectedUser(USER_NAME);
+
+		createSession(user);
+
+		assertTrue(assist.hasSession(sessionId));
+		assertTrue(assist.hasSession(USER_NAME));
+
+		illegalStateExpected(() -> assist.create(user), "Session exists");
+
+		UserSession same = assist.expected(sessionId);
+		assertEquals(sessionId, same.getId());
+
+		same = assist.expected(USER_NAME);
+		assertEquals(sessionId, same.getId());
+
+		same = assist.expected(user);
+		assertEquals(sessionId, same.getId());
 	}
 
 	/**
-	 * Metrics with user name.
+	 * Test logout user name.
 	 *
 	 * @throws Exception
 	 *           the exception
 	 */
 	@Test
 	@Transactional
-	public void metricsWithUserName() throws Exception {
-		generateUncachedStats();
-
-		for (int i = 0; i < METRICS_ITR; i++) {
-			lookup.expected(USER_NAME);
-		}
-
-		metrics();
+	public void testLogoutUserName() throws Exception {
+		testLogout(() -> assist.logout(USER_NAME));
 	}
 
 	/**
-	 * Generate uncached stats.
+	 * Test logout id.
+	 *
+	 * @throws Exception
+	 *           the exception
 	 */
-	protected void generateUncachedStats() {
-		for (int i = 0; i < METRICS_ITR; i++) {
-			cache.clear();
-			assist.activeSessions();
-		}
+	@Test
+	@Transactional
+	public void testLogoutId() throws Exception {
+		testLogout(() -> assist.logout(sessionId));
+	}
+
+	/**
+	 * Test active session caching.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
+	@Test
+	@Transactional
+	public void testActiveSessionCaching() throws Exception {
+		cache = cacheManager.getCache(SESSIONS_CACHE_NAME);
+		
+		cache.clear();
+
+		User user = assist.expectedUser(USER_NAME);
+
+		UserSession session = createSession(user);
+
+		List<UserSession> sessions = assist.activeSessions();
+
+		assertEquals(1, sessions.size());
+		assertEquals(session.getId(), sessions.get(0).getId());
+		assertNotNull(getCached());
+
+		// enable to test cache expiry, assumes 15 seconds
+		// @see src/main/resources/ehcache.xml
+		//
+		// Thread.sleep(16000);
+		//
+		// assertNull(getCached());
+	}
+
+	@SuppressWarnings("unchecked")
+	private List<UserSession> getCached() {
+		return cache.get(UserSessionAssist.SESSIONS_KEY, List.class);
+	}
+
+	private void testLogout(Runnable r) throws Exception {
+		User user = assist.expectedUser(USER_NAME);
+
+		UserSession session = createSession(user);
+
+		assertNull(session.getEnded());
+
+		assertTrue(assist.hasSession(sessionId));
+
+		r.run();
+
+		assertFalse(assist.hasSession(sessionId));
+
+		assertNotNull(session.getEnded());
+	}
+
+	private UserSession createSession(User user) {
+		UserSession session = assist.create(user);
+		sessionId = session.getId();
+		return session;
 	}
 
 	private void illegalStateExpected(Runnable r, String failMsg) {
@@ -226,29 +286,5 @@ public class CachedUserSessionLookupTest {
 		user.setPasswordHash("unimportant");
 
 		return user;
-	}
-
-	private UserSession createSession(User user) {
-		UserSession session = assist.create(user);
-		sessionId = session.getId();
-		return session;
-	}
-
-	private void metrics() throws Exception {
-		Set<Entry<String, Timer>> timers = helper.getTimers();
-
-		timers.stream().filter(e -> isMetric(e.getKey())).forEach(e -> display(e));
-	}
-
-	private boolean isMetric(String key) {
-		return "UncachedSessionTimer".equals(key) || "CachedSessionTimer".equals(key);
-	}
-
-	private void display(Entry<String, ?> t) {
-		try {
-			log.debug(mapper.writeValueAsString(t));
-		} catch (JsonProcessingException e) {
-			log.error("Unexpected exception", e);
-		}
 	}
 }
