@@ -145,7 +145,7 @@ public class GameBootConcurrentConfiguration {
 	@Bean
 	@Primary
 	public ExecutorService completableExecutorService() {
-		String name = isEmpty(executorName) ? "Completeable Executor" : executorName;
+		String name = isEmpty(executorName) ? "GameBoot Executor" : executorName;
 
 		GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
@@ -160,7 +160,7 @@ public class GameBootConcurrentConfiguration {
 	@Bean
 	@Primary
 	public ScheduledExecutorService completableScheduledExecutorService() {
-		String name = isEmpty(schedulerName) ? "Completeable Scheduled Executor" : schedulerName;
+		String name = isEmpty(schedulerName) ? "GameBoot Scheduled Executor" : schedulerName;
 
 		GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
