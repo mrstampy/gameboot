@@ -67,7 +67,6 @@ repositories {
     mavenCentral()
 }
 
-
 dependencies {
     compile('org.springframework.boot:spring-boot-starter-actuator')
     compile('org.springframework.boot:spring-boot-starter-aop')
@@ -111,7 +110,6 @@ dependencyManagement {
 		mavenBom "com.vaadin:vaadin-bom:7.5.5" 
 	}
 }
-
 
 eclipse {
     classpath {
