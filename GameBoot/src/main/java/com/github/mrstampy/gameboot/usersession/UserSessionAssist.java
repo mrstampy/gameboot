@@ -294,13 +294,7 @@ public class UserSessionAssist {
     return sessionsKey;
   }
 
-  /**
-   * Close session.
-   *
-   * @param session
-   *          the session
-   */
-  protected void closeSession(UserSession session) {
+  private void closeSession(UserSession session) {
     session.setEnded(new Date());
 
     userSessionRepo.save(session);
@@ -310,39 +304,15 @@ public class UserSessionAssist {
     log.info("User {} logged out", session.getUser().getUserName());
   }
 
-  /**
-   * User check.
-   *
-   * @param user
-   *          the user
-   * @throws GameBootRuntimeException
-   *           the game boot runtime exception
-   */
-  protected void userCheck(User user) throws GameBootRuntimeException {
+  private void userCheck(User user) throws GameBootRuntimeException {
     check(user == null, "null user");
   }
 
-  /**
-   * User name check.
-   *
-   * @param userName
-   *          the user name
-   * @throws GameBootRuntimeException
-   *           the game boot runtime exception
-   */
-  protected void userNameCheck(String userName) throws GameBootRuntimeException {
+  private void userNameCheck(String userName) throws GameBootRuntimeException {
     check(isEmpty(userName), "null username");
   }
 
-  /**
-   * Check.
-   *
-   * @param condition
-   *          the condition
-   * @param msg
-   *          the msg
-   */
-  protected void check(boolean condition, String msg) {
+  private void check(boolean condition, String msg) {
     if (condition) throw new GameBootRuntimeException(msg);
   }
 }
