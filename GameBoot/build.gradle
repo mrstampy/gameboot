@@ -98,6 +98,8 @@ dependencies {
     compile('org.ehcache:ehcache:3.0.0.m4')
     compile('org.terracotta:management-model:2.0.0');
     
+    compile('javax:javaee-api:7.0')
+    
     runtime('com.h2database:h2')
     runtime('mysql:mysql-connector-java')
     runtime('org.postgresql:postgresql:9.4-1206-jdbc42')
