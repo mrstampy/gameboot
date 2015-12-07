@@ -73,11 +73,11 @@ import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 /**
- * The Class CachedUserSessionLookupTest.
+ * The Class UserSessionLookupTest.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(TestConfiguration.class)
-public class CachedUserSessionLookupTest {
+public class UserSessionLookupTest {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String NON_EXISTENT = "usertest";
@@ -87,7 +87,7 @@ public class CachedUserSessionLookupTest {
   private static final int METRICS_ITR = 100;
 
   @Autowired
-  private CachedUserSessionLookup lookup;
+  private UserSessionLookup lookup;
 
   @Autowired
   private UserSessionAssist assist;

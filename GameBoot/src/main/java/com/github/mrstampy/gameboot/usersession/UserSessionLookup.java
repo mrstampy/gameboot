@@ -59,12 +59,11 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 /**
  * This class ensures {@link UserSession} lookups use the cacheable
- * {@link UserSessionAssist#activeSessions()} method.
- * CachedUserSessionLookupTest shows 3 - 7X faster lookups vs. database access,
- * for a single session.
+ * {@link UserSessionAssist#activeSessions()} method. UserSessionLookupTest
+ * shows 3 - 7X faster lookups vs. database access, for a single session.
  */
 @Component
-public class CachedUserSessionLookup {
+public class UserSessionLookup {
 
   private static final String CACHED_SESSION_TIMER = "CachedSessionTimer";
 
@@ -88,7 +87,7 @@ public class CachedUserSessionLookup {
    */
   @PostConstruct
   public void postConstruct() throws Exception {
-    helper.timer(CACHED_SESSION_TIMER, CachedUserSessionLookup.class, "cached", "session", "timer");
+    helper.timer(CACHED_SESSION_TIMER, UserSessionLookup.class, "cached", "session", "timer");
   }
 
   /**
