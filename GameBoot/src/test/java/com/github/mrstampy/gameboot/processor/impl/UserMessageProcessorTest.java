@@ -68,8 +68,6 @@ import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.TestConfiguration;
-import com.github.mrstampy.gameboot.data.assist.ActiveSessions;
-import com.github.mrstampy.gameboot.data.assist.UserSessionAssist;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
 import com.github.mrstampy.gameboot.data.repository.UserRepository;
@@ -80,6 +78,8 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.messages.UserMessage.Function;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.usersession.ActiveSessions;
+import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 
 /**
  * The Class UserMessageProcessorTest.

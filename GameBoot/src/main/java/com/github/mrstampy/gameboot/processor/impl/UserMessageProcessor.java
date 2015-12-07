@@ -56,7 +56,6 @@ import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
-import com.github.mrstampy.gameboot.data.assist.UserSessionAssist;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
 import com.github.mrstampy.gameboot.data.repository.UserRepository;
@@ -66,6 +65,7 @@ import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
+import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 
 /**
  * This implementation of a {@link GameBootProcessor} processes

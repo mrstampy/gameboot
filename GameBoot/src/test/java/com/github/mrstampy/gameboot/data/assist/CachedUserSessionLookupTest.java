@@ -70,6 +70,8 @@ import com.github.mrstampy.gameboot.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.usersession.CachedUserSessionLookup;
+import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 
 /**
  * The Class CachedUserSessionLookupTest.

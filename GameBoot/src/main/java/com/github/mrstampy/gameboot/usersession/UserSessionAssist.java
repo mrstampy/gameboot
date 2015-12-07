@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.assist;
+package com.github.mrstampy.gameboot.usersession;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
