@@ -66,37 +66,37 @@ import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 @Configuration
 @EnableScheduling
 public class GameBootConcurrentConfiguration {
-	
+
 	@Value("${task.scheduler.name}")
 	private String taskSchedulerName;
 
 	@Value("${task.scheduler.pool.size}")
 	private int taskSchedulerPoolSize;
-	
+
 	@Value("${task.executor.name}")
 	private String taskExecutorName;
 
 	@Value("${task.executor.pool.size}")
 	private int taskExecutorPoolSize;
-	
+
 	@Value("${pu.fiber.scheduler.name}")
 	private String fiberExecutorName;
 
 	@Value("${pu.fiber.scheduler.pool.size}")
 	private int fiberPoolSize;
-	
+
 	@Value("${pu.fiber.fj.scheduler.name}")
 	private String fiberForkJoinName;
 
 	@Value("${pu.fiber.fj.scheduler.pool.size}")
 	private int fiberForkJoinPoolSize;
-	
+
 	@Value("${executor.name}")
 	private String executorName;
 
 	@Value("${executor.pool.size}")
 	private int executorPoolSize;
-	
+
 	@Value("${scheduler.name}")
 	private String schedulerName;
 

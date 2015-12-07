@@ -222,7 +222,7 @@ public class UserSessionAssistTest {
 	@Transactional
 	public void testActiveSessionCaching() throws Exception {
 		cache = cacheManager.getCache(SESSIONS_CACHE_NAME);
-		
+
 		cache.clear();
 
 		User user = assist.expectedUser(USER_NAME);
