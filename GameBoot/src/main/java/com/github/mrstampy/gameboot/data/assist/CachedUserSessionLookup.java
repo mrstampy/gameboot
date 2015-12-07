@@ -115,7 +115,7 @@ public class CachedUserSessionLookup {
 			Optional<UserSession> o = find(sessions, us -> us.getUser().getUserName().equals(userName));
 
 			// may not yet be in the cached list
-			return o.isPresent() ? o.get() : sessionCheck(repository.findByUserNameAndEndedIsNull(userName));
+			return o.isPresent() ? o.get() : sessionCheck(repository.findOpenSession(userName));
 		} finally {
 			ctx.stop();
 		}
@@ -146,7 +146,7 @@ public class CachedUserSessionLookup {
 			Optional<UserSession> o = find(sessions, us -> us.getId().equals(id));
 
 			// may not yet be in the cached list
-			return o.isPresent() ? o.get() : sessionCheck(repository.findByIdAndEndedIsNull(id));
+			return o.isPresent() ? o.get() : sessionCheck(repository.findOpenSession(id));
 		} finally {
 			ctx.stop();
 		}

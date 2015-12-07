@@ -163,7 +163,7 @@ public class UserSessionAssist {
 
 		check(!activeSessions.hasSession(userName), noSession);
 
-		UserSession session = userSessionRepo.findByUserNameAndEndedIsNull(userName);
+		UserSession session = userSessionRepo.findOpenSession(userName);
 
 		check(session == null, noSession);
 
@@ -202,7 +202,7 @@ public class UserSessionAssist {
 
 		check(!activeSessions.hasSession(id), "No session for id " + id);
 
-		return userSessionRepo.findByIdAndEndedIsNull(id);
+		return userSessionRepo.findOpenSession(id);
 	}
 
 	/**
@@ -275,7 +275,7 @@ public class UserSessionAssist {
 	public List<UserSession> activeSessions() {
 		Context ctx = helper.startTimer(UNCACHED_SESSION_TIMER);
 		try {
-			return userSessionRepo.findByEndedIsNull();
+			return userSessionRepo.openSessions();
 		} finally {
 			ctx.stop();
 		}
