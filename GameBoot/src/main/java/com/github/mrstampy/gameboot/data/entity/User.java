@@ -255,14 +255,14 @@ public class User extends AbstractGameBootEntity {
     ToStringBuilder tsb = new ToStringBuilder(this);
 
     //@formatter:off
-		tsb
-			.append(getUserName())
-			.append(getFirstName())
-			.append(getLastName())
-			.append(getState())
-			.append(getDob())
-			.append(getEmail());
-		//@formatter:on
+    tsb
+      .append(getUserName())
+      .append(getFirstName())
+      .append(getLastName())
+      .append(getState())
+      .append(getDob())
+      .append(getEmail());
+    //@formatter:on
 
     return tsb.toString();
   }

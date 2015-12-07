@@ -235,15 +235,15 @@ public class UserMessage extends AbstractGameBootMessage {
     ToStringBuilder tsb = new ToStringBuilder(this);
 
     //@formatter:off
-		tsb
-			.append(getUserName())
-			.append(getFunction())
-			.append(getFirstName())
-			.append(getLastName())
-			.append(getEmail())
-			.append(getDob())
-			.append(getState());
-		//@formatter:on
+    tsb
+      .append(getUserName())
+      .append(getFunction())
+      .append(getFirstName())
+      .append(getLastName())
+      .append(getEmail())
+      .append(getDob())
+      .append(getState());
+    //@formatter:on
 
     return tsb.toString();
   }

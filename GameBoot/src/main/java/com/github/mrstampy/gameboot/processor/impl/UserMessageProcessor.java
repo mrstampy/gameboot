@@ -178,13 +178,13 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
   private boolean noData(UserMessage message) {
     //@formatter:off
-		return isEmpty(message.getNewPassword()) && 
-				isEmpty(message.getEmail()) && 
-				isEmpty(message.getFirstName()) && 
-				isEmpty(message.getLastName()) && 
-				message.getState() == null &&
-				message.getDob() == null;
-		//@formatter:on
+    return isEmpty(message.getNewPassword()) && 
+        isEmpty(message.getEmail()) && 
+        isEmpty(message.getFirstName()) && 
+        isEmpty(message.getLastName()) && 
+        message.getState() == null && 
+        message.getDob() == null;
+    //@formatter:on
   }
 
   private Response logoutUser(UserMessage message) {
