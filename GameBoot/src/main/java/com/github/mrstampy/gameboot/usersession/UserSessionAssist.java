@@ -43,6 +43,7 @@ package com.github.mrstampy.gameboot.usersession;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -276,7 +277,7 @@ public class UserSessionAssist {
   public List<UserSession> activeSessions() {
     Context ctx = helper.startTimer(UNCACHED_SESSION_TIMER);
     try {
-      return userSessionRepo.openSessions();
+      return Collections.unmodifiableList(userSessionRepo.openSessions());
     } finally {
       ctx.stop();
     }
