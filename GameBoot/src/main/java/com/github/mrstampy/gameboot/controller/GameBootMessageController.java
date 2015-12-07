@@ -109,7 +109,8 @@ public class GameBootMessageController {
   }
 
   /**
-   * Process.
+   * Process the given JSON message using the {@link GameBootProcessor}
+   * specified for its {@link AbstractGameBootMessage#getType()}.
    *
    * @param <AGBM>
    *          the generic type
