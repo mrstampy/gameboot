@@ -58,14 +58,15 @@ import org.springframework.stereotype.Component;
 import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
-import com.github.mrstampy.gameboot.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
+import com.github.mrstampy.gameboot.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
+import com.github.mrstampy.gameboot.usersession.UserSessionLookup;
 
 /**
  * This implementation of a {@link GameBootProcessor} processes
@@ -95,6 +96,9 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
 
   @Autowired
   private MetricsHelper helper;
+
+  @Autowired
+  private UserSessionLookup lookup;
 
   /**
    * Post construct.
@@ -248,6 +252,8 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
     userRepo.save(user);
 
     log.info("Set user status for {} to DELETED", user.getUserName());
+
+    lookup.clearMDC();
 
     return success(user);
   }

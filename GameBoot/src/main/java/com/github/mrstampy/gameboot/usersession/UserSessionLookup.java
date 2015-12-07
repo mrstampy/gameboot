@@ -48,6 +48,7 @@ import java.util.function.Predicate;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -66,6 +67,12 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 public class UserSessionLookup {
 
   private static final String CACHED_SESSION_TIMER = "CachedSessionTimer";
+
+  /** The Logback mapped diagnostic context key for session id (sessionId). */
+  public static final String MDC_SESSION_ID = "sessionId";
+
+  /** The Logback mapped diagnostic context key for user id (userId). */
+  public static final String MDC_USER_ID = "userId";
 
   @Autowired
   private UserSessionAssist assist;
@@ -173,9 +180,20 @@ public class UserSessionLookup {
   public boolean hasSession(long id) {
     return activeSessions.hasSession(id);
   }
+  
+  /**
+   * Clear the logback mapped diagnostic context.
+   */
+  public void clearMDC() {
+    MDC.remove(MDC_SESSION_ID);
+    MDC.remove(MDC_USER_ID);
+  }
 
   private UserSession sessionCheck(UserSession session) {
     check(session == null, "No session");
+
+    MDC.put(MDC_SESSION_ID, session.getId().toString());
+    MDC.put(MDC_USER_ID, session.getUser().getId().toString());
 
     return session;
   }
