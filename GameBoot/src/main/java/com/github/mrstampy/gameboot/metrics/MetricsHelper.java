@@ -169,7 +169,7 @@ public class MetricsHelper {
   public Context startTimer(String key) {
     Timer t = timers.get(key);
 
-    if (t == null) throw new IllegalArgumentException("No timer for key " + key);
+    if (t == null) throw new GameBootRuntimeException("No timer for key " + key);
 
     Context ctx = t.time();
 
@@ -199,7 +199,7 @@ public class MetricsHelper {
   private Counter getCounter(String key) {
     Counter c = counters.get(key);
 
-    if (c == null) throw new IllegalArgumentException("No counter for key " + key);
+    if (c == null) throw new GameBootRuntimeException("No counter for key " + key);
 
     return c;
   }
