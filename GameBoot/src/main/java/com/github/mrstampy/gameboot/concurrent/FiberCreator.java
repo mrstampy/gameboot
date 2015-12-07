@@ -49,9 +49,12 @@ import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 import co.paralleluniverse.strands.SuspendableCallable;
 import co.paralleluniverse.strands.SuspendableRunnable;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class FiberCreator.
+ * The Class FiberCreator ensures the created fibers are using the schedulers
+ * defined in the system.
+ * 
+ * @see GameBootConcurrentConfiguration#fiberExecutorScheduler()
+ * @see GameBootConcurrentConfiguration#fiberForkJoinScheduler()
  */
 @Component
 public class FiberCreator {

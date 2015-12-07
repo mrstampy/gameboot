@@ -52,9 +52,11 @@ import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class GameBootProcessorAspect.
+ * An aspect that ensures all {@link GameBootProcessor} implementations are
+ * profiled.
+ * 
+ * @see MetricsHelper
  */
 @Aspect
 @Component

@@ -50,9 +50,8 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import co.paralleluniverse.springframework.boot.security.autoconfigure.web.FiberSecureSpringBootApplication;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class GameBoot.
+ * The Main Class for the GameBoot application.
  */
 @Configuration
 @EnableAutoConfiguration

@@ -46,9 +46,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
- * <a href=
+ * Data configuration for GameBoot. More from the <a href=
  * "http://docs.spring.io/spring-boot/docs/current/reference/html/howto-database-initialization.html#howto-initialize-a-database-using-spring-jdbc">
- * Data initialization</a>
+ * Spring Boot Documentation</a>
  * 
  * @author burton
  *

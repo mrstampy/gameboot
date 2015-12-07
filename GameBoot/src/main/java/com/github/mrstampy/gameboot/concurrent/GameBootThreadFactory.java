@@ -48,9 +48,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// TODO: Auto-generated Javadoc
 /**
- * A factory for creating GameBootThread objects.
+ * A configurable thread factory enabling full thread customization.
  */
 public class GameBootThreadFactory implements ThreadFactory {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

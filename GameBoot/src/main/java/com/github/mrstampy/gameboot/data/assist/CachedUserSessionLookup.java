@@ -55,9 +55,11 @@ import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class CachedUserSessionLookup.
+ * This class ensures {@link UserSession} lookups use the cacheable
+ * {@link UserSessionAssist#activeSessions()} method.
+ * {@link CachedUserSessionLookupTest} shows 3 - 7X faster lookups vs. database
+ * access, for a single session.
  */
 @Component
 public class CachedUserSessionLookup {
@@ -73,6 +75,12 @@ public class CachedUserSessionLookup {
 	@Autowired
 	private MetricsHelper helper;
 
+	/**
+	 * Post construct.
+	 *
+	 * @throws Exception
+	 *           the exception
+	 */
 	@PostConstruct
 	public void postConstruct() throws Exception {
 		helper.timer(CACHED_SESSION_TIMER, CachedUserSessionLookup.class, "cached", "session", "timer");
@@ -115,6 +123,8 @@ public class CachedUserSessionLookup {
 	 * @param id
 	 *          the id
 	 * @return the user session
+	 * @throws IllegalStateException
+	 *           the illegal state exception
 	 */
 	public UserSession expected(Long id) throws IllegalStateException {
 		Context ctx = helper.startTimer(CACHED_SESSION_TIMER);

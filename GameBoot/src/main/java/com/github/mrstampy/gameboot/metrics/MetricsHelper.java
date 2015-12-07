@@ -48,6 +48,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -57,9 +59,18 @@ import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.codahale.metrics.Timer.Context;;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class MetricsHelper.
+ * The {@link MetricRegistry} has an excellent naming standard which defines the
+ * class in which the metric is used and qualifiers describing its function.
+ * However for programmatic lookups it is a pain to reconstruct. This class
+ * manages {@link Timer}s, {@link Counter}s and {@link Gauge}s within GameBoot
+ * providing lookups with a simple alternate key. This negates the need to keep
+ * a reference to the metric object and provides a single interface to
+ * {@link #startTimer(String)}s and {@link #incr(String)} counters. Metrics must
+ * first be registered in one of {@link #counter(String, Class, String...)},
+ * {@link #timer(String, Class, String...)} or
+ * {@link #gauge(Gauge, String, Class, String...)}, usually in a
+ * {@link PostConstruct} block.
  */
 @Component
 public class MetricsHelper {
@@ -74,7 +85,7 @@ public class MetricsHelper {
 	private Map<String, Gauge<?>> gauges = new ConcurrentHashMap<>();
 
 	/**
-	 * Counter.
+	 * Counter register.
 	 *
 	 * @param key
 	 *          the key
@@ -84,11 +95,12 @@ public class MetricsHelper {
 	 *          the qualifiers
 	 */
 	public void counter(String key, Class<?> clz, String... qualifiers) {
+		if (counters.containsKey(key)) throw new IllegalStateException(key + " already exists");
 		counters.put(key, registry.counter(name(clz, qualifiers)));
 	}
 
 	/**
-	 * Timer.
+	 * Timer register.
 	 *
 	 * @param key
 	 *          the key
@@ -98,11 +110,12 @@ public class MetricsHelper {
 	 *          the qualifiers
 	 */
 	public void timer(String key, Class<?> clz, String... qualifiers) {
+		if (timers.containsKey(key)) throw new IllegalStateException(key + " already exists");
 		timers.put(key, registry.timer(name(clz, qualifiers)));
 	}
 
 	/**
-	 * Gauge.
+	 * Gauge register.
 	 *
 	 * @param gauge
 	 *          the gauge
@@ -114,6 +127,7 @@ public class MetricsHelper {
 	 *          the qualifiers
 	 */
 	public void gauge(Gauge<?> gauge, String key, Class<?> clz, String... qualifiers) {
+		if (gauges.containsKey(key)) throw new IllegalStateException(key + " already exists");
 		gauges.put(key, registry.register(name(clz, qualifiers), gauge));
 	}
 
@@ -162,7 +176,7 @@ public class MetricsHelper {
 	}
 
 	/**
-	 * Incr.
+	 * Incr counter.
 	 *
 	 * @param key
 	 *          the key
@@ -172,7 +186,7 @@ public class MetricsHelper {
 	}
 
 	/**
-	 * Decr.
+	 * Decr counter.
 	 *
 	 * @param key
 	 *          the key

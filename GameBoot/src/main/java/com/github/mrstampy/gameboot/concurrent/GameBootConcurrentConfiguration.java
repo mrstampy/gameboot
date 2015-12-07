@@ -63,9 +63,8 @@ import co.paralleluniverse.concurrent.util.CompletableScheduledExecutorService;
 import co.paralleluniverse.fibers.FiberExecutorScheduler;
 import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class GameBootConcurrentConfiguration.
+ * Concurrent configuration for GameBoot.
  */
 @Configuration
 @EnableScheduling

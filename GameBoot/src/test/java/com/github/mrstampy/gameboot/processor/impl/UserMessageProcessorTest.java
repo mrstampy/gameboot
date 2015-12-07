@@ -81,7 +81,6 @@ import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.messages.UserMessage.Function;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class UserMessageProcessorTest.
  */

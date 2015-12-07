@@ -61,14 +61,15 @@ import com.github.mrstampy.gameboot.data.entity.repository.UserRepository;
 import com.github.mrstampy.gameboot.data.entity.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class UserSessionAssist.
+ * The Class UserSessionAssist provides methods to look up {@link User}s and
+ * {@link UserSession}s from the database, failing with
+ * {@link IllegalStateException}s should the records not exist.
  */
 @Component
 public class UserSessionAssist {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-	
+
 	public static final String SESSIONS_CACHE = "sessions";
 
 	/** The Constant SESSIONS_KEY. */
@@ -102,7 +103,7 @@ public class UserSessionAssist {
 	}
 
 	/**
-	 * Creates the.
+	 * Creates the session.
 	 *
 	 * @param user
 	 *          the user
@@ -146,7 +147,7 @@ public class UserSessionAssist {
 	}
 
 	/**
-	 * Expected.
+	 * Expected session.
 	 *
 	 * @param userName
 	 *          the user name
@@ -169,7 +170,7 @@ public class UserSessionAssist {
 	}
 
 	/**
-	 * Expected.
+	 * Expected session.
 	 *
 	 * @param user
 	 *          the user
@@ -187,7 +188,7 @@ public class UserSessionAssist {
 	}
 
 	/**
-	 * Expected.
+	 * Expected session.
 	 *
 	 * @param id
 	 *          the id
@@ -204,29 +205,31 @@ public class UserSessionAssist {
 	}
 
 	/**
-	 * Checks for session.
+	 * Returns true if the session specified by the userName is active.
 	 *
 	 * @param userName
 	 *          the user name
 	 * @return true, if successful
+	 * @see ActiveSessions
 	 */
 	public boolean hasSession(String userName) {
 		return activeSessions.hasSession(userName);
 	}
 
 	/**
-	 * Checks for session.
+	 * Returns true if the session specified by the id is active.
 	 *
 	 * @param id
 	 *          the id
 	 * @return true, if successful
+	 * @see ActiveSessions
 	 */
 	public boolean hasSession(long id) {
 		return activeSessions.hasSession(id);
 	}
 
 	/**
-	 * Logout.
+	 * Logout, closing the session.
 	 *
 	 * @param userName
 	 *          the user name
@@ -243,7 +246,7 @@ public class UserSessionAssist {
 	}
 
 	/**
-	 * Logout.
+	 * Logout, closing the session.
 	 *
 	 * @param id
 	 *          the id
@@ -260,7 +263,10 @@ public class UserSessionAssist {
 	}
 
 	/**
-	 * Active sessions.
+	 * Returns a list of active sessions. This list is backed by cache as defined
+	 * by the {@link #SESSIONS_CACHE} cache region in ehcache.xml. Use
+	 * {@link CachedUserSessionLookup} in preference to this method when looking
+	 * up a specific {@link UserSession}.
 	 *
 	 * @return the list
 	 */
@@ -275,7 +281,9 @@ public class UserSessionAssist {
 	}
 
 	/**
-	 * Gets the sessions key.
+	 * Gets the sessions key, used as a key in the {@link #SESSIONS_CACHE} cache
+	 * for the {@link UserSession} list. Exposed as a property for the
+	 * {@link Cacheable} annotation on {@link #activeSessions()}
 	 *
 	 * @return the sessions key
 	 */
@@ -305,7 +313,7 @@ public class UserSessionAssist {
 	 * @param user
 	 *          the user
 	 */
-	protected void userCheck(User user) {
+	protected void userCheck(User user) throws IllegalStateException {
 		check(user == null, "null user");
 	}
 

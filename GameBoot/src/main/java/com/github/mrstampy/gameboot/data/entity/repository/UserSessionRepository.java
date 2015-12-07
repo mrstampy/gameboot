@@ -49,7 +49,6 @@ import org.springframework.data.repository.query.Param;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface UserSessionRepository.
  */

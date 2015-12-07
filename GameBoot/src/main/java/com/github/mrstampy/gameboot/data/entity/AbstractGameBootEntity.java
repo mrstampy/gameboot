@@ -52,9 +52,8 @@ import javax.persistence.TemporalType;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class AbstractGameBootEntity.
+ * The superclass for all GameBoot entities.
  */
 @MappedSuperclass
 public abstract class AbstractGameBootEntity {

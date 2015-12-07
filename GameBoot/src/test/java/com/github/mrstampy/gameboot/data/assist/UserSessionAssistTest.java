@@ -68,7 +68,6 @@ import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.entity.repository.UserRepository;
 import com.github.mrstampy.gameboot.data.entity.repository.UserSessionRepository;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class UserSessionAssistTest.
  */

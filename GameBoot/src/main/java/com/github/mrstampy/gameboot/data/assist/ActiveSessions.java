@@ -50,9 +50,10 @@ import org.springframework.stereotype.Component;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class ActiveSessions.
+ * Maintains a map in memory of usernames vs. active session ids for up-to-date
+ * checking of active sessions. This class is managed by
+ * {@link UserSessionAssist}.
  */
 @Component
 public class ActiveSessions {

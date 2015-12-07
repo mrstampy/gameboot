@@ -45,7 +45,7 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 /**
- * The Class SecurityConfiguration.
+ * Security configuration for GameBoot.
  */
 @Configuration
 @EnableWebSecurity

@@ -51,9 +51,9 @@ import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class AbstractGameBootProcessor.
+ * Abstract superclass for {@link GameBootProcessor}s ensuring processing occurs
+ * within a transaction.
  *
  * @param <M>
  *          the generic type
@@ -92,17 +92,19 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 	}
 
 	/**
-	 * Fail.
+	 * Fail, throwing a {@link RuntimeException} with the specified message. The
+	 * exception is caught by the {@link #process(AbstractGameBootMessage)}
+	 * implementation which after logging returns a failure response.
 	 *
 	 * @param message
 	 *          the message
 	 */
-	protected void fail(String message) {
+	protected void fail(String message) throws RuntimeException {
 		throw new RuntimeException(message);
 	}
 
 	/**
-	 * Success.
+	 * Returns an initialized success {@link Response}.
 	 *
 	 * @param message
 	 *          the message
@@ -113,7 +115,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 	}
 
 	/**
-	 * Failure.
+	 * Returns an initialized failure {@link Response}.
 	 *
 	 * @param message
 	 *          the message
@@ -124,7 +126,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 	}
 
 	/**
-	 * Validate.
+	 * Implement to perform any pre-processing validation.
 	 *
 	 * @param message
 	 *          the message
@@ -134,7 +136,8 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 	protected abstract void validate(M message) throws Exception;
 
 	/**
-	 * Process impl.
+	 * Implement to process the {@link #validate(AbstractGameBootMessage)}'ed
+	 * message.
 	 *
 	 * @param message
 	 *          the message

@@ -65,10 +65,11 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
+import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class UserMessageProcessor.
+ * This implementation of a {@link GameBootProcessor} processes
+ * {@link UserMessage}s for user creation, update, delete, login and logout.
  */
 @Component
 public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage> {

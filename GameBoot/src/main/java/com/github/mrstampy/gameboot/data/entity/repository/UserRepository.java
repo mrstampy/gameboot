@@ -46,7 +46,6 @@ import org.springframework.data.repository.query.Param;
 
 import com.github.mrstampy.gameboot.data.entity.User;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Interface UserRepository.
  */

@@ -45,9 +45,8 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class AbstractGameBootMessage.
+ * The superclass for all GameBoot JSON messages.
  */
 @JsonInclude(Include.NON_NULL)
 public abstract class AbstractGameBootMessage {

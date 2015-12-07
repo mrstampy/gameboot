@@ -42,9 +42,10 @@ package com.github.mrstampy.gameboot.messages;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-// TODO: Auto-generated Javadoc
 /**
- * The Class Response.
+ * The response to (intended) all GameBoot messages. {@link #getResponseCode()}
+ * defines the type of message while the response can be null, strings, JSON, or
+ * a mix of strings and JSON.
  */
 public class Response extends AbstractGameBootMessage {
 

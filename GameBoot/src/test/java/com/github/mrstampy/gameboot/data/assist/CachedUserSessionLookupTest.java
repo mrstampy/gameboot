@@ -71,7 +71,6 @@ import com.github.mrstampy.gameboot.data.entity.repository.UserRepository;
 import com.github.mrstampy.gameboot.data.entity.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
-// TODO: Auto-generated Javadoc
 /**
  * The Class CachedUserSessionLookupTest.
  */
