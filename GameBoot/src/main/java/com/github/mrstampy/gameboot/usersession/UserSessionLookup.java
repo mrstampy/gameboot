@@ -180,7 +180,7 @@ public class UserSessionLookup {
   public boolean hasSession(long id) {
     return activeSessions.hasSession(id);
   }
-  
+
   /**
    * Clear the logback mapped diagnostic context.
    */

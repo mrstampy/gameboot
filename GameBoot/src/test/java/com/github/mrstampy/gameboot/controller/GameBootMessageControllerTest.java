@@ -42,8 +42,9 @@ package com.github.mrstampy.gameboot.controller;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
+import java.util.Map;
 
 import javax.transaction.Transactional;
 
@@ -57,7 +58,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.TestConfiguration;
-import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.Response;
@@ -81,7 +81,7 @@ public class GameBootMessageControllerTest {
   @Autowired
   private UserRepository userRepo;
 
-  private User user;
+  private Long userId;
 
   /**
    * After.
@@ -92,9 +92,9 @@ public class GameBootMessageControllerTest {
   @After
   @Transactional
   public void after() throws Exception {
-    if (user != null) userRepo.delete(user);
+    if (userId != null) userRepo.delete(userId);
 
-    user = null;
+    userId = null;
   }
 
   /**
@@ -110,15 +110,19 @@ public class GameBootMessageControllerTest {
     msg.setFunction(Function.CREATE);
     msg.setNewPassword("password");
 
-    Response r = controller.process(mapper.writeValueAsString(msg));
+    String s = controller.process(mapper.writeValueAsString(msg));
+    assertNotNull(s);
+
+    Response r = mapper.readValue(s, Response.class);
     Object[] response = r.getResponse();
 
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
     assertNotNull(response);
     assertEquals(1, response.length);
-    assertTrue(response[0] instanceof User);
 
-    this.user = (User) response[0];
+    Map<?, ?> blah = (Map<?, ?>) response[0];
+
+    this.userId = Long.parseLong(blah.get("id").toString());
   }
 
   /**

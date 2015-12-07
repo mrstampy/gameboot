@@ -54,7 +54,13 @@ public abstract class AbstractGameBootMessage {
   private Integer id;
 
   private String type;
-  
+
+  /**
+   * Instantiates a new abstract game boot message.
+   *
+   * @param type
+   *          the type
+   */
   protected AbstractGameBootMessage(String type) {
     setType(type);
   }

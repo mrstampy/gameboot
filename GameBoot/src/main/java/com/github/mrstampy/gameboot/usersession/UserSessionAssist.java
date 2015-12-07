@@ -268,8 +268,8 @@ public class UserSessionAssist {
   /**
    * Returns a list of active sessions. This list is backed by cache as defined
    * by the {@link #SESSIONS_CACHE} cache region in ehcache.xml. Use
-   * {@link UserSessionLookup} in preference to this method when looking
-   * up a specific {@link UserSession}.
+   * {@link UserSessionLookup} in preference to this method when looking up a
+   * specific {@link UserSession}.
    *
    * @return the list
    */

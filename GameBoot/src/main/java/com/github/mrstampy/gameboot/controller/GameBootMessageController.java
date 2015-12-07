@@ -58,7 +58,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
-import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 
@@ -93,6 +92,7 @@ public class GameBootMessageController {
   @Autowired
   private MessageClassFinder finder;
 
+  /** The map. */
   protected Map<String, GameBootProcessor<?>> map = new ConcurrentHashMap<>();
 
   /**
@@ -121,7 +121,7 @@ public class GameBootMessageController {
    *           the exception
    */
   @SuppressWarnings("unchecked")
-  public <AGBM extends AbstractGameBootMessage> Response process(String message) throws Exception {
+  public <AGBM extends AbstractGameBootMessage> String process(String message) throws Exception {
     helper.incr(MESSAGE_COUNTER);
 
     if (isEmpty(message)) fail("Empty message");
@@ -135,7 +135,7 @@ public class GameBootMessageController {
       fail("Unrecognized message");
     }
 
-    return processor.process(msg);
+    return mapper.writeValueAsString(processor.process(msg));
   }
 
   /**

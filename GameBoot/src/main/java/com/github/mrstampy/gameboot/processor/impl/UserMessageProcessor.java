@@ -116,6 +116,11 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
     helper.counter(USER_UPDATE_COUNTER, UserMessageProcessor.class, "update", "counter");
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.processor.GameBootProcessor#getType()
+   */
   @Override
   public String getType() {
     return UserMessage.TYPE;
