@@ -98,6 +98,8 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 	 *
 	 * @param message
 	 *          the message
+	 * @throws RuntimeException
+	 *           the runtime exception
 	 */
 	protected void fail(String message) throws RuntimeException {
 		throw new RuntimeException(message);

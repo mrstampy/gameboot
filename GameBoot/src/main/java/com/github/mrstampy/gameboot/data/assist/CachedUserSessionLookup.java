@@ -53,6 +53,7 @@ import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
+import com.github.mrstampy.gameboot.data.entity.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 /**
@@ -75,6 +76,9 @@ public class CachedUserSessionLookup {
 	@Autowired
 	private MetricsHelper helper;
 
+	@Autowired
+	private UserSessionRepository repository;
+
 	/**
 	 * Post construct.
 	 *
@@ -87,7 +91,8 @@ public class CachedUserSessionLookup {
 	}
 
 	/**
-	 * Expected.
+	 * Return an expected session for the user, falling back to database retrieval
+	 * should the session not yet exist in cache.
 	 *
 	 * @param userName
 	 *          the user name
@@ -109,16 +114,16 @@ public class CachedUserSessionLookup {
 
 			Optional<UserSession> o = find(sessions, us -> us.getUser().getUserName().equals(userName));
 
-			check(!o.isPresent(), noSession);
-
-			return o.get();
+			// may not yet be in the cached list
+			return o.isPresent() ? o.get() : sessionCheck(repository.findByUserNameAndEndedIsNull(userName));
 		} finally {
 			ctx.stop();
 		}
 	}
 
 	/**
-	 * Expected.
+	 * Return an expected session for the given id, falling back to database
+	 * retrieval should the session not yet exist in cache.
 	 *
 	 * @param id
 	 *          the id
@@ -140,9 +145,8 @@ public class CachedUserSessionLookup {
 
 			Optional<UserSession> o = find(sessions, us -> us.getId().equals(id));
 
-			check(!o.isPresent(), noSession);
-
-			return o.get();
+			// may not yet be in the cached list
+			return o.isPresent() ? o.get() : sessionCheck(repository.findByIdAndEndedIsNull(id));
 		} finally {
 			ctx.stop();
 		}
@@ -168,6 +172,12 @@ public class CachedUserSessionLookup {
 	 */
 	public boolean hasSession(long id) {
 		return activeSessions.hasSession(id);
+	}
+
+	private UserSession sessionCheck(UserSession session) {
+		check(session == null, "No session");
+
+		return session;
 	}
 
 	private Optional<UserSession> find(List<UserSession> sessions, Predicate<UserSession> p) {

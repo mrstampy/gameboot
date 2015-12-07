@@ -70,6 +70,7 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 public class UserSessionAssist {
 	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+	/** The Constant SESSIONS_CACHE. */
 	public static final String SESSIONS_CACHE = "sessions";
 
 	/** The Constant SESSIONS_KEY. */
@@ -312,6 +313,8 @@ public class UserSessionAssist {
 	 *
 	 * @param user
 	 *          the user
+	 * @throws IllegalStateException
+	 *           the illegal state exception
 	 */
 	protected void userCheck(User user) throws IllegalStateException {
 		check(user == null, "null user");
