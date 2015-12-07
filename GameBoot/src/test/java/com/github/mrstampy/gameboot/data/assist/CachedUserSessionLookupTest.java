@@ -83,6 +83,8 @@ public class CachedUserSessionLookupTest {
 
 	private static final String USER_NAME = "testuser";
 
+	private static final int METRICS_ITR = 100;
+
 	@Autowired
 	private CachedUserSessionLookup lookup;
 
@@ -171,7 +173,7 @@ public class CachedUserSessionLookupTest {
 	public void metricsWithSessionId() throws Exception {
 		generateUncachedStats();
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < METRICS_ITR; i++) {
 			lookup.expected(sessionId);
 		}
 
@@ -189,7 +191,7 @@ public class CachedUserSessionLookupTest {
 	public void metricsWithUserName() throws Exception {
 		generateUncachedStats();
 
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < METRICS_ITR; i++) {
 			lookup.expected(USER_NAME);
 		}
 
@@ -200,7 +202,7 @@ public class CachedUserSessionLookupTest {
 	 * Generate uncached stats.
 	 */
 	protected void generateUncachedStats() {
-		for (int i = 0; i < 5; i++) {
+		for (int i = 0; i < METRICS_ITR; i++) {
 			cache.clear();
 			assist.activeSessions();
 		}
