@@ -54,187 +54,187 @@ import com.github.mrstampy.gameboot.data.entity.User.UserState;
  */
 public class UserMessage extends AbstractGameBootMessage {
 
-	private String userName;
+  private String userName;
 
-	private String newPassword;
+  private String newPassword;
 
-	private String oldPassword;
+  private String oldPassword;
 
-	private String firstName;
+  private String firstName;
 
-	private String lastName;
+  private String lastName;
 
-	private String email;
+  private String email;
 
-	private UserState state;
+  private UserState state;
 
-	@JsonFormat(shape = Shape.STRING, pattern = "yyyy/MM/dd")
-	private Date dob;
+  @JsonFormat(shape = Shape.STRING, pattern = "yyyy/MM/dd")
+  private Date dob;
 
-	/**
-	 * The Enum Function.
-	 */
-	public enum Function {
+  /**
+   * The Enum Function.
+   */
+  public enum Function {
 
-		/** The create. */
-		CREATE,
-		/** The update. */
-		UPDATE,
-		/** The delete. */
-		DELETE,
-		/** The login. */
-		LOGIN,
-		/** The logout. */
-		LOGOUT
-	}
+    /** The create. */
+    CREATE,
+    /** The update. */
+    UPDATE,
+    /** The delete. */
+    DELETE,
+    /** The login. */
+    LOGIN,
+    /** The logout. */
+    LOGOUT
+  }
 
-	private Function function;
+  private Function function;
 
-	/**
-	 * Gets the user name.
-	 *
-	 * @return the user name
-	 */
-	public String getUserName() {
-		return userName;
-	}
+  /**
+   * Gets the user name.
+   *
+   * @return the user name
+   */
+  public String getUserName() {
+    return userName;
+  }
 
-	/**
-	 * Sets the user name.
-	 *
-	 * @param userName
-	 *          the new user name
-	 */
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
+  /**
+   * Sets the user name.
+   *
+   * @param userName
+   *          the new user name
+   */
+  public void setUserName(String userName) {
+    this.userName = userName;
+  }
 
-	/**
-	 * Gets the new password.
-	 *
-	 * @return the new password
-	 */
-	public String getNewPassword() {
-		return newPassword;
-	}
+  /**
+   * Gets the new password.
+   *
+   * @return the new password
+   */
+  public String getNewPassword() {
+    return newPassword;
+  }
 
-	/**
-	 * Sets the new password.
-	 *
-	 * @param password
-	 *          the new new password
-	 */
-	public void setNewPassword(String password) {
-		this.newPassword = password;
-	}
+  /**
+   * Sets the new password.
+   *
+   * @param password
+   *          the new new password
+   */
+  public void setNewPassword(String password) {
+    this.newPassword = password;
+  }
 
-	/**
-	 * Gets the first name.
-	 *
-	 * @return the first name
-	 */
-	public String getFirstName() {
-		return firstName;
-	}
+  /**
+   * Gets the first name.
+   *
+   * @return the first name
+   */
+  public String getFirstName() {
+    return firstName;
+  }
 
-	/**
-	 * Sets the first name.
-	 *
-	 * @param firstName
-	 *          the new first name
-	 */
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
+  /**
+   * Sets the first name.
+   *
+   * @param firstName
+   *          the new first name
+   */
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
 
-	/**
-	 * Gets the last name.
-	 *
-	 * @return the last name
-	 */
-	public String getLastName() {
-		return lastName;
-	}
+  /**
+   * Gets the last name.
+   *
+   * @return the last name
+   */
+  public String getLastName() {
+    return lastName;
+  }
 
-	/**
-	 * Sets the last name.
-	 *
-	 * @param lastName
-	 *          the new last name
-	 */
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
+  /**
+   * Sets the last name.
+   *
+   * @param lastName
+   *          the new last name
+   */
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
 
-	/**
-	 * Gets the dob.
-	 *
-	 * @return the dob
-	 */
-	public Date getDob() {
-		return dob;
-	}
+  /**
+   * Gets the dob.
+   *
+   * @return the dob
+   */
+  public Date getDob() {
+    return dob;
+  }
 
-	/**
-	 * Sets the dob.
-	 *
-	 * @param dob
-	 *          the new dob
-	 */
-	public void setDob(Date dob) {
-		this.dob = dob;
-	}
+  /**
+   * Sets the dob.
+   *
+   * @param dob
+   *          the new dob
+   */
+  public void setDob(Date dob) {
+    this.dob = dob;
+  }
 
-	/**
-	 * Gets the email.
-	 *
-	 * @return the email
-	 */
-	public String getEmail() {
-		return email;
-	}
+  /**
+   * Gets the email.
+   *
+   * @return the email
+   */
+  public String getEmail() {
+    return email;
+  }
 
-	/**
-	 * Sets the email.
-	 *
-	 * @param email
-	 *          the new email
-	 */
-	public void setEmail(String email) {
-		this.email = email;
-	}
+  /**
+   * Sets the email.
+   *
+   * @param email
+   *          the new email
+   */
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-	/**
-	 * Gets the function.
-	 *
-	 * @return the function
-	 */
-	public Function getFunction() {
-		return function;
-	}
+  /**
+   * Gets the function.
+   *
+   * @return the function
+   */
+  public Function getFunction() {
+    return function;
+  }
 
-	/**
-	 * Sets the function.
-	 *
-	 * @param function
-	 *          the new function
-	 */
-	public void setFunction(Function function) {
-		this.function = function;
-	}
+  /**
+   * Sets the function.
+   *
+   * @param function
+   *          the new function
+   */
+  public void setFunction(Function function) {
+    this.function = function;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage#toString()
-	 */
-	@Override
-	public String toString() {
-		// no passwords in teh logz
-		ToStringBuilder tsb = new ToStringBuilder(this);
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage#toString()
+   */
+  @Override
+  public String toString() {
+    // no passwords in teh logz
+    ToStringBuilder tsb = new ToStringBuilder(this);
 
-		//@formatter:off
+    //@formatter:off
 		tsb
 			.append(getUserName())
 			.append(getFunction())
@@ -245,44 +245,44 @@ public class UserMessage extends AbstractGameBootMessage {
 			.append(getState());
 		//@formatter:on
 
-		return tsb.toString();
-	}
+    return tsb.toString();
+  }
 
-	/**
-	 * Gets the old password.
-	 *
-	 * @return the old password
-	 */
-	public String getOldPassword() {
-		return oldPassword;
-	}
+  /**
+   * Gets the old password.
+   *
+   * @return the old password
+   */
+  public String getOldPassword() {
+    return oldPassword;
+  }
 
-	/**
-	 * Sets the old password.
-	 *
-	 * @param oldPassword
-	 *          the new old password
-	 */
-	public void setOldPassword(String oldPassword) {
-		this.oldPassword = oldPassword;
-	}
+  /**
+   * Sets the old password.
+   *
+   * @param oldPassword
+   *          the new old password
+   */
+  public void setOldPassword(String oldPassword) {
+    this.oldPassword = oldPassword;
+  }
 
-	/**
-	 * Gets the state.
-	 *
-	 * @return the state
-	 */
-	public UserState getState() {
-		return state;
-	}
+  /**
+   * Gets the state.
+   *
+   * @return the state
+   */
+  public UserState getState() {
+    return state;
+  }
 
-	/**
-	 * Sets the state.
-	 *
-	 * @param state
-	 *          the new state
-	 */
-	public void setState(UserState state) {
-		this.state = state;
-	}
+  /**
+   * Sets the state.
+   *
+   * @param state
+   *          the new state
+   */
+  public void setState(UserState state) {
+    this.state = state;
+  }
 }

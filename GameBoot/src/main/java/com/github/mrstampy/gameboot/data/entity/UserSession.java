@@ -57,48 +57,48 @@ import javax.persistence.TemporalType;
 @Table
 public class UserSession extends AbstractGameBootEntity {
 
-	@ManyToOne(fetch = FetchType.LAZY, optional = false)
-	private User user;
+  @ManyToOne(fetch = FetchType.LAZY, optional = false)
+  private User user;
 
-	@Column
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date ended;
+  @Column
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date ended;
 
-	/**
-	 * Gets the user.
-	 *
-	 * @return the user
-	 */
-	public User getUser() {
-		return user;
-	}
+  /**
+   * Gets the user.
+   *
+   * @return the user
+   */
+  public User getUser() {
+    return user;
+  }
 
-	/**
-	 * Sets the user.
-	 *
-	 * @param user
-	 *          the new user
-	 */
-	public void setUser(User user) {
-		this.user = user;
-	}
+  /**
+   * Sets the user.
+   *
+   * @param user
+   *          the new user
+   */
+  public void setUser(User user) {
+    this.user = user;
+  }
 
-	/**
-	 * Gets the ended.
-	 *
-	 * @return the ended
-	 */
-	public Date getEnded() {
-		return ended;
-	}
+  /**
+   * Gets the ended.
+   *
+   * @return the ended
+   */
+  public Date getEnded() {
+    return ended;
+  }
 
-	/**
-	 * Sets the ended.
-	 *
-	 * @param ended
-	 *          the new ended
-	 */
-	public void setEnded(Date ended) {
-		this.ended = ended;
-	}
+  /**
+   * Sets the ended.
+   *
+   * @param ended
+   *          the new ended
+   */
+  public void setEnded(Date ended) {
+    this.ended = ended;
+  }
 }

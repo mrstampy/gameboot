@@ -59,94 +59,94 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
  *          the generic type
  */
 public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessage> implements GameBootProcessor<M> {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * com.github.mrstampy.gameboot.processor.GameBootProcessor#process(com.github
-	 * .mrstampy.gameboot.messages.AbstractGameBootMessage)
-	 */
-	@Transactional
-	@Override
-	public final Response process(M message) throws Exception {
-		log.debug("Processing message {}", message);
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.processor.GameBootProcessor#process(com.github
+   * .mrstampy.gameboot.messages.AbstractGameBootMessage)
+   */
+  @Transactional
+  @Override
+  public final Response process(M message) throws Exception {
+    log.debug("Processing message {}", message);
 
-		if (message == null) fail("Null message");
+    if (message == null) fail("Null message");
 
-		try {
-			validate(message);
+    try {
+      validate(message);
 
-			Response response = processImpl(message);
-			response.setId(message.getId());
+      Response response = processImpl(message);
+      response.setId(message.getId());
 
-			log.debug("Created response {} for {}", response, message);
+      log.debug("Created response {} for {}", response, message);
 
-			return response;
-		} catch (Exception e) {
-			log.error("Error in processing {}", message, e);
+      return response;
+    } catch (Exception e) {
+      log.error("Error in processing {}", message, e);
 
-			return new Response(ResponseCode.FAILURE, e.getMessage());
-		}
-	}
+      return new Response(ResponseCode.FAILURE, e.getMessage());
+    }
+  }
 
-	/**
-	 * Fail, throwing a {@link RuntimeException} with the specified message. The
-	 * exception is caught by the {@link #process(AbstractGameBootMessage)}
-	 * implementation which after logging returns a failure response.
-	 *
-	 * @param message
-	 *          the message
-	 * @throws RuntimeException
-	 *           the runtime exception
-	 */
-	protected void fail(String message) throws RuntimeException {
-		throw new RuntimeException(message);
-	}
+  /**
+   * Fail, throwing a {@link RuntimeException} with the specified message. The
+   * exception is caught by the {@link #process(AbstractGameBootMessage)}
+   * implementation which after logging returns a failure response.
+   *
+   * @param message
+   *          the message
+   * @throws RuntimeException
+   *           the runtime exception
+   */
+  protected void fail(String message) throws RuntimeException {
+    throw new RuntimeException(message);
+  }
 
-	/**
-	 * Returns an initialized success {@link Response}.
-	 *
-	 * @param message
-	 *          the message
-	 * @return the response
-	 */
-	protected Response success(Object... message) {
-		return new Response(ResponseCode.SUCCESS, message);
-	}
+  /**
+   * Returns an initialized success {@link Response}.
+   *
+   * @param message
+   *          the message
+   * @return the response
+   */
+  protected Response success(Object... message) {
+    return new Response(ResponseCode.SUCCESS, message);
+  }
 
-	/**
-	 * Returns an initialized failure {@link Response}.
-	 *
-	 * @param message
-	 *          the message
-	 * @return the response
-	 */
-	protected Response failure(Object... message) {
-		return new Response(ResponseCode.FAILURE, message);
-	}
+  /**
+   * Returns an initialized failure {@link Response}.
+   *
+   * @param message
+   *          the message
+   * @return the response
+   */
+  protected Response failure(Object... message) {
+    return new Response(ResponseCode.FAILURE, message);
+  }
 
-	/**
-	 * Implement to perform any pre-processing validation.
-	 *
-	 * @param message
-	 *          the message
-	 * @throws Exception
-	 *           the exception
-	 */
-	protected abstract void validate(M message) throws Exception;
+  /**
+   * Implement to perform any pre-processing validation.
+   *
+   * @param message
+   *          the message
+   * @throws Exception
+   *           the exception
+   */
+  protected abstract void validate(M message) throws Exception;
 
-	/**
-	 * Implement to process the {@link #validate(AbstractGameBootMessage)}'ed
-	 * message.
-	 *
-	 * @param message
-	 *          the message
-	 * @return the response
-	 * @throws Exception
-	 *           the exception
-	 */
-	protected abstract Response processImpl(M message) throws Exception;
+  /**
+   * Implement to process the {@link #validate(AbstractGameBootMessage)}'ed
+   * message.
+   *
+   * @param message
+   *          the message
+   * @return the response
+   * @throws Exception
+   *           the exception
+   */
+  protected abstract Response processImpl(M message) throws Exception;
 
 }

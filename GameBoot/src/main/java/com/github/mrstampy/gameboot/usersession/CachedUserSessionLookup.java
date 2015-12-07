@@ -65,126 +65,126 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 @Component
 public class CachedUserSessionLookup {
 
-	private static final String CACHED_SESSION_TIMER = "CachedSessionTimer";
+  private static final String CACHED_SESSION_TIMER = "CachedSessionTimer";
 
-	@Autowired
-	private UserSessionAssist assist;
+  @Autowired
+  private UserSessionAssist assist;
 
-	@Autowired
-	private ActiveSessions activeSessions;
+  @Autowired
+  private ActiveSessions activeSessions;
 
-	@Autowired
-	private MetricsHelper helper;
+  @Autowired
+  private MetricsHelper helper;
 
-	@Autowired
-	private UserSessionRepository repository;
+  @Autowired
+  private UserSessionRepository repository;
 
-	/**
-	 * Post construct.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@PostConstruct
-	public void postConstruct() throws Exception {
-		helper.timer(CACHED_SESSION_TIMER, CachedUserSessionLookup.class, "cached", "session", "timer");
-	}
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    helper.timer(CACHED_SESSION_TIMER, CachedUserSessionLookup.class, "cached", "session", "timer");
+  }
 
-	/**
-	 * Return an expected session for the user, falling back to database retrieval
-	 * should the session not yet exist in cache.
-	 *
-	 * @param userName
-	 *          the user name
-	 * @return the user session
-	 * @throws IllegalStateException
-	 *           the illegal state exception
-	 */
-	public UserSession expected(String userName) throws IllegalStateException {
-		Context ctx = helper.startTimer(CACHED_SESSION_TIMER);
+  /**
+   * Return an expected session for the user, falling back to database retrieval
+   * should the session not yet exist in cache.
+   *
+   * @param userName
+   *          the user name
+   * @return the user session
+   * @throws IllegalStateException
+   *           the illegal state exception
+   */
+  public UserSession expected(String userName) throws IllegalStateException {
+    Context ctx = helper.startTimer(CACHED_SESSION_TIMER);
 
-		try {
-			String noSession = "No session for " + userName;
+    try {
+      String noSession = "No session for " + userName;
 
-			check(isEmpty(userName), "No username specified");
+      check(isEmpty(userName), "No username specified");
 
-			check(!activeSessions.hasSession(userName), noSession);
+      check(!activeSessions.hasSession(userName), noSession);
 
-			List<UserSession> sessions = assist.activeSessions();
+      List<UserSession> sessions = assist.activeSessions();
 
-			Optional<UserSession> o = find(sessions, us -> us.getUser().getUserName().equals(userName));
+      Optional<UserSession> o = find(sessions, us -> us.getUser().getUserName().equals(userName));
 
-			// may not yet be in the cached list
-			return o.isPresent() ? o.get() : sessionCheck(repository.findOpenSession(userName));
-		} finally {
-			ctx.stop();
-		}
-	}
+      // may not yet be in the cached list
+      return o.isPresent() ? o.get() : sessionCheck(repository.findOpenSession(userName));
+    } finally {
+      ctx.stop();
+    }
+  }
 
-	/**
-	 * Return an expected session for the given id, falling back to database
-	 * retrieval should the session not yet exist in cache.
-	 *
-	 * @param id
-	 *          the id
-	 * @return the user session
-	 * @throws IllegalStateException
-	 *           the illegal state exception
-	 */
-	public UserSession expected(Long id) throws IllegalStateException {
-		Context ctx = helper.startTimer(CACHED_SESSION_TIMER);
+  /**
+   * Return an expected session for the given id, falling back to database
+   * retrieval should the session not yet exist in cache.
+   *
+   * @param id
+   *          the id
+   * @return the user session
+   * @throws IllegalStateException
+   *           the illegal state exception
+   */
+  public UserSession expected(Long id) throws IllegalStateException {
+    Context ctx = helper.startTimer(CACHED_SESSION_TIMER);
 
-		try {
-			String noSession = "No session for " + id;
+    try {
+      String noSession = "No session for " + id;
 
-			check(id == null, "No session id specified");
+      check(id == null, "No session id specified");
 
-			check(!activeSessions.hasSession(id), noSession);
+      check(!activeSessions.hasSession(id), noSession);
 
-			List<UserSession> sessions = assist.activeSessions();
+      List<UserSession> sessions = assist.activeSessions();
 
-			Optional<UserSession> o = find(sessions, us -> us.getId().equals(id));
+      Optional<UserSession> o = find(sessions, us -> us.getId().equals(id));
 
-			// may not yet be in the cached list
-			return o.isPresent() ? o.get() : sessionCheck(repository.findOpenSession(id));
-		} finally {
-			ctx.stop();
-		}
-	}
+      // may not yet be in the cached list
+      return o.isPresent() ? o.get() : sessionCheck(repository.findOpenSession(id));
+    } finally {
+      ctx.stop();
+    }
+  }
 
-	/**
-	 * Checks for session.
-	 *
-	 * @param userName
-	 *          the user name
-	 * @return true, if successful
-	 */
-	public boolean hasSession(String userName) {
-		return activeSessions.hasSession(userName);
-	}
+  /**
+   * Checks for session.
+   *
+   * @param userName
+   *          the user name
+   * @return true, if successful
+   */
+  public boolean hasSession(String userName) {
+    return activeSessions.hasSession(userName);
+  }
 
-	/**
-	 * Checks for session.
-	 *
-	 * @param id
-	 *          the id
-	 * @return true, if successful
-	 */
-	public boolean hasSession(long id) {
-		return activeSessions.hasSession(id);
-	}
+  /**
+   * Checks for session.
+   *
+   * @param id
+   *          the id
+   * @return true, if successful
+   */
+  public boolean hasSession(long id) {
+    return activeSessions.hasSession(id);
+  }
 
-	private UserSession sessionCheck(UserSession session) {
-		check(session == null, "No session");
+  private UserSession sessionCheck(UserSession session) {
+    check(session == null, "No session");
 
-		return session;
-	}
+    return session;
+  }
 
-	private Optional<UserSession> find(List<UserSession> sessions, Predicate<UserSession> p) {
-		return sessions.stream().filter(p).findFirst();
-	}
+  private Optional<UserSession> find(List<UserSession> sessions, Predicate<UserSession> p) {
+    return sessions.stream().filter(p).findFirst();
+  }
 
-	private void check(boolean condition, String msg) {
-		if (condition) throw new IllegalStateException(msg);
-	}
+  private void check(boolean condition, String msg) {
+    if (condition) throw new IllegalStateException(msg);
+  }
 }

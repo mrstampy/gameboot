@@ -62,14 +62,14 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
 @EnableWebMvc
 public class GameBoot {
 
-	/**
-	 * The main method.
-	 *
-	 * @param args
-	 *          the arguments
-	 */
-	public static void main(String[] args) {
-		SpringApplication.run(GameBoot.class, args);
-	}
+  /**
+   * The main method.
+   *
+   * @param args
+   *          the arguments
+   */
+  public static void main(String[] args) {
+    SpringApplication.run(GameBoot.class, args);
+  }
 
 }

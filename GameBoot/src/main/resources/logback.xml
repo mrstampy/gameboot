@@ -2,11 +2,11 @@
 
 <!-- 
 =================================================
-	Logback configuration for GameBoot.
-	
-	http://logback.qos.ch/manual/configuration.html.
-	
-	@see src/main/resources/application.properties
+  Logback configuration for GameBoot.
+  
+  http://logback.qos.ch/manual/configuration.html.
+  
+  @see src/main/resources/application.properties
 =================================================
 #
 # Copyright (C) 2015 Burton Alexander
@@ -28,38 +28,38 @@
 
 <configuration scan="true">
 
-	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
-			</pattern>
-		</encoder>
-	</appender>
-	
-	<appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-	    
-		<file>gameboot.log</file>
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+      </pattern>
+    </encoder>
+  </appender>
+  
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+      
+    <file>gameboot.log</file>
 
-		<rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
-			<fileNamePattern>gameboot.%i.log.zip</fileNamePattern>
-			<minIndex>1</minIndex>
-			<maxIndex>10</maxIndex>
-		</rollingPolicy>
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <fileNamePattern>gameboot.%i.log.zip</fileNamePattern>
+      <minIndex>1</minIndex>
+      <maxIndex>10</maxIndex>
+    </rollingPolicy>
 
-		<triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
-			<maxFileSize>50MB</maxFileSize>
-		</triggeringPolicy>
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <maxFileSize>50MB</maxFileSize>
+    </triggeringPolicy>
 
-		<encoder>
-			<pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
-		</encoder>
-	</appender>
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+    </encoder>
+  </appender>
 
-	<logger name="com.github.mrstampy.gameboot" level="debug" />
+  <logger name="com.github.mrstampy.gameboot" level="debug" />
 
-	<root level="warn">
-		<appender-ref ref="CONSOLE" />
-		<appender-ref ref="FILE" />
-	</root>
+  <root level="warn">
+    <appender-ref ref="CONSOLE" />
+    <appender-ref ref="FILE" />
+  </root>
 
 </configuration>
 

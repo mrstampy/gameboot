@@ -58,80 +58,80 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 @Component
 public class ActiveSessions {
 
-	private static final String ACTIVE_SESSIONS = "ActiveSessions";
+  private static final String ACTIVE_SESSIONS = "ActiveSessions";
 
-	private Map<String, Long> sessions = new ConcurrentHashMap<>();
+  private Map<String, Long> sessions = new ConcurrentHashMap<>();
 
-	@Autowired
-	private MetricsHelper helper;
+  @Autowired
+  private MetricsHelper helper;
 
-	/**
-	 * Post construct.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	public void postConstruct() throws Exception {
-		helper.gauge(() -> sessions.size(), ACTIVE_SESSIONS, ActiveSessions.class, "active", "sessions");
-	}
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  public void postConstruct() throws Exception {
+    helper.gauge(() -> sessions.size(), ACTIVE_SESSIONS, ActiveSessions.class, "active", "sessions");
+  }
 
-	/**
-	 * Adds the session.
-	 *
-	 * @param session
-	 *          the session
-	 */
-	public void addSession(UserSession session) {
-		sessions.put(session.getUser().getUserName(), session.getId());
-	}
+  /**
+   * Adds the session.
+   *
+   * @param session
+   *          the session
+   */
+  public void addSession(UserSession session) {
+    sessions.put(session.getUser().getUserName(), session.getId());
+  }
 
-	/**
-	 * Checks for session.
-	 *
-	 * @param userName
-	 *          the user name
-	 * @return true, if successful
-	 */
-	public boolean hasSession(String userName) {
-		return sessions.containsKey(userName);
-	}
+  /**
+   * Checks for session.
+   *
+   * @param userName
+   *          the user name
+   * @return true, if successful
+   */
+  public boolean hasSession(String userName) {
+    return sessions.containsKey(userName);
+  }
 
-	/**
-	 * Checks for session.
-	 *
-	 * @param id
-	 *          the id
-	 * @return true, if successful
-	 */
-	public boolean hasSession(long id) {
-		return sessions.containsValue(id);
-	}
+  /**
+   * Checks for session.
+   *
+   * @param id
+   *          the id
+   * @return true, if successful
+   */
+  public boolean hasSession(long id) {
+    return sessions.containsValue(id);
+  }
 
-	/**
-	 * Removes the session.
-	 *
-	 * @param session
-	 *          the session
-	 */
-	public void removeSession(UserSession session) {
-		sessions.remove(session.getUser().getUserName());
-	}
+  /**
+   * Removes the session.
+   *
+   * @param session
+   *          the session
+   */
+  public void removeSession(UserSession session) {
+    sessions.remove(session.getUser().getUserName());
+  }
 
-	/**
-	 * Gets the session ids.
-	 *
-	 * @return the session ids
-	 */
-	public Collection<Long> getSessionIds() {
-		return sessions.values();
-	}
+  /**
+   * Gets the session ids.
+   *
+   * @return the session ids
+   */
+  public Collection<Long> getSessionIds() {
+    return sessions.values();
+  }
 
-	/**
-	 * Size.
-	 *
-	 * @return the int
-	 */
-	public int size() {
-		return sessions.size();
-	}
+  /**
+   * Size.
+   *
+   * @return the int
+   */
+  public int size() {
+    return sessions.size();
+  }
 }

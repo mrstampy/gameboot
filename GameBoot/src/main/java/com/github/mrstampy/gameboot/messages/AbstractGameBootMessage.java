@@ -51,35 +51,35 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonInclude(Include.NON_NULL)
 public abstract class AbstractGameBootMessage {
 
-	private Integer id;
+  private Integer id;
 
-	/**
-	 * Gets the id.
-	 *
-	 * @return the id
-	 */
-	public Integer getId() {
-		return id;
-	}
+  /**
+   * Gets the id.
+   *
+   * @return the id
+   */
+  public Integer getId() {
+    return id;
+  }
 
-	/**
-	 * Sets the id.
-	 *
-	 * @param id
-	 *          the new id
-	 */
-	public void setId(Integer id) {
-		this.id = id;
-	}
+  /**
+   * Sets the id.
+   *
+   * @param id
+   *          the new id
+   */
+  public void setId(Integer id) {
+    this.id = id;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
+  }
 
 }

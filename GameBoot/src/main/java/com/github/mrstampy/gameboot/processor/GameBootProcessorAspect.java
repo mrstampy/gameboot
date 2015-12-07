@@ -62,76 +62,76 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 @Component
 public class GameBootProcessorAspect {
 
-	private static final String PROCESS_TIMER = "ProcessTimer";
+  private static final String PROCESS_TIMER = "ProcessTimer";
 
-	private static final String FAILED_REQUESTS = "FailedRequests";
+  private static final String FAILED_REQUESTS = "FailedRequests";
 
-	private static final String ALERT_REQUESTS = "AlertRequests";
+  private static final String ALERT_REQUESTS = "AlertRequests";
 
-	private static final String INFO_REQUESTS = "InfoRequests";
+  private static final String INFO_REQUESTS = "InfoRequests";
 
-	private static final String SUCCESS_REQUESTS = "SuccessRequests";
+  private static final String SUCCESS_REQUESTS = "SuccessRequests";
 
-	private static final String WARNING_REQUESTS = "WarningRequests";
+  private static final String WARNING_REQUESTS = "WarningRequests";
 
-	@Autowired
-	private MetricsHelper helper;
+  @Autowired
+  private MetricsHelper helper;
 
-	/**
-	 * Post construct.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@PostConstruct
-	public void postConstruct() throws Exception {
-		helper.timer(PROCESS_TIMER, AbstractGameBootProcessor.class, "process", "timer");
-		helper.counter(FAILED_REQUESTS, AbstractGameBootProcessor.class, "failed", "requests");
-		helper.counter(ALERT_REQUESTS, AbstractGameBootProcessor.class, "alert", "requests");
-		helper.counter(INFO_REQUESTS, AbstractGameBootProcessor.class, "info", "requests");
-		helper.counter(SUCCESS_REQUESTS, AbstractGameBootProcessor.class, "success", "requests");
-		helper.counter(WARNING_REQUESTS, AbstractGameBootProcessor.class, "warning", "requests");
-	}
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    helper.timer(PROCESS_TIMER, AbstractGameBootProcessor.class, "process", "timer");
+    helper.counter(FAILED_REQUESTS, AbstractGameBootProcessor.class, "failed", "requests");
+    helper.counter(ALERT_REQUESTS, AbstractGameBootProcessor.class, "alert", "requests");
+    helper.counter(INFO_REQUESTS, AbstractGameBootProcessor.class, "info", "requests");
+    helper.counter(SUCCESS_REQUESTS, AbstractGameBootProcessor.class, "success", "requests");
+    helper.counter(WARNING_REQUESTS, AbstractGameBootProcessor.class, "warning", "requests");
+  }
 
-	/**
-	 * Metrics.
-	 *
-	 * @param pjp
-	 *          the pjp
-	 * @return the object
-	 * @throws Throwable
-	 *           the throwable
-	 */
-	@Around("this(com.github.mrstampy.gameboot.processor.GameBootProcessor) && execution(com.github.mrstampy.gameboot.messages.Response *.*(..))")
-	public Object metrics(ProceedingJoinPoint pjp) throws Throwable {
-		Context ctx = helper.startTimer(PROCESS_TIMER);
+  /**
+   * Metrics.
+   *
+   * @param pjp
+   *          the pjp
+   * @return the object
+   * @throws Throwable
+   *           the throwable
+   */
+  @Around("this(com.github.mrstampy.gameboot.processor.GameBootProcessor) && execution(com.github.mrstampy.gameboot.messages.Response *.*(..))")
+  public Object metrics(ProceedingJoinPoint pjp) throws Throwable {
+    Context ctx = helper.startTimer(PROCESS_TIMER);
 
-		try {
-			Response r = (Response) pjp.proceed();
+    try {
+      Response r = (Response) pjp.proceed();
 
-			switch (r.getResponseCode()) {
-			case FAILURE:
-				helper.incr(FAILED_REQUESTS);
-				break;
-			case ALERT:
-				helper.incr(ALERT_REQUESTS);
-				break;
-			case INFO:
-				helper.incr(INFO_REQUESTS);
-				break;
-			case SUCCESS:
-				helper.incr(SUCCESS_REQUESTS);
-				break;
-			case WARNING:
-				helper.incr(WARNING_REQUESTS);
-				break;
-			default:
-				break;
-			}
+      switch (r.getResponseCode()) {
+      case FAILURE:
+        helper.incr(FAILED_REQUESTS);
+        break;
+      case ALERT:
+        helper.incr(ALERT_REQUESTS);
+        break;
+      case INFO:
+        helper.incr(INFO_REQUESTS);
+        break;
+      case SUCCESS:
+        helper.incr(SUCCESS_REQUESTS);
+        break;
+      case WARNING:
+        helper.incr(WARNING_REQUESTS);
+        break;
+      default:
+        break;
+      }
 
-			return r;
-		} finally {
-			ctx.stop();
-		}
-	}
+      return r;
+    } finally {
+      ctx.stop();
+    }
+  }
 }

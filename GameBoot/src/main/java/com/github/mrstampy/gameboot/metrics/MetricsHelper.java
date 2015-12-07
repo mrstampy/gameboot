@@ -75,131 +75,131 @@ import com.codahale.metrics.Timer.Context;;
 @Component
 public class MetricsHelper {
 
-	@Autowired
-	private MetricRegistry registry;
+  @Autowired
+  private MetricRegistry registry;
 
-	private Map<String, Timer> timers = new ConcurrentHashMap<>();
+  private Map<String, Timer> timers = new ConcurrentHashMap<>();
 
-	private Map<String, Counter> counters = new ConcurrentHashMap<>();
+  private Map<String, Counter> counters = new ConcurrentHashMap<>();
 
-	private Map<String, Gauge<?>> gauges = new ConcurrentHashMap<>();
+  private Map<String, Gauge<?>> gauges = new ConcurrentHashMap<>();
 
-	/**
-	 * Counter register.
-	 *
-	 * @param key
-	 *          the key
-	 * @param clz
-	 *          the clz
-	 * @param qualifiers
-	 *          the qualifiers
-	 */
-	public void counter(String key, Class<?> clz, String... qualifiers) {
-		if (counters.containsKey(key)) throw new IllegalStateException(key + " already exists");
-		counters.put(key, registry.counter(name(clz, qualifiers)));
-	}
+  /**
+   * Counter register.
+   *
+   * @param key
+   *          the key
+   * @param clz
+   *          the clz
+   * @param qualifiers
+   *          the qualifiers
+   */
+  public void counter(String key, Class<?> clz, String... qualifiers) {
+    if (counters.containsKey(key)) throw new IllegalStateException(key + " already exists");
+    counters.put(key, registry.counter(name(clz, qualifiers)));
+  }
 
-	/**
-	 * Timer register.
-	 *
-	 * @param key
-	 *          the key
-	 * @param clz
-	 *          the clz
-	 * @param qualifiers
-	 *          the qualifiers
-	 */
-	public void timer(String key, Class<?> clz, String... qualifiers) {
-		if (timers.containsKey(key)) throw new IllegalStateException(key + " already exists");
-		timers.put(key, registry.timer(name(clz, qualifiers)));
-	}
+  /**
+   * Timer register.
+   *
+   * @param key
+   *          the key
+   * @param clz
+   *          the clz
+   * @param qualifiers
+   *          the qualifiers
+   */
+  public void timer(String key, Class<?> clz, String... qualifiers) {
+    if (timers.containsKey(key)) throw new IllegalStateException(key + " already exists");
+    timers.put(key, registry.timer(name(clz, qualifiers)));
+  }
 
-	/**
-	 * Gauge register.
-	 *
-	 * @param gauge
-	 *          the gauge
-	 * @param key
-	 *          the key
-	 * @param clz
-	 *          the clz
-	 * @param qualifiers
-	 *          the qualifiers
-	 */
-	public void gauge(Gauge<?> gauge, String key, Class<?> clz, String... qualifiers) {
-		if (gauges.containsKey(key)) throw new IllegalStateException(key + " already exists");
-		gauges.put(key, registry.register(name(clz, qualifiers), gauge));
-	}
+  /**
+   * Gauge register.
+   *
+   * @param gauge
+   *          the gauge
+   * @param key
+   *          the key
+   * @param clz
+   *          the clz
+   * @param qualifiers
+   *          the qualifiers
+   */
+  public void gauge(Gauge<?> gauge, String key, Class<?> clz, String... qualifiers) {
+    if (gauges.containsKey(key)) throw new IllegalStateException(key + " already exists");
+    gauges.put(key, registry.register(name(clz, qualifiers), gauge));
+  }
 
-	/**
-	 * Gets the timers.
-	 *
-	 * @return the timers
-	 */
-	public Set<Entry<String, Timer>> getTimers() {
-		return Collections.unmodifiableSet(timers.entrySet());
-	}
+  /**
+   * Gets the timers.
+   *
+   * @return the timers
+   */
+  public Set<Entry<String, Timer>> getTimers() {
+    return Collections.unmodifiableSet(timers.entrySet());
+  }
 
-	/**
-	 * Gets the counters.
-	 *
-	 * @return the counters
-	 */
-	public Set<Entry<String, Counter>> getCounters() {
-		return Collections.unmodifiableSet(counters.entrySet());
-	}
+  /**
+   * Gets the counters.
+   *
+   * @return the counters
+   */
+  public Set<Entry<String, Counter>> getCounters() {
+    return Collections.unmodifiableSet(counters.entrySet());
+  }
 
-	/**
-	 * Gets the gauges.
-	 *
-	 * @return the gauges
-	 */
-	public Set<Entry<String, Gauge<?>>> getGauges() {
-		return Collections.unmodifiableSet(gauges.entrySet());
-	}
+  /**
+   * Gets the gauges.
+   *
+   * @return the gauges
+   */
+  public Set<Entry<String, Gauge<?>>> getGauges() {
+    return Collections.unmodifiableSet(gauges.entrySet());
+  }
 
-	/**
-	 * Start timer.
-	 *
-	 * @param key
-	 *          the key
-	 * @return the context
-	 */
-	public Context startTimer(String key) {
-		Timer t = timers.get(key);
+  /**
+   * Start timer.
+   *
+   * @param key
+   *          the key
+   * @return the context
+   */
+  public Context startTimer(String key) {
+    Timer t = timers.get(key);
 
-		if (t == null) throw new IllegalArgumentException("No timer for key " + key);
+    if (t == null) throw new IllegalArgumentException("No timer for key " + key);
 
-		Context ctx = t.time();
+    Context ctx = t.time();
 
-		return ctx;
-	}
+    return ctx;
+  }
 
-	/**
-	 * Incr counter.
-	 *
-	 * @param key
-	 *          the key
-	 */
-	public void incr(String key) {
-		getCounter(key).inc();
-	}
+  /**
+   * Incr counter.
+   *
+   * @param key
+   *          the key
+   */
+  public void incr(String key) {
+    getCounter(key).inc();
+  }
 
-	/**
-	 * Decr counter.
-	 *
-	 * @param key
-	 *          the key
-	 */
-	public void decr(String key) {
-		getCounter(key).dec();
-	}
+  /**
+   * Decr counter.
+   *
+   * @param key
+   *          the key
+   */
+  public void decr(String key) {
+    getCounter(key).dec();
+  }
 
-	private Counter getCounter(String key) {
-		Counter c = counters.get(key);
+  private Counter getCounter(String key) {
+    Counter c = counters.get(key);
 
-		if (c == null) throw new IllegalArgumentException("No counter for key " + key);
+    if (c == null) throw new IllegalArgumentException("No counter for key " + key);
 
-		return c;
-	}
+    return c;
+  }
 }

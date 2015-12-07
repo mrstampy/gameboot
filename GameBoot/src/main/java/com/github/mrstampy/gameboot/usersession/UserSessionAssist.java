@@ -68,279 +68,279 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
  */
 @Component
 public class UserSessionAssist {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-	/** The Constant SESSIONS_CACHE. */
-	public static final String SESSIONS_CACHE = "sessions";
+  /** The Constant SESSIONS_CACHE. */
+  public static final String SESSIONS_CACHE = "sessions";
 
-	/** The Constant SESSIONS_KEY. */
-	public static final String SESSIONS_KEY = "ActiveSessions";
+  /** The Constant SESSIONS_KEY. */
+  public static final String SESSIONS_KEY = "ActiveSessions";
 
-	private static final String UNCACHED_SESSION_TIMER = "UncachedSessionTimer";
+  private static final String UNCACHED_SESSION_TIMER = "UncachedSessionTimer";
 
-	@Autowired
-	private UserSessionRepository userSessionRepo;
+  @Autowired
+  private UserSessionRepository userSessionRepo;
 
-	@Autowired
-	private UserRepository userRepo;
+  @Autowired
+  private UserRepository userRepo;
 
-	@Autowired
-	private ActiveSessions activeSessions;
+  @Autowired
+  private ActiveSessions activeSessions;
 
-	@Autowired
-	private MetricsHelper helper;
+  @Autowired
+  private MetricsHelper helper;
 
-	private String sessionsKey = SESSIONS_KEY;
+  private String sessionsKey = SESSIONS_KEY;
 
-	/**
-	 * Post construct.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@PostConstruct
-	public void postConstruct() throws Exception {
-		helper.timer(UNCACHED_SESSION_TIMER, UserSessionAssist.class, "uncached", "session", "timer");
-	}
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    helper.timer(UNCACHED_SESSION_TIMER, UserSessionAssist.class, "uncached", "session", "timer");
+  }
 
-	/**
-	 * Creates the session.
-	 *
-	 * @param user
-	 *          the user
-	 * @return the user session
-	 * @throws IllegalStateException
-	 *           the illegal state exception
-	 */
-	public UserSession create(User user) throws IllegalStateException {
-		userCheck(user);
+  /**
+   * Creates the session.
+   *
+   * @param user
+   *          the user
+   * @return the user session
+   * @throws IllegalStateException
+   *           the illegal state exception
+   */
+  public UserSession create(User user) throws IllegalStateException {
+    userCheck(user);
 
-		String userName = user.getUserName();
-		check(activeSessions.hasSession(userName), "Session already exists for " + userName);
+    String userName = user.getUserName();
+    check(activeSessions.hasSession(userName), "Session already exists for " + userName);
 
-		UserSession session = new UserSession();
-		session.setUser(user);
+    UserSession session = new UserSession();
+    session.setUser(user);
 
-		userSessionRepo.save(session);
+    userSessionRepo.save(session);
 
-		activeSessions.addSession(session);
+    activeSessions.addSession(session);
 
-		return session;
-	}
+    return session;
+  }
 
-	/**
-	 * Expected user.
-	 *
-	 * @param userName
-	 *          the user name
-	 * @return the user
-	 * @throws IllegalStateException
-	 *           the illegal state exception
-	 */
-	public User expectedUser(String userName) throws IllegalStateException {
-		userNameCheck(userName);
+  /**
+   * Expected user.
+   *
+   * @param userName
+   *          the user name
+   * @return the user
+   * @throws IllegalStateException
+   *           the illegal state exception
+   */
+  public User expectedUser(String userName) throws IllegalStateException {
+    userNameCheck(userName);
 
-		User user = userRepo.findByUserName(userName);
+    User user = userRepo.findByUserName(userName);
 
-		check(user == null, "No user for " + userName);
+    check(user == null, "No user for " + userName);
 
-		return user;
-	}
+    return user;
+  }
 
-	/**
-	 * Expected session.
-	 *
-	 * @param userName
-	 *          the user name
-	 * @return the user session
-	 * @throws IllegalStateException
-	 *           the illegal state exception
-	 */
-	public UserSession expected(String userName) throws IllegalStateException {
-		userNameCheck(userName);
+  /**
+   * Expected session.
+   *
+   * @param userName
+   *          the user name
+   * @return the user session
+   * @throws IllegalStateException
+   *           the illegal state exception
+   */
+  public UserSession expected(String userName) throws IllegalStateException {
+    userNameCheck(userName);
 
-		String noSession = "No session for " + userName;
+    String noSession = "No session for " + userName;
 
-		check(!activeSessions.hasSession(userName), noSession);
+    check(!activeSessions.hasSession(userName), noSession);
 
-		UserSession session = userSessionRepo.findOpenSession(userName);
+    UserSession session = userSessionRepo.findOpenSession(userName);
 
-		check(session == null, noSession);
+    check(session == null, noSession);
 
-		return session;
-	}
+    return session;
+  }
 
-	/**
-	 * Expected session.
-	 *
-	 * @param user
-	 *          the user
-	 * @return the user session
-	 * @throws IllegalStateException
-	 *           the illegal state exception
-	 */
-	public UserSession expected(User user) throws IllegalStateException {
-		userCheck(user);
+  /**
+   * Expected session.
+   *
+   * @param user
+   *          the user
+   * @return the user session
+   * @throws IllegalStateException
+   *           the illegal state exception
+   */
+  public UserSession expected(User user) throws IllegalStateException {
+    userCheck(user);
 
-		String userName = user.getUserName();
-		check(!activeSessions.hasSession(userName), "No session for " + userName);
+    String userName = user.getUserName();
+    check(!activeSessions.hasSession(userName), "No session for " + userName);
 
-		return userSessionRepo.findByUserAndEndedIsNull(user);
-	}
+    return userSessionRepo.findByUserAndEndedIsNull(user);
+  }
 
-	/**
-	 * Expected session.
-	 *
-	 * @param id
-	 *          the id
-	 * @return the user session
-	 * @throws IllegalStateException
-	 *           the illegal state exception
-	 */
-	public UserSession expected(long id) throws IllegalStateException {
-		if (id <= 0) throw new IllegalStateException("Id must be > 0: " + id);
+  /**
+   * Expected session.
+   *
+   * @param id
+   *          the id
+   * @return the user session
+   * @throws IllegalStateException
+   *           the illegal state exception
+   */
+  public UserSession expected(long id) throws IllegalStateException {
+    if (id <= 0) throw new IllegalStateException("Id must be > 0: " + id);
 
-		check(!activeSessions.hasSession(id), "No session for id " + id);
+    check(!activeSessions.hasSession(id), "No session for id " + id);
 
-		return userSessionRepo.findOpenSession(id);
-	}
+    return userSessionRepo.findOpenSession(id);
+  }
 
-	/**
-	 * Returns true if the session specified by the userName is active.
-	 *
-	 * @param userName
-	 *          the user name
-	 * @return true, if successful
-	 * @see ActiveSessions
-	 */
-	public boolean hasSession(String userName) {
-		return activeSessions.hasSession(userName);
-	}
+  /**
+   * Returns true if the session specified by the userName is active.
+   *
+   * @param userName
+   *          the user name
+   * @return true, if successful
+   * @see ActiveSessions
+   */
+  public boolean hasSession(String userName) {
+    return activeSessions.hasSession(userName);
+  }
 
-	/**
-	 * Returns true if the session specified by the id is active.
-	 *
-	 * @param id
-	 *          the id
-	 * @return true, if successful
-	 * @see ActiveSessions
-	 */
-	public boolean hasSession(long id) {
-		return activeSessions.hasSession(id);
-	}
+  /**
+   * Returns true if the session specified by the id is active.
+   *
+   * @param id
+   *          the id
+   * @return true, if successful
+   * @see ActiveSessions
+   */
+  public boolean hasSession(long id) {
+    return activeSessions.hasSession(id);
+  }
 
-	/**
-	 * Logout, closing the session.
-	 *
-	 * @param userName
-	 *          the user name
-	 * @return the user
-	 * @throws IllegalStateException
-	 *           the illegal state exception
-	 */
-	public User logout(String userName) throws IllegalStateException {
-		UserSession session = expected(userName);
+  /**
+   * Logout, closing the session.
+   *
+   * @param userName
+   *          the user name
+   * @return the user
+   * @throws IllegalStateException
+   *           the illegal state exception
+   */
+  public User logout(String userName) throws IllegalStateException {
+    UserSession session = expected(userName);
 
-		closeSession(session);
+    closeSession(session);
 
-		return session.getUser();
-	}
+    return session.getUser();
+  }
 
-	/**
-	 * Logout, closing the session.
-	 *
-	 * @param id
-	 *          the id
-	 * @return the user
-	 * @throws IllegalStateException
-	 *           the illegal state exception
-	 */
-	public User logout(Long id) throws IllegalStateException {
-		UserSession session = expected(id);
+  /**
+   * Logout, closing the session.
+   *
+   * @param id
+   *          the id
+   * @return the user
+   * @throws IllegalStateException
+   *           the illegal state exception
+   */
+  public User logout(Long id) throws IllegalStateException {
+    UserSession session = expected(id);
 
-		closeSession(session);
+    closeSession(session);
 
-		return session.getUser();
-	}
+    return session.getUser();
+  }
 
-	/**
-	 * Returns a list of active sessions. This list is backed by cache as defined
-	 * by the {@link #SESSIONS_CACHE} cache region in ehcache.xml. Use
-	 * {@link CachedUserSessionLookup} in preference to this method when looking
-	 * up a specific {@link UserSession}.
-	 *
-	 * @return the list
-	 */
-	@Cacheable(cacheNames = SESSIONS_CACHE, key = "target.sessionsKey")
-	public List<UserSession> activeSessions() {
-		Context ctx = helper.startTimer(UNCACHED_SESSION_TIMER);
-		try {
-			return userSessionRepo.openSessions();
-		} finally {
-			ctx.stop();
-		}
-	}
+  /**
+   * Returns a list of active sessions. This list is backed by cache as defined
+   * by the {@link #SESSIONS_CACHE} cache region in ehcache.xml. Use
+   * {@link CachedUserSessionLookup} in preference to this method when looking
+   * up a specific {@link UserSession}.
+   *
+   * @return the list
+   */
+  @Cacheable(cacheNames = SESSIONS_CACHE, key = "target.sessionsKey")
+  public List<UserSession> activeSessions() {
+    Context ctx = helper.startTimer(UNCACHED_SESSION_TIMER);
+    try {
+      return userSessionRepo.openSessions();
+    } finally {
+      ctx.stop();
+    }
+  }
 
-	/**
-	 * Gets the sessions key, used as a key in the {@link #SESSIONS_CACHE} cache
-	 * for the {@link UserSession} list. Exposed as a property for the
-	 * {@link Cacheable} annotation on {@link #activeSessions()}
-	 *
-	 * @return the sessions key
-	 */
-	public String getSessionsKey() {
-		return sessionsKey;
-	}
+  /**
+   * Gets the sessions key, used as a key in the {@link #SESSIONS_CACHE} cache
+   * for the {@link UserSession} list. Exposed as a property for the
+   * {@link Cacheable} annotation on {@link #activeSessions()}
+   *
+   * @return the sessions key
+   */
+  public String getSessionsKey() {
+    return sessionsKey;
+  }
 
-	/**
-	 * Close session.
-	 *
-	 * @param session
-	 *          the session
-	 */
-	protected void closeSession(UserSession session) {
-		session.setEnded(new Date());
+  /**
+   * Close session.
+   *
+   * @param session
+   *          the session
+   */
+  protected void closeSession(UserSession session) {
+    session.setEnded(new Date());
 
-		userSessionRepo.save(session);
+    userSessionRepo.save(session);
 
-		activeSessions.removeSession(session);
+    activeSessions.removeSession(session);
 
-		log.info("User {} logged out", session.getUser().getUserName());
-	}
+    log.info("User {} logged out", session.getUser().getUserName());
+  }
 
-	/**
-	 * User check.
-	 *
-	 * @param user
-	 *          the user
-	 * @throws IllegalStateException
-	 *           the illegal state exception
-	 */
-	protected void userCheck(User user) throws IllegalStateException {
-		check(user == null, "null user");
-	}
+  /**
+   * User check.
+   *
+   * @param user
+   *          the user
+   * @throws IllegalStateException
+   *           the illegal state exception
+   */
+  protected void userCheck(User user) throws IllegalStateException {
+    check(user == null, "null user");
+  }
 
-	/**
-	 * User name check.
-	 *
-	 * @param userName
-	 *          the user name
-	 * @throws IllegalStateException
-	 *           the illegal state exception
-	 */
-	protected void userNameCheck(String userName) throws IllegalStateException {
-		check(isEmpty(userName), "null username");
-	}
+  /**
+   * User name check.
+   *
+   * @param userName
+   *          the user name
+   * @throws IllegalStateException
+   *           the illegal state exception
+   */
+  protected void userNameCheck(String userName) throws IllegalStateException {
+    check(isEmpty(userName), "null username");
+  }
 
-	/**
-	 * Check.
-	 *
-	 * @param condition
-	 *          the condition
-	 * @param msg
-	 *          the msg
-	 */
-	protected void check(boolean condition, String msg) {
-		if (condition) throw new IllegalStateException(msg);
-	}
+  /**
+   * Check.
+   *
+   * @param condition
+   *          the condition
+   * @param msg
+   *          the msg
+   */
+  protected void check(boolean condition, String msg) {
+    if (condition) throw new IllegalStateException(msg);
+  }
 }

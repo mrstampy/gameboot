@@ -52,14 +52,14 @@ import com.github.mrstampy.gameboot.messages.Response;
  */
 public interface GameBootProcessor<M extends AbstractGameBootMessage> {
 
-	/**
-	 * Process.
-	 *
-	 * @param message
-	 *          the message
-	 * @return the response
-	 * @throws Exception
-	 *           the exception
-	 */
-	Response process(M message) throws Exception;
+  /**
+   * Process.
+   *
+   * @param message
+   *          the message
+   * @return the response
+   * @throws Exception
+   *           the exception
+   */
+  Response process(M message) throws Exception;
 }

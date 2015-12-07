@@ -68,193 +68,193 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Audited
 public class User extends AbstractGameBootEntity {
 
-	@Column(unique = true, nullable = false, length = 50)
-	private String userName;
+  @Column(unique = true, nullable = false, length = 50)
+  private String userName;
 
-	@Column(nullable = false)
-	@JsonIgnore
-	private String passwordHash;
+  @Column(nullable = false)
+  @JsonIgnore
+  private String passwordHash;
 
-	@Column
-	private String firstName;
+  @Column
+  private String firstName;
 
-	@Column
-	private String lastName;
+  @Column
+  private String lastName;
 
-	@Column
-	private String email;
+  @Column
+  private String email;
 
-	@Column
-	@Temporal(TemporalType.DATE)
-	@JsonFormat(shape = Shape.STRING, pattern = "yyyy/MM/dd")
-	private Date dob;
+  @Column
+  @Temporal(TemporalType.DATE)
+  @JsonFormat(shape = Shape.STRING, pattern = "yyyy/MM/dd")
+  private Date dob;
 
-	@OneToMany(fetch = FetchType.LAZY)
-	private List<User> friends;
+  @OneToMany(fetch = FetchType.LAZY)
+  private List<User> friends;
 
-	@OneToMany(fetch = FetchType.LAZY)
-	private List<User> blocked;
+  @OneToMany(fetch = FetchType.LAZY)
+  private List<User> blocked;
 
-	/**
-	 * The Enum UserState.
-	 */
-	public enum UserState {
+  /**
+   * The Enum UserState.
+   */
+  public enum UserState {
 
-		/** The active. */
-		ACTIVE,
-		/** The inactive. */
-		INACTIVE,
-		/** The deleted. */
-		DELETED
-	}
+    /** The active. */
+    ACTIVE,
+    /** The inactive. */
+    INACTIVE,
+    /** The deleted. */
+    DELETED
+  }
 
-	@Column(nullable = false)
-	@Enumerated(EnumType.STRING)
-	private UserState state;
+  @Column(nullable = false)
+  @Enumerated(EnumType.STRING)
+  private UserState state;
 
-	/**
-	 * Gets the user name.
-	 *
-	 * @return the user name
-	 */
-	public String getUserName() {
-		return userName;
-	}
+  /**
+   * Gets the user name.
+   *
+   * @return the user name
+   */
+  public String getUserName() {
+    return userName;
+  }
 
-	/**
-	 * Sets the user name.
-	 *
-	 * @param userName
-	 *          the new user name
-	 */
-	public void setUserName(String userName) {
-		this.userName = userName;
-	}
+  /**
+   * Sets the user name.
+   *
+   * @param userName
+   *          the new user name
+   */
+  public void setUserName(String userName) {
+    this.userName = userName;
+  }
 
-	/**
-	 * Gets the password hash.
-	 *
-	 * @return the password hash
-	 */
-	public String getPasswordHash() {
-		return passwordHash;
-	}
+  /**
+   * Gets the password hash.
+   *
+   * @return the password hash
+   */
+  public String getPasswordHash() {
+    return passwordHash;
+  }
 
-	/**
-	 * Sets the password hash.
-	 *
-	 * @param passwordHash
-	 *          the new password hash
-	 */
-	public void setPasswordHash(String passwordHash) {
-		this.passwordHash = passwordHash;
-	}
+  /**
+   * Sets the password hash.
+   *
+   * @param passwordHash
+   *          the new password hash
+   */
+  public void setPasswordHash(String passwordHash) {
+    this.passwordHash = passwordHash;
+  }
 
-	/**
-	 * Gets the first name.
-	 *
-	 * @return the first name
-	 */
-	public String getFirstName() {
-		return firstName;
-	}
+  /**
+   * Gets the first name.
+   *
+   * @return the first name
+   */
+  public String getFirstName() {
+    return firstName;
+  }
 
-	/**
-	 * Sets the first name.
-	 *
-	 * @param firstName
-	 *          the new first name
-	 */
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
+  /**
+   * Sets the first name.
+   *
+   * @param firstName
+   *          the new first name
+   */
+  public void setFirstName(String firstName) {
+    this.firstName = firstName;
+  }
 
-	/**
-	 * Gets the last name.
-	 *
-	 * @return the last name
-	 */
-	public String getLastName() {
-		return lastName;
-	}
+  /**
+   * Gets the last name.
+   *
+   * @return the last name
+   */
+  public String getLastName() {
+    return lastName;
+  }
 
-	/**
-	 * Sets the last name.
-	 *
-	 * @param lastName
-	 *          the new last name
-	 */
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
+  /**
+   * Sets the last name.
+   *
+   * @param lastName
+   *          the new last name
+   */
+  public void setLastName(String lastName) {
+    this.lastName = lastName;
+  }
 
-	/**
-	 * Gets the email.
-	 *
-	 * @return the email
-	 */
-	public String getEmail() {
-		return email;
-	}
+  /**
+   * Gets the email.
+   *
+   * @return the email
+   */
+  public String getEmail() {
+    return email;
+  }
 
-	/**
-	 * Sets the email.
-	 *
-	 * @param email
-	 *          the new email
-	 */
-	public void setEmail(String email) {
-		this.email = email;
-	}
+  /**
+   * Sets the email.
+   *
+   * @param email
+   *          the new email
+   */
+  public void setEmail(String email) {
+    this.email = email;
+  }
 
-	/**
-	 * Gets the dob.
-	 *
-	 * @return the dob
-	 */
-	public Date getDob() {
-		return dob;
-	}
+  /**
+   * Gets the dob.
+   *
+   * @return the dob
+   */
+  public Date getDob() {
+    return dob;
+  }
 
-	/**
-	 * Sets the dob.
-	 *
-	 * @param dob
-	 *          the new dob
-	 */
-	public void setDob(Date dob) {
-		this.dob = dob;
-	}
+  /**
+   * Sets the dob.
+   *
+   * @param dob
+   *          the new dob
+   */
+  public void setDob(Date dob) {
+    this.dob = dob;
+  }
 
-	/**
-	 * Gets the state.
-	 *
-	 * @return the state
-	 */
-	public UserState getState() {
-		return state;
-	}
+  /**
+   * Gets the state.
+   *
+   * @return the state
+   */
+  public UserState getState() {
+    return state;
+  }
 
-	/**
-	 * Sets the state.
-	 *
-	 * @param state
-	 *          the new state
-	 */
-	public void setState(UserState state) {
-		this.state = state;
-	}
+  /**
+   * Sets the state.
+   *
+   * @param state
+   *          the new state
+   */
+  public void setState(UserState state) {
+    this.state = state;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		ToStringBuilder tsb = new ToStringBuilder(this);
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    ToStringBuilder tsb = new ToStringBuilder(this);
 
-		//@formatter:off
+    //@formatter:off
 		tsb
 			.append(getUserName())
 			.append(getFirstName())
@@ -264,44 +264,44 @@ public class User extends AbstractGameBootEntity {
 			.append(getEmail());
 		//@formatter:on
 
-		return tsb.toString();
-	}
+    return tsb.toString();
+  }
 
-	/**
-	 * Gets the friends.
-	 *
-	 * @return the friends
-	 */
-	public List<User> getFriends() {
-		return friends;
-	}
+  /**
+   * Gets the friends.
+   *
+   * @return the friends
+   */
+  public List<User> getFriends() {
+    return friends;
+  }
 
-	/**
-	 * Sets the friends.
-	 *
-	 * @param friends
-	 *          the new friends
-	 */
-	public void setFriends(List<User> friends) {
-		this.friends = friends;
-	}
+  /**
+   * Sets the friends.
+   *
+   * @param friends
+   *          the new friends
+   */
+  public void setFriends(List<User> friends) {
+    this.friends = friends;
+  }
 
-	/**
-	 * Gets the blocked.
-	 *
-	 * @return the blocked
-	 */
-	public List<User> getBlocked() {
-		return blocked;
-	}
+  /**
+   * Gets the blocked.
+   *
+   * @return the blocked
+   */
+  public List<User> getBlocked() {
+    return blocked;
+  }
 
-	/**
-	 * Sets the blocked.
-	 *
-	 * @param blocked
-	 *          the new blocked
-	 */
-	public void setBlocked(List<User> blocked) {
-		this.blocked = blocked;
-	}
+  /**
+   * Sets the blocked.
+   *
+   * @param blocked
+   *          the new blocked
+   */
+  public void setBlocked(List<User> blocked) {
+    this.blocked = blocked;
+  }
 }

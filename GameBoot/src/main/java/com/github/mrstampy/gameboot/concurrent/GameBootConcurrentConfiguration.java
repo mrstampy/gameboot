@@ -67,136 +67,136 @@ import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 @EnableScheduling
 public class GameBootConcurrentConfiguration {
 
-	@Value("${task.scheduler.name}")
-	private String taskSchedulerName;
+  @Value("${task.scheduler.name}")
+  private String taskSchedulerName;
 
-	@Value("${task.scheduler.pool.size}")
-	private int taskSchedulerPoolSize;
+  @Value("${task.scheduler.pool.size}")
+  private int taskSchedulerPoolSize;
 
-	@Value("${task.executor.name}")
-	private String taskExecutorName;
+  @Value("${task.executor.name}")
+  private String taskExecutorName;
 
-	@Value("${task.executor.pool.size}")
-	private int taskExecutorPoolSize;
+  @Value("${task.executor.pool.size}")
+  private int taskExecutorPoolSize;
 
-	@Value("${pu.fiber.scheduler.name}")
-	private String fiberExecutorName;
+  @Value("${pu.fiber.scheduler.name}")
+  private String fiberExecutorName;
 
-	@Value("${pu.fiber.scheduler.pool.size}")
-	private int fiberPoolSize;
+  @Value("${pu.fiber.scheduler.pool.size}")
+  private int fiberPoolSize;
 
-	@Value("${pu.fiber.fj.scheduler.name}")
-	private String fiberForkJoinName;
+  @Value("${pu.fiber.fj.scheduler.name}")
+  private String fiberForkJoinName;
 
-	@Value("${pu.fiber.fj.scheduler.pool.size}")
-	private int fiberForkJoinPoolSize;
+  @Value("${pu.fiber.fj.scheduler.pool.size}")
+  private int fiberForkJoinPoolSize;
 
-	@Value("${executor.name}")
-	private String executorName;
+  @Value("${executor.name}")
+  private String executorName;
 
-	@Value("${executor.pool.size}")
-	private int executorPoolSize;
+  @Value("${executor.pool.size}")
+  private int executorPoolSize;
 
-	@Value("${scheduler.name}")
-	private String schedulerName;
+  @Value("${scheduler.name}")
+  private String schedulerName;
 
-	@Value("${scheduler.pool.size}")
-	private int schedulerPoolSize;
+  @Value("${scheduler.pool.size}")
+  private int schedulerPoolSize;
 
-	/**
-	 * Task scheduler.
-	 *
-	 * @return the task scheduler
-	 */
-	@Bean
-	@Primary
-	public TaskScheduler taskScheduler() {
-		String name = isEmpty(taskSchedulerName) ? "GameBoot Task Scheduler" : taskSchedulerName;
+  /**
+   * Task scheduler.
+   *
+   * @return the task scheduler
+   */
+  @Bean
+  @Primary
+  public TaskScheduler taskScheduler() {
+    String name = isEmpty(taskSchedulerName) ? "GameBoot Task Scheduler" : taskSchedulerName;
 
-		GameBootThreadFactory factory = new GameBootThreadFactory(name);
+    GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
-		ScheduledExecutorService exe = Executors.newScheduledThreadPool(taskSchedulerPoolSize, factory);
+    ScheduledExecutorService exe = Executors.newScheduledThreadPool(taskSchedulerPoolSize, factory);
 
-		return new ConcurrentTaskScheduler(exe);
-	}
+    return new ConcurrentTaskScheduler(exe);
+  }
 
-	/**
-	 * Task executor.
-	 *
-	 * @return the task executor
-	 */
-	@Bean
-	@Primary
-	public TaskExecutor taskExecutor() {
-		String name = isEmpty(taskExecutorName) ? "GameBoot Task Executor" : taskExecutorName;
+  /**
+   * Task executor.
+   *
+   * @return the task executor
+   */
+  @Bean
+  @Primary
+  public TaskExecutor taskExecutor() {
+    String name = isEmpty(taskExecutorName) ? "GameBoot Task Executor" : taskExecutorName;
 
-		GameBootThreadFactory factory = new GameBootThreadFactory(name);
+    GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
-		Executor exe = Executors.newFixedThreadPool(taskExecutorPoolSize, factory);
+    Executor exe = Executors.newFixedThreadPool(taskExecutorPoolSize, factory);
 
-		return new ConcurrentTaskExecutor(exe);
-	}
+    return new ConcurrentTaskExecutor(exe);
+  }
 
-	/**
-	 * Completable executor service.
-	 *
-	 * @return the completable executor service
-	 */
-	@Bean
-	@Primary
-	public ExecutorService completableExecutorService() {
-		String name = isEmpty(executorName) ? "GameBoot Executor" : executorName;
+  /**
+   * Completable executor service.
+   *
+   * @return the completable executor service
+   */
+  @Bean
+  @Primary
+  public ExecutorService completableExecutorService() {
+    String name = isEmpty(executorName) ? "GameBoot Executor" : executorName;
 
-		GameBootThreadFactory factory = new GameBootThreadFactory(name);
+    GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
-		return Executors.newFixedThreadPool(executorPoolSize, factory);
-	}
+    return Executors.newFixedThreadPool(executorPoolSize, factory);
+  }
 
-	/**
-	 * Completable scheduled executor service.
-	 *
-	 * @return the completable scheduled executor service
-	 */
-	@Bean
-	@Primary
-	public ScheduledExecutorService completableScheduledExecutorService() {
-		String name = isEmpty(schedulerName) ? "GameBoot Scheduled Executor" : schedulerName;
+  /**
+   * Completable scheduled executor service.
+   *
+   * @return the completable scheduled executor service
+   */
+  @Bean
+  @Primary
+  public ScheduledExecutorService completableScheduledExecutorService() {
+    String name = isEmpty(schedulerName) ? "GameBoot Scheduled Executor" : schedulerName;
 
-		GameBootThreadFactory factory = new GameBootThreadFactory(name);
+    GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
-		return Executors.newScheduledThreadPool(schedulerPoolSize, factory);
-	}
+    return Executors.newScheduledThreadPool(schedulerPoolSize, factory);
+  }
 
-	/**
-	 * Fiber executor scheduler.
-	 *
-	 * @return the fiber executor scheduler
-	 * @see FiberCreator
-	 */
-	@Bean
-	@Primary
-	public FiberExecutorScheduler fiberExecutorScheduler() {
-		String name = isEmpty(fiberExecutorName) ? "Fiber Scheduler" : fiberExecutorName;
+  /**
+   * Fiber executor scheduler.
+   *
+   * @return the fiber executor scheduler
+   * @see FiberCreator
+   */
+  @Bean
+  @Primary
+  public FiberExecutorScheduler fiberExecutorScheduler() {
+    String name = isEmpty(fiberExecutorName) ? "Fiber Scheduler" : fiberExecutorName;
 
-		GameBootThreadFactory factory = new GameBootThreadFactory(name);
+    GameBootThreadFactory factory = new GameBootThreadFactory(name);
 
-		Executor exe = Executors.newFixedThreadPool(fiberPoolSize, factory);
+    Executor exe = Executors.newFixedThreadPool(fiberPoolSize, factory);
 
-		return new FiberExecutorScheduler(name, exe, null, true);
-	}
+    return new FiberExecutorScheduler(name, exe, null, true);
+  }
 
-	/**
-	 * Fiber fork join scheduler.
-	 *
-	 * @return the fiber fork join scheduler
-	 * @see FiberCreator
-	 */
-	@Bean
-	@Primary
-	public FiberForkJoinScheduler fiberForkJoinScheduler() {
-		String name = isEmpty(fiberForkJoinName) ? "Fiber Fork Join Scheduler" : fiberForkJoinName;
+  /**
+   * Fiber fork join scheduler.
+   *
+   * @return the fiber fork join scheduler
+   * @see FiberCreator
+   */
+  @Bean
+  @Primary
+  public FiberForkJoinScheduler fiberForkJoinScheduler() {
+    String name = isEmpty(fiberForkJoinName) ? "Fiber Fork Join Scheduler" : fiberForkJoinName;
 
-		return new FiberForkJoinScheduler(name, fiberForkJoinPoolSize, null, true);
-	}
+    return new FiberForkJoinScheduler(name, fiberForkJoinPoolSize, null, true);
+  }
 
 }

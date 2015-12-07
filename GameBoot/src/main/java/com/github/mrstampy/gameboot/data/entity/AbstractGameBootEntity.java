@@ -58,59 +58,59 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 @MappedSuperclass
 public abstract class AbstractGameBootEntity {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.AUTO)
-	private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.AUTO)
+  private Long id;
 
-	@Column
-	@Temporal(TemporalType.TIMESTAMP)
-	private Date created = new Date();
+  @Column
+  @Temporal(TemporalType.TIMESTAMP)
+  private Date created = new Date();
 
-	/**
-	 * Gets the id.
-	 *
-	 * @return the id
-	 */
-	public Long getId() {
-		return id;
-	}
+  /**
+   * Gets the id.
+   *
+   * @return the id
+   */
+  public Long getId() {
+    return id;
+  }
 
-	/**
-	 * Sets the id.
-	 *
-	 * @param id
-	 *          the new id
-	 */
-	public void setId(Long id) {
-		this.id = id;
-	}
+  /**
+   * Sets the id.
+   *
+   * @param id
+   *          the new id
+   */
+  public void setId(Long id) {
+    this.id = id;
+  }
 
-	/**
-	 * Gets the created.
-	 *
-	 * @return the created
-	 */
-	public Date getCreated() {
-		return created;
-	}
+  /**
+   * Gets the created.
+   *
+   * @return the created
+   */
+  public Date getCreated() {
+    return created;
+  }
 
-	/**
-	 * Sets the created.
-	 *
-	 * @param createdTime
-	 *          the new created
-	 */
-	public void setCreated(Date createdTime) {
-		this.created = createdTime;
-	}
+  /**
+   * Sets the created.
+   *
+   * @param createdTime
+   *          the new created
+   */
+  public void setCreated(Date createdTime) {
+    this.created = createdTime;
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this);
-	}
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
+  }
 }

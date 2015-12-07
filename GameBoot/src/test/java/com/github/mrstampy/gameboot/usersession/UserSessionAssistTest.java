@@ -76,215 +76,215 @@ import com.github.mrstampy.gameboot.data.entity.UserSession;
 @SpringApplicationConfiguration(TestConfiguration.class)
 public class UserSessionAssistTest {
 
-	private static final String SESSIONS_CACHE_NAME = UserSessionAssist.SESSIONS_CACHE;
+  private static final String SESSIONS_CACHE_NAME = UserSessionAssist.SESSIONS_CACHE;
 
-	private static final String NON_EXISTENT = "usertest";
+  private static final String NON_EXISTENT = "usertest";
 
-	private static final String USER_NAME = "testuser";
+  private static final String USER_NAME = "testuser";
 
-	@Autowired
-	private UserSessionAssist assist;
+  @Autowired
+  private UserSessionAssist assist;
 
-	@Autowired
-	private UserRepository userRepo;
+  @Autowired
+  private UserRepository userRepo;
 
-	@Autowired
-	private UserSessionRepository userSessionRepo;
+  @Autowired
+  private UserSessionRepository userSessionRepo;
 
-	@Autowired
-	private CacheManager cacheManager;
+  @Autowired
+  private CacheManager cacheManager;
 
-	private Long userId;
+  private Long userId;
 
-	private Long sessionId;
+  private Long sessionId;
 
-	private Cache cache;
+  private Cache cache;
 
-	/**
-	 * Before.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Before
-	public void before() throws Exception {
-		User user = createUser();
+  /**
+   * Before.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Before
+  public void before() throws Exception {
+    User user = createUser();
 
-		user = userRepo.save(user);
+    user = userRepo.save(user);
 
-		userId = user.getId();
-	}
+    userId = user.getId();
+  }
 
-	/**
-	 * After.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@After
-	public void after() throws Exception {
-		if (sessionId != null) {
-			if (assist.hasSession(sessionId)) assist.logout(sessionId);
-			userSessionRepo.delete(sessionId);
-		}
+  /**
+   * After.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @After
+  public void after() throws Exception {
+    if (sessionId != null) {
+      if (assist.hasSession(sessionId)) assist.logout(sessionId);
+      userSessionRepo.delete(sessionId);
+    }
 
-		sessionId = null;
+    sessionId = null;
 
-		userRepo.delete(userId);
-	}
+    userRepo.delete(userId);
+  }
 
-	/**
-	 * Test expected user.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void testExpectedUser() throws Exception {
-		illegalStateExpected(() -> assist.expectedUser(null), "Null user name");
-		illegalStateExpected(() -> assist.expectedUser(" "), "Blank user name");
-		illegalStateExpected(() -> assist.expectedUser(NON_EXISTENT), "non existent user name");
+  /**
+   * Test expected user.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void testExpectedUser() throws Exception {
+    illegalStateExpected(() -> assist.expectedUser(null), "Null user name");
+    illegalStateExpected(() -> assist.expectedUser(" "), "Blank user name");
+    illegalStateExpected(() -> assist.expectedUser(NON_EXISTENT), "non existent user name");
 
-		User user = assist.expectedUser(USER_NAME);
+    User user = assist.expectedUser(USER_NAME);
 
-		assertEquals(userId, user.getId());
-	}
+    assertEquals(userId, user.getId());
+  }
 
-	/**
-	 * Test expected session.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void testExpectedSession() throws Exception {
-		illegalStateExpected(() -> assist.create(null), "Null user");
-		illegalStateExpected(() -> assist.expected((String) null), "Null user name");
-		illegalStateExpected(() -> assist.expected(" "), "Blank user name");
-		illegalStateExpected(() -> assist.expected(0), "Zero id");
-		illegalStateExpected(() -> assist.expected(-1), "Negative id");
+  /**
+   * Test expected session.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void testExpectedSession() throws Exception {
+    illegalStateExpected(() -> assist.create(null), "Null user");
+    illegalStateExpected(() -> assist.expected((String) null), "Null user name");
+    illegalStateExpected(() -> assist.expected(" "), "Blank user name");
+    illegalStateExpected(() -> assist.expected(0), "Zero id");
+    illegalStateExpected(() -> assist.expected(-1), "Negative id");
 
-		assertFalse(assist.hasSession(Long.MAX_VALUE));
-		assertFalse(assist.hasSession(NON_EXISTENT));
+    assertFalse(assist.hasSession(Long.MAX_VALUE));
+    assertFalse(assist.hasSession(NON_EXISTENT));
 
-		User user = assist.expectedUser(USER_NAME);
+    User user = assist.expectedUser(USER_NAME);
 
-		createSession(user);
+    createSession(user);
 
-		assertTrue(assist.hasSession(sessionId));
-		assertTrue(assist.hasSession(USER_NAME));
+    assertTrue(assist.hasSession(sessionId));
+    assertTrue(assist.hasSession(USER_NAME));
 
-		illegalStateExpected(() -> assist.create(user), "Session exists");
+    illegalStateExpected(() -> assist.create(user), "Session exists");
 
-		UserSession same = assist.expected(sessionId);
-		assertEquals(sessionId, same.getId());
+    UserSession same = assist.expected(sessionId);
+    assertEquals(sessionId, same.getId());
 
-		same = assist.expected(USER_NAME);
-		assertEquals(sessionId, same.getId());
+    same = assist.expected(USER_NAME);
+    assertEquals(sessionId, same.getId());
 
-		same = assist.expected(user);
-		assertEquals(sessionId, same.getId());
-	}
+    same = assist.expected(user);
+    assertEquals(sessionId, same.getId());
+  }
 
-	/**
-	 * Test logout user name.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void testLogoutUserName() throws Exception {
-		testLogout(() -> assist.logout(USER_NAME));
-	}
+  /**
+   * Test logout user name.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void testLogoutUserName() throws Exception {
+    testLogout(() -> assist.logout(USER_NAME));
+  }
 
-	/**
-	 * Test logout id.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void testLogoutId() throws Exception {
-		testLogout(() -> assist.logout(sessionId));
-	}
+  /**
+   * Test logout id.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void testLogoutId() throws Exception {
+    testLogout(() -> assist.logout(sessionId));
+  }
 
-	/**
-	 * Test active session caching.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void testActiveSessionCaching() throws Exception {
-		cache = cacheManager.getCache(SESSIONS_CACHE_NAME);
+  /**
+   * Test active session caching.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void testActiveSessionCaching() throws Exception {
+    cache = cacheManager.getCache(SESSIONS_CACHE_NAME);
 
-		cache.clear();
+    cache.clear();
 
-		User user = assist.expectedUser(USER_NAME);
+    User user = assist.expectedUser(USER_NAME);
 
-		UserSession session = createSession(user);
+    UserSession session = createSession(user);
 
-		List<UserSession> sessions = assist.activeSessions();
+    List<UserSession> sessions = assist.activeSessions();
 
-		assertEquals(1, sessions.size());
-		assertEquals(session.getId(), sessions.get(0).getId());
-		assertNotNull(getCached());
+    assertEquals(1, sessions.size());
+    assertEquals(session.getId(), sessions.get(0).getId());
+    assertNotNull(getCached());
 
-		// enable to test cache expiry, assumes 15 seconds
-		// @see src/main/resources/ehcache.xml
-		//
-		// Thread.sleep(16000);
-		//
-		// assertNull(getCached());
-	}
+    // enable to test cache expiry, assumes 15 seconds
+    // @see src/main/resources/ehcache.xml
+    //
+    // Thread.sleep(16000);
+    //
+    // assertNull(getCached());
+  }
 
-	@SuppressWarnings("unchecked")
-	private List<UserSession> getCached() {
-		return cache.get(UserSessionAssist.SESSIONS_KEY, List.class);
-	}
+  @SuppressWarnings("unchecked")
+  private List<UserSession> getCached() {
+    return cache.get(UserSessionAssist.SESSIONS_KEY, List.class);
+  }
 
-	private void testLogout(Runnable r) throws Exception {
-		User user = assist.expectedUser(USER_NAME);
+  private void testLogout(Runnable r) throws Exception {
+    User user = assist.expectedUser(USER_NAME);
 
-		UserSession session = createSession(user);
+    UserSession session = createSession(user);
 
-		assertNull(session.getEnded());
+    assertNull(session.getEnded());
 
-		assertTrue(assist.hasSession(sessionId));
+    assertTrue(assist.hasSession(sessionId));
 
-		r.run();
+    r.run();
 
-		assertFalse(assist.hasSession(sessionId));
+    assertFalse(assist.hasSession(sessionId));
 
-		assertNotNull(session.getEnded());
-	}
+    assertNotNull(session.getEnded());
+  }
 
-	private UserSession createSession(User user) {
-		UserSession session = assist.create(user);
-		sessionId = session.getId();
-		return session;
-	}
+  private UserSession createSession(User user) {
+    UserSession session = assist.create(user);
+    sessionId = session.getId();
+    return session;
+  }
 
-	private void illegalStateExpected(Runnable r, String failMsg) {
-		try {
-			r.run();
-			fail(failMsg);
-		} catch (IllegalStateException expected) {
-		}
-	}
+  private void illegalStateExpected(Runnable r, String failMsg) {
+    try {
+      r.run();
+      fail(failMsg);
+    } catch (IllegalStateException expected) {
+    }
+  }
 
-	private User createUser() {
-		User user = new User();
+  private User createUser() {
+    User user = new User();
 
-		user.setUserName(USER_NAME);
-		user.setState(UserState.ACTIVE);
-		user.setPasswordHash("unimportant");
+    user.setUserName(USER_NAME);
+    user.setState(UserState.ACTIVE);
+    user.setPasswordHash("unimportant");
 
-		return user;
-	}
+    return user;
+  }
 }

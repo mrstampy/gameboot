@@ -79,176 +79,176 @@ import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(TestConfiguration.class)
 public class CachedUserSessionLookupTest {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-	private static final String NON_EXISTENT = "usertest";
+  private static final String NON_EXISTENT = "usertest";
 
-	private static final String USER_NAME = "testuser";
+  private static final String USER_NAME = "testuser";
 
-	private static final int METRICS_ITR = 100;
+  private static final int METRICS_ITR = 100;
 
-	@Autowired
-	private CachedUserSessionLookup lookup;
+  @Autowired
+  private CachedUserSessionLookup lookup;
 
-	@Autowired
-	private UserSessionAssist assist;
+  @Autowired
+  private UserSessionAssist assist;
 
-	@Autowired
-	private UserRepository userRepo;
+  @Autowired
+  private UserRepository userRepo;
 
-	@Autowired
-	private UserSessionRepository userSessionRepo;
+  @Autowired
+  private UserSessionRepository userSessionRepo;
 
-	@Autowired
-	private MetricsHelper helper;
+  @Autowired
+  private MetricsHelper helper;
 
-	@Autowired
-	private ObjectMapper mapper;
+  @Autowired
+  private ObjectMapper mapper;
 
-	private User user;
+  private User user;
 
-	private Long sessionId;
+  private Long sessionId;
 
-	@Autowired
-	private CacheManager cacheManager;
+  @Autowired
+  private CacheManager cacheManager;
 
-	private Cache cache;
+  private Cache cache;
 
-	/**
-	 * Before.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Before
-	public void before() throws Exception {
-		User user = createUser();
+  /**
+   * Before.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Before
+  public void before() throws Exception {
+    User user = createUser();
 
-		this.user = userRepo.save(user);
+    this.user = userRepo.save(user);
 
-		createSession(user);
+    createSession(user);
 
-		cache = cacheManager.getCache(UserSessionAssist.SESSIONS_CACHE);
-	}
+    cache = cacheManager.getCache(UserSessionAssist.SESSIONS_CACHE);
+  }
 
-	/**
-	 * After.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@After
-	public void after() throws Exception {
-		if (sessionId != null) {
-			if (assist.hasSession(sessionId)) assist.logout(sessionId);
-			userSessionRepo.delete(sessionId);
-		}
+  /**
+   * After.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @After
+  public void after() throws Exception {
+    if (sessionId != null) {
+      if (assist.hasSession(sessionId)) assist.logout(sessionId);
+      userSessionRepo.delete(sessionId);
+    }
 
-		sessionId = null;
+    sessionId = null;
 
-		userRepo.delete(user);
-	}
+    userRepo.delete(user);
+  }
 
-	/**
-	 * Test exceptions.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void testExceptions() throws Exception {
-		illegalStateExpected(() -> lookup.expected(NON_EXISTENT), "No session for username");
-		illegalStateExpected(() -> lookup.expected((String) null), "Null username");
-		illegalStateExpected(() -> lookup.expected((Long) null), "Null id");
-		illegalStateExpected(() -> lookup.expected(Long.MAX_VALUE), "No session for id");
-	}
+  /**
+   * Test exceptions.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void testExceptions() throws Exception {
+    illegalStateExpected(() -> lookup.expected(NON_EXISTENT), "No session for username");
+    illegalStateExpected(() -> lookup.expected((String) null), "Null username");
+    illegalStateExpected(() -> lookup.expected((Long) null), "Null id");
+    illegalStateExpected(() -> lookup.expected(Long.MAX_VALUE), "No session for id");
+  }
 
-	/**
-	 * Metrics with session id.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void metricsWithSessionId() throws Exception {
-		generateUncachedStats();
+  /**
+   * Metrics with session id.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void metricsWithSessionId() throws Exception {
+    generateUncachedStats();
 
-		for (int i = 0; i < METRICS_ITR; i++) {
-			lookup.expected(sessionId);
-		}
+    for (int i = 0; i < METRICS_ITR; i++) {
+      lookup.expected(sessionId);
+    }
 
-		metrics();
-	}
+    metrics();
+  }
 
-	/**
-	 * Metrics with user name.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void metricsWithUserName() throws Exception {
-		generateUncachedStats();
+  /**
+   * Metrics with user name.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void metricsWithUserName() throws Exception {
+    generateUncachedStats();
 
-		for (int i = 0; i < METRICS_ITR; i++) {
-			lookup.expected(USER_NAME);
-		}
+    for (int i = 0; i < METRICS_ITR; i++) {
+      lookup.expected(USER_NAME);
+    }
 
-		metrics();
-	}
+    metrics();
+  }
 
-	/**
-	 * Generate uncached stats.
-	 */
-	protected void generateUncachedStats() {
-		for (int i = 0; i < METRICS_ITR; i++) {
-			cache.clear();
-			assist.activeSessions();
-		}
-	}
+  /**
+   * Generate uncached stats.
+   */
+  protected void generateUncachedStats() {
+    for (int i = 0; i < METRICS_ITR; i++) {
+      cache.clear();
+      assist.activeSessions();
+    }
+  }
 
-	private void illegalStateExpected(Runnable r, String failMsg) {
-		try {
-			r.run();
-			fail(failMsg);
-		} catch (IllegalStateException expected) {
-		}
-	}
+  private void illegalStateExpected(Runnable r, String failMsg) {
+    try {
+      r.run();
+      fail(failMsg);
+    } catch (IllegalStateException expected) {
+    }
+  }
 
-	private User createUser() {
-		User user = new User();
+  private User createUser() {
+    User user = new User();
 
-		user.setUserName(USER_NAME);
-		user.setState(UserState.ACTIVE);
-		user.setPasswordHash("unimportant");
+    user.setUserName(USER_NAME);
+    user.setState(UserState.ACTIVE);
+    user.setPasswordHash("unimportant");
 
-		return user;
-	}
+    return user;
+  }
 
-	private UserSession createSession(User user) {
-		UserSession session = assist.create(user);
-		sessionId = session.getId();
-		return session;
-	}
+  private UserSession createSession(User user) {
+    UserSession session = assist.create(user);
+    sessionId = session.getId();
+    return session;
+  }
 
-	private void metrics() throws Exception {
-		Set<Entry<String, Timer>> timers = helper.getTimers();
+  private void metrics() throws Exception {
+    Set<Entry<String, Timer>> timers = helper.getTimers();
 
-		timers.stream().filter(e -> isMetric(e.getKey())).forEach(e -> display(e));
-	}
+    timers.stream().filter(e -> isMetric(e.getKey())).forEach(e -> display(e));
+  }
 
-	private boolean isMetric(String key) {
-		return "UncachedSessionTimer".equals(key) || "CachedSessionTimer".equals(key);
-	}
+  private boolean isMetric(String key) {
+    return "UncachedSessionTimer".equals(key) || "CachedSessionTimer".equals(key);
+  }
 
-	private void display(Entry<String, ?> t) {
-		try {
-			log.debug(mapper.writeValueAsString(t));
-		} catch (JsonProcessingException e) {
-			log.error("Unexpected exception", e);
-		}
-	}
+  private void display(Entry<String, ?> t) {
+    try {
+      log.debug(mapper.writeValueAsString(t));
+    } catch (JsonProcessingException e) {
+      log.error("Unexpected exception", e);
+    }
+  }
 }

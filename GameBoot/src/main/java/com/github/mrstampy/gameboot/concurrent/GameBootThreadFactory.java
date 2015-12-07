@@ -52,216 +52,216 @@ import org.slf4j.LoggerFactory;
  * A configurable thread factory enabling full thread customization.
  */
 public class GameBootThreadFactory implements ThreadFactory {
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-	private boolean daemon = true;
+  private boolean daemon = true;
 
-	private String name = "GameBoot Thread Factory";
+  private String name = "GameBoot Thread Factory";
 
-	private ThreadGroup group;
+  private ThreadGroup group;
 
-	private AtomicInteger count = new AtomicInteger(1);
+  private AtomicInteger count = new AtomicInteger(1);
 
-	private UncaughtExceptionHandler handler;
+  private UncaughtExceptionHandler handler;
 
-	private ClassLoader classLoader;
+  private ClassLoader classLoader;
 
-	/**
-	 * The Enum Priority.
-	 */
-	public enum Priority {
-		/** The max. */
-		MAX,
-		/** The min. */
-		MIN,
-		/** The default. */
-		DEFAULT;
-	}
+  /**
+   * The Enum Priority.
+   */
+  public enum Priority {
+    /** The max. */
+    MAX,
+    /** The min. */
+    MIN,
+    /** The default. */
+    DEFAULT;
+  }
 
-	private Priority priority = Priority.DEFAULT;
+  private Priority priority = Priority.DEFAULT;
 
-	static {
-		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+  static {
+    Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 
-			@Override
-			public void uncaughtException(Thread t, Throwable e) {
-				log.error("Uncaught exception in thread {}", t.getName(), e);
-			}
+      @Override
+      public void uncaughtException(Thread t, Throwable e) {
+        log.error("Uncaught exception in thread {}", t.getName(), e);
+      }
 
-		});
-	}
+    });
+  }
 
-	/**
-	 * Instantiates a new game boot thread factory.
-	 *
-	 * @param name
-	 *          the name
-	 */
-	public GameBootThreadFactory(String name) {
-		setName(name);
-	}
+  /**
+   * Instantiates a new game boot thread factory.
+   *
+   * @param name
+   *          the name
+   */
+  public GameBootThreadFactory(String name) {
+    setName(name);
+  }
 
-	/**
-	 * Instantiates a new game boot thread factory.
-	 *
-	 * @param name
-	 *          the name
-	 * @param priority
-	 *          the priority
-	 */
-	public GameBootThreadFactory(String name, Priority priority) {
-		setName(name);
-		setPriority(priority);
-	}
+  /**
+   * Instantiates a new game boot thread factory.
+   *
+   * @param name
+   *          the name
+   * @param priority
+   *          the priority
+   */
+  public GameBootThreadFactory(String name, Priority priority) {
+    setName(name);
+    setPriority(priority);
+  }
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
-	 */
-	@Override
-	public Thread newThread(Runnable r) {
-		int nbr = count.getAndIncrement();
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.util.concurrent.ThreadFactory#newThread(java.lang.Runnable)
+   */
+  @Override
+  public Thread newThread(Runnable r) {
+    int nbr = count.getAndIncrement();
 
-		String tn = nbr == 1 ? name : name + "-" + nbr;
-		Thread thread = group == null ? new Thread(r, tn) : new Thread(group, r, tn);
+    String tn = nbr == 1 ? name : name + "-" + nbr;
+    Thread thread = group == null ? new Thread(r, tn) : new Thread(group, r, tn);
 
-		thread.setDaemon(daemon);
+    thread.setDaemon(daemon);
 
-		if (handler != null) thread.setUncaughtExceptionHandler(handler);
-		if (classLoader != null) thread.setContextClassLoader(classLoader);
+    if (handler != null) thread.setUncaughtExceptionHandler(handler);
+    if (classLoader != null) thread.setContextClassLoader(classLoader);
 
-		if (priority == null) {
-			thread.setPriority(Thread.NORM_PRIORITY);
-		} else {
-			switch (priority) {
-			case MAX:
-				thread.setPriority(Thread.MAX_PRIORITY);
-				break;
-			case MIN:
-				thread.setPriority(Thread.MIN_PRIORITY);
-				break;
-			default:
-				thread.setPriority(Thread.NORM_PRIORITY);
-				break;
-			}
-		}
+    if (priority == null) {
+      thread.setPriority(Thread.NORM_PRIORITY);
+    } else {
+      switch (priority) {
+      case MAX:
+        thread.setPriority(Thread.MAX_PRIORITY);
+        break;
+      case MIN:
+        thread.setPriority(Thread.MIN_PRIORITY);
+        break;
+      default:
+        thread.setPriority(Thread.NORM_PRIORITY);
+        break;
+      }
+    }
 
-		return thread;
-	}
+    return thread;
+  }
 
-	/**
-	 * Checks if is daemon.
-	 *
-	 * @return true, if is daemon
-	 */
-	public boolean isDaemon() {
-		return daemon;
-	}
+  /**
+   * Checks if is daemon.
+   *
+   * @return true, if is daemon
+   */
+  public boolean isDaemon() {
+    return daemon;
+  }
 
-	/**
-	 * Gets the name.
-	 *
-	 * @return the name
-	 */
-	public String getName() {
-		return name;
-	}
+  /**
+   * Gets the name.
+   *
+   * @return the name
+   */
+  public String getName() {
+    return name;
+  }
 
-	/**
-	 * Gets the group.
-	 *
-	 * @return the group
-	 */
-	public ThreadGroup getGroup() {
-		return group;
-	}
+  /**
+   * Gets the group.
+   *
+   * @return the group
+   */
+  public ThreadGroup getGroup() {
+    return group;
+  }
 
-	/**
-	 * Sets the daemon.
-	 *
-	 * @param daemon
-	 *          the new daemon
-	 */
-	public void setDaemon(boolean daemon) {
-		this.daemon = daemon;
-	}
+  /**
+   * Sets the daemon.
+   *
+   * @param daemon
+   *          the new daemon
+   */
+  public void setDaemon(boolean daemon) {
+    this.daemon = daemon;
+  }
 
-	/**
-	 * Sets the name.
-	 *
-	 * @param name
-	 *          the new name
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
+  /**
+   * Sets the name.
+   *
+   * @param name
+   *          the new name
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	/**
-	 * Sets the group.
-	 *
-	 * @param group
-	 *          the new group
-	 */
-	public void setGroup(ThreadGroup group) {
-		this.group = group;
-	}
+  /**
+   * Sets the group.
+   *
+   * @param group
+   *          the new group
+   */
+  public void setGroup(ThreadGroup group) {
+    this.group = group;
+  }
 
-	/**
-	 * Gets the handler.
-	 *
-	 * @return the handler
-	 */
-	public UncaughtExceptionHandler getHandler() {
-		return handler;
-	}
+  /**
+   * Gets the handler.
+   *
+   * @return the handler
+   */
+  public UncaughtExceptionHandler getHandler() {
+    return handler;
+  }
 
-	/**
-	 * Sets the handler.
-	 *
-	 * @param handler
-	 *          the new handler
-	 */
-	public void setHandler(UncaughtExceptionHandler handler) {
-		this.handler = handler;
-	}
+  /**
+   * Sets the handler.
+   *
+   * @param handler
+   *          the new handler
+   */
+  public void setHandler(UncaughtExceptionHandler handler) {
+    this.handler = handler;
+  }
 
-	/**
-	 * Gets the class loader.
-	 *
-	 * @return the class loader
-	 */
-	public ClassLoader getClassLoader() {
-		return classLoader;
-	}
+  /**
+   * Gets the class loader.
+   *
+   * @return the class loader
+   */
+  public ClassLoader getClassLoader() {
+    return classLoader;
+  }
 
-	/**
-	 * Sets the class loader.
-	 *
-	 * @param classLoader
-	 *          the new class loader
-	 */
-	public void setClassLoader(ClassLoader classLoader) {
-		this.classLoader = classLoader;
-	}
+  /**
+   * Sets the class loader.
+   *
+   * @param classLoader
+   *          the new class loader
+   */
+  public void setClassLoader(ClassLoader classLoader) {
+    this.classLoader = classLoader;
+  }
 
-	/**
-	 * Gets the priority.
-	 *
-	 * @return the priority
-	 */
-	public Priority getPriority() {
-		return priority;
-	}
+  /**
+   * Gets the priority.
+   *
+   * @return the priority
+   */
+  public Priority getPriority() {
+    return priority;
+  }
 
-	/**
-	 * Sets the priority.
-	 *
-	 * @param priority
-	 *          the new priority
-	 */
-	public void setPriority(Priority priority) {
-		this.priority = priority;
-	}
+  /**
+   * Sets the priority.
+   *
+   * @param priority
+   *          the new priority
+   */
+  public void setPriority(Priority priority) {
+    this.priority = priority;
+  }
 
 }

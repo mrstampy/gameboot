@@ -87,373 +87,373 @@ import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(TestConfiguration.class)
 public class UserMessageProcessorTest {
-	private static final UserState NEW_STATE = UserState.INACTIVE;
+  private static final UserState NEW_STATE = UserState.INACTIVE;
 
-	private static final String NEW_LAST = "last";
+  private static final String NEW_LAST = "last";
 
-	private static final String NEW_FIRST = "first";
+  private static final String NEW_FIRST = "first";
 
-	private static final Date NEW_DOB = new Date();
+  private static final Date NEW_DOB = new Date();
 
-	private static final String NEW_EMAIL = "bling.blah@yada.com";
+  private static final String NEW_EMAIL = "bling.blah@yada.com";
 
-	private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-	private static final String PASSWORD = "password";
+  private static final String PASSWORD = "password";
 
-	private static final String BAD_PASSWORD = "BADpassword";
+  private static final String BAD_PASSWORD = "BADpassword";
 
-	private static final String TEST_USER = "testuser";
+  private static final String TEST_USER = "testuser";
 
-	private static final String BAD_USER = "baduser";
+  private static final String BAD_USER = "baduser";
 
-	@Autowired
-	private UserMessageProcessor processor;
+  @Autowired
+  private UserMessageProcessor processor;
 
-	@Autowired
-	private UserSessionAssist assist;
+  @Autowired
+  private UserSessionAssist assist;
 
-	@Autowired
-	private ActiveSessions activeSessions;
+  @Autowired
+  private ActiveSessions activeSessions;
 
-	@Autowired
-	private UserRepository userRepo;
+  @Autowired
+  private UserRepository userRepo;
 
-	@Autowired
-	private UserSessionRepository userSessionRepo;
+  @Autowired
+  private UserSessionRepository userSessionRepo;
 
-	@Autowired
-	private MetricsHelper helper;
+  @Autowired
+  private MetricsHelper helper;
 
-	@Autowired
-	private ObjectMapper mapper;
+  @Autowired
+  private ObjectMapper mapper;
 
-	private Long userId;
+  private Long userId;
 
-	private Long sessionId;
+  private Long sessionId;
 
-	/**
-	 * Before.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Before
-	public void before() throws Exception {
-		failExpected(null, "Null message");
+  /**
+   * Before.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Before
+  public void before() throws Exception {
+    failExpected(null, "Null message");
 
-		UserMessage m = new UserMessage();
+    UserMessage m = new UserMessage();
 
-		failExpected(m, "Empty message");
+    failExpected(m, "Empty message");
 
-		m.setFunction(Function.CREATE);
-		failExpected(m, "No username/password");
+    m.setFunction(Function.CREATE);
+    failExpected(m, "No username/password");
 
-		m.setUserName(TEST_USER);
-		failExpected(m, "No password");
+    m.setUserName(TEST_USER);
+    failExpected(m, "No password");
 
-		m.setNewPassword(PASSWORD);
+    m.setNewPassword(PASSWORD);
 
-		Response r = processor.process(m);
+    Response r = processor.process(m);
 
-		assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
-		assertNotNull(r.getResponse());
-		assertEquals(1, r.getResponse().length);
-		assertTrue(r.getResponse()[0] instanceof User);
+    assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+    assertNotNull(r.getResponse());
+    assertEquals(1, r.getResponse().length);
+    assertTrue(r.getResponse()[0] instanceof User);
 
-		User user = (User) r.getResponse()[0];
-		userId = user.getId();
-	}
+    User user = (User) r.getResponse()[0];
+    userId = user.getId();
+  }
 
-	/**
-	 * After.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@After
-	public void after() throws Exception {
-		if (sessionId != null) {
-			if (assist.hasSession(sessionId)) assist.logout(sessionId);
+  /**
+   * After.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @After
+  public void after() throws Exception {
+    if (sessionId != null) {
+      if (assist.hasSession(sessionId)) assist.logout(sessionId);
 
-			userSessionRepo.delete(sessionId);
-		}
+      userSessionRepo.delete(sessionId);
+    }
 
-		userRepo.delete(userId);
+    userRepo.delete(userId);
 
-		metrics();
-	}
+    metrics();
+  }
 
-	/**
-	 * Test login.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void testLogin() throws Exception {
-		UserMessage m = new UserMessage();
+  /**
+   * Test login.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void testLogin() throws Exception {
+    UserMessage m = new UserMessage();
 
-		m.setFunction(Function.LOGIN);
-		m.setUserName(TEST_USER);
-		m.setNewPassword(BAD_PASSWORD);
+    m.setFunction(Function.LOGIN);
+    m.setUserName(TEST_USER);
+    m.setNewPassword(BAD_PASSWORD);
 
-		failExpected(m, "Bad password");
+    failExpected(m, "Bad password");
 
-		m.setUserName(BAD_USER);
-		m.setNewPassword(PASSWORD);
+    m.setUserName(BAD_USER);
+    m.setNewPassword(PASSWORD);
 
-		failExpected(m, "Bad user");
-
-		m.setUserName(TEST_USER);
+    failExpected(m, "Bad user");
+
+    m.setUserName(TEST_USER);
 
-		Response r = processor.process(m);
+    Response r = processor.process(m);
 
-		assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+    assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
 
-		assertNotNull(r.getResponse());
-		assertEquals(2, r.getResponse().length);
+    assertNotNull(r.getResponse());
+    assertEquals(2, r.getResponse().length);
 
-		assertTrue(r.getResponse()[0] instanceof User);
-		assertTrue(r.getResponse()[1] instanceof UserSession);
+    assertTrue(r.getResponse()[0] instanceof User);
+    assertTrue(r.getResponse()[1] instanceof UserSession);
 
-		UserSession session = (UserSession) r.getResponse()[1];
-		sessionId = session.getId();
+    UserSession session = (UserSession) r.getResponse()[1];
+    sessionId = session.getId();
 
-		failExpected(m, "User logged in");
-	}
+    failExpected(m, "User logged in");
+  }
 
-	/**
-	 * Test logout.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void testLogout() throws Exception {
-		UserMessage m = new UserMessage();
+  /**
+   * Test logout.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void testLogout() throws Exception {
+    UserMessage m = new UserMessage();
 
-		m.setFunction(Function.LOGOUT);
-		m.setUserName(TEST_USER);
+    m.setFunction(Function.LOGOUT);
+    m.setUserName(TEST_USER);
 
-		failExpected(m, "Not logged in");
+    failExpected(m, "Not logged in");
 
-		testLogin();
+    testLogin();
 
-		Response r = processor.process(m);
+    Response r = processor.process(m);
 
-		assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+    assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
 
-		assertNotNull(r.getResponse());
-		assertEquals(1, r.getResponse().length);
+    assertNotNull(r.getResponse());
+    assertEquals(1, r.getResponse().length);
 
-		assertTrue(r.getResponse()[0] instanceof User);
-	}
+    assertTrue(r.getResponse()[0] instanceof User);
+  }
 
-	/**
-	 * Test delete.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void testDelete() throws Exception {
-		UserMessage m = new UserMessage();
+  /**
+   * Test delete.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void testDelete() throws Exception {
+    UserMessage m = new UserMessage();
 
-		m.setFunction(Function.DELETE);
-		m.setUserName(TEST_USER);
+    m.setFunction(Function.DELETE);
+    m.setUserName(TEST_USER);
 
-		Response r = processor.process(m);
+    Response r = processor.process(m);
 
-		assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+    assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
 
-		assertNotNull(r.getResponse());
-		assertEquals(1, r.getResponse().length);
+    assertNotNull(r.getResponse());
+    assertEquals(1, r.getResponse().length);
 
-		assertTrue(r.getResponse()[0] instanceof User);
+    assertTrue(r.getResponse()[0] instanceof User);
 
-		User user = (User) r.getResponse()[0];
-		assertEquals(UserState.DELETED, user.getState());
-	}
+    User user = (User) r.getResponse()[0];
+    assertEquals(UserState.DELETED, user.getState());
+  }
 
-	/**
-	 * Test delete logged in.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void testDeleteLoggedIn() throws Exception {
-		testLogin();
-		assertEquals(1, activeSessions.size());
+  /**
+   * Test delete logged in.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void testDeleteLoggedIn() throws Exception {
+    testLogin();
+    assertEquals(1, activeSessions.size());
 
-		testDelete();
-		assertEquals(0, activeSessions.size());
-	}
-
-	/**
-	 * Test update.
-	 *
-	 * @throws Exception
-	 *           the exception
-	 */
-	@Test
-	@Transactional
-	public void testUpdate() throws Exception {
-		User user = userRepo.findOne(userId);
-
-		UserMessage m = new UserMessage();
-
-		m.setFunction(Function.UPDATE);
-		m.setUserName(TEST_USER);
-
-		failExpected(m, "No user data changed");
-
-		user = emailTest(user, m);
-
-		user = dobTest(user, m);
-		assertEquals(NEW_EMAIL, user.getEmail());
-
-		user = firstNameTest(user, m);
-		assertEquals(NEW_EMAIL, user.getEmail());
-		assertEquals(NEW_DOB, user.getDob());
-
-		user = lastNameTest(user, m);
-		assertEquals(NEW_EMAIL, user.getEmail());
-		assertEquals(NEW_DOB, user.getDob());
-		assertEquals(NEW_FIRST, user.getFirstName());
+    testDelete();
+    assertEquals(0, activeSessions.size());
+  }
+
+  /**
+   * Test update.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  @Transactional
+  public void testUpdate() throws Exception {
+    User user = userRepo.findOne(userId);
+
+    UserMessage m = new UserMessage();
+
+    m.setFunction(Function.UPDATE);
+    m.setUserName(TEST_USER);
+
+    failExpected(m, "No user data changed");
+
+    user = emailTest(user, m);
+
+    user = dobTest(user, m);
+    assertEquals(NEW_EMAIL, user.getEmail());
+
+    user = firstNameTest(user, m);
+    assertEquals(NEW_EMAIL, user.getEmail());
+    assertEquals(NEW_DOB, user.getDob());
+
+    user = lastNameTest(user, m);
+    assertEquals(NEW_EMAIL, user.getEmail());
+    assertEquals(NEW_DOB, user.getDob());
+    assertEquals(NEW_FIRST, user.getFirstName());
 
-		user = userStateTest(user, m);
-		assertEquals(NEW_EMAIL, user.getEmail());
-		assertEquals(NEW_DOB, user.getDob());
-		assertEquals(NEW_FIRST, user.getFirstName());
-		assertEquals(NEW_LAST, user.getLastName());
+    user = userStateTest(user, m);
+    assertEquals(NEW_EMAIL, user.getEmail());
+    assertEquals(NEW_DOB, user.getDob());
+    assertEquals(NEW_FIRST, user.getFirstName());
+    assertEquals(NEW_LAST, user.getLastName());
 
-		passwordTest(user, m);
+    passwordTest(user, m);
 
-		assertEquals(NEW_EMAIL, user.getEmail());
-		assertEquals(NEW_DOB, user.getDob());
-		assertEquals(NEW_FIRST, user.getFirstName());
-		assertEquals(NEW_LAST, user.getLastName());
-		assertEquals(NEW_STATE, user.getState());
-	}
+    assertEquals(NEW_EMAIL, user.getEmail());
+    assertEquals(NEW_DOB, user.getDob());
+    assertEquals(NEW_FIRST, user.getFirstName());
+    assertEquals(NEW_LAST, user.getLastName());
+    assertEquals(NEW_STATE, user.getState());
+  }
 
-	private void passwordTest(User user, UserMessage m) throws Exception {
-		m.setOldPassword(BAD_PASSWORD);
-		m.setNewPassword(PASSWORD);
-
-		failExpected(m, "Wrong password for password change");
-
-		m.setOldPassword(PASSWORD);
-		m.setNewPassword(BAD_PASSWORD);
-
-		String oldHash = user.getPasswordHash();
-
-		user = updateCheck(processor.process(m));
-		assertNotEquals(oldHash, user.getPasswordHash());
-	}
-
-	private User userStateTest(User user, UserMessage m) throws Exception {
-		UserState state = NEW_STATE;
-		assertNotEquals(state, user.getState());
-		m.setState(state);
-
-		user = updateCheck(processor.process(m));
-		assertEquals(state, user.getState());
-		m.setState(null);
-		return user;
-	}
-
-	private User lastNameTest(User user, UserMessage m) throws Exception {
-		String lastName = NEW_LAST;
-		assertNotEquals(lastName, user.getLastName());
-		m.setLastName(lastName);
-
-		user = updateCheck(processor.process(m));
-		assertEquals(lastName, user.getLastName());
-		m.setLastName(null);
-		return user;
-	}
-
-	private User firstNameTest(User user, UserMessage m) throws Exception {
-		String firstName = NEW_FIRST;
-		assertNotEquals(firstName, user.getFirstName());
-		m.setFirstName(firstName);
-
-		user = updateCheck(processor.process(m));
-		assertEquals(firstName, user.getFirstName());
-		m.setFirstName(null);
-		return user;
-	}
-
-	private User dobTest(User user, UserMessage m) throws Exception {
-		Date dob = NEW_DOB;
-		assertNotEquals(dob, user.getDob());
-		m.setDob(dob);
-
-		user = updateCheck(processor.process(m));
-		assertEquals(dob, user.getDob());
-		m.setDob(null);
-		return user;
-	}
-
-	private User emailTest(User user, UserMessage m) throws Exception {
-		String email = NEW_EMAIL;
-		assertNotEquals(email, user.getEmail());
-		m.setEmail(email);
-
-		user = updateCheck(processor.process(m));
-		assertEquals(email, user.getEmail());
-		m.setEmail(null);
-		return user;
-	}
-
-	private User updateCheck(Response r) {
-		assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
-
-		assertNotNull(r.getResponse());
-		assertEquals(1, r.getResponse().length);
-
-		assertTrue(r.getResponse()[0] instanceof User);
-
-		return (User) r.getResponse()[0];
-	}
-
-	private void metrics() throws Exception {
-		Set<Entry<String, Timer>> timers = helper.getTimers();
-
-		timers.forEach(e -> display(e));
-
-		Set<Entry<String, Counter>> counters = helper.getCounters();
-
-		counters.forEach(e -> display(e));
-	}
-
-	private void display(Entry<String, ?> t) {
-		try {
-			log.debug(mapper.writeValueAsString(t));
-		} catch (JsonProcessingException e) {
-			log.error("Unexpected exception", e);
-		}
-	}
-
-	private void failExpected(UserMessage m, String failMsg) {
-		try {
-			Response r = processor.process(m);
-			switch (r.getResponseCode()) {
-			case FAILURE:
-				break;
-			default:
-				fail(failMsg);
-				break;
-			}
-		} catch (RuntimeException expected) {
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
-	}
+  private void passwordTest(User user, UserMessage m) throws Exception {
+    m.setOldPassword(BAD_PASSWORD);
+    m.setNewPassword(PASSWORD);
+
+    failExpected(m, "Wrong password for password change");
+
+    m.setOldPassword(PASSWORD);
+    m.setNewPassword(BAD_PASSWORD);
+
+    String oldHash = user.getPasswordHash();
+
+    user = updateCheck(processor.process(m));
+    assertNotEquals(oldHash, user.getPasswordHash());
+  }
+
+  private User userStateTest(User user, UserMessage m) throws Exception {
+    UserState state = NEW_STATE;
+    assertNotEquals(state, user.getState());
+    m.setState(state);
+
+    user = updateCheck(processor.process(m));
+    assertEquals(state, user.getState());
+    m.setState(null);
+    return user;
+  }
+
+  private User lastNameTest(User user, UserMessage m) throws Exception {
+    String lastName = NEW_LAST;
+    assertNotEquals(lastName, user.getLastName());
+    m.setLastName(lastName);
+
+    user = updateCheck(processor.process(m));
+    assertEquals(lastName, user.getLastName());
+    m.setLastName(null);
+    return user;
+  }
+
+  private User firstNameTest(User user, UserMessage m) throws Exception {
+    String firstName = NEW_FIRST;
+    assertNotEquals(firstName, user.getFirstName());
+    m.setFirstName(firstName);
+
+    user = updateCheck(processor.process(m));
+    assertEquals(firstName, user.getFirstName());
+    m.setFirstName(null);
+    return user;
+  }
+
+  private User dobTest(User user, UserMessage m) throws Exception {
+    Date dob = NEW_DOB;
+    assertNotEquals(dob, user.getDob());
+    m.setDob(dob);
+
+    user = updateCheck(processor.process(m));
+    assertEquals(dob, user.getDob());
+    m.setDob(null);
+    return user;
+  }
+
+  private User emailTest(User user, UserMessage m) throws Exception {
+    String email = NEW_EMAIL;
+    assertNotEquals(email, user.getEmail());
+    m.setEmail(email);
+
+    user = updateCheck(processor.process(m));
+    assertEquals(email, user.getEmail());
+    m.setEmail(null);
+    return user;
+  }
+
+  private User updateCheck(Response r) {
+    assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+
+    assertNotNull(r.getResponse());
+    assertEquals(1, r.getResponse().length);
+
+    assertTrue(r.getResponse()[0] instanceof User);
+
+    return (User) r.getResponse()[0];
+  }
+
+  private void metrics() throws Exception {
+    Set<Entry<String, Timer>> timers = helper.getTimers();
+
+    timers.forEach(e -> display(e));
+
+    Set<Entry<String, Counter>> counters = helper.getCounters();
+
+    counters.forEach(e -> display(e));
+  }
+
+  private void display(Entry<String, ?> t) {
+    try {
+      log.debug(mapper.writeValueAsString(t));
+    } catch (JsonProcessingException e) {
+      log.error("Unexpected exception", e);
+    }
+  }
+
+  private void failExpected(UserMessage m, String failMsg) {
+    try {
+      Response r = processor.process(m);
+      switch (r.getResponseCode()) {
+      case FAILURE:
+        break;
+      default:
+        fail(failMsg);
+        break;
+      }
+    } catch (RuntimeException expected) {
+    } catch (Exception e) {
+      fail(e.getMessage());
+    }
+  }
 }
