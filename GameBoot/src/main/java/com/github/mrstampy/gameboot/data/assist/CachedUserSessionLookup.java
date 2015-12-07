@@ -53,7 +53,7 @@ import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
-import com.github.mrstampy.gameboot.data.entity.repository.UserSessionRepository;
+import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 /**

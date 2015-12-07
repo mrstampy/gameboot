@@ -38,56 +38,46 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.entity.repository;
-
-import java.util.List;
+package com.github.mrstampy.gameboot.data.repository;
 
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import com.github.mrstampy.gameboot.data.entity.User;
-import com.github.mrstampy.gameboot.data.entity.UserSession;
 
 /**
- * The Interface UserSessionRepository.
+ * The Interface UserRepository.
  */
-public interface UserSessionRepository extends CrudRepository<UserSession, Long> {
+public interface UserRepository extends CrudRepository<User, Long> {
 
 	/**
-	 * Find by user and ended is null.
-	 *
-	 * @param user
-	 *          the user
-	 * @return the user session
-	 */
-	UserSession findByUserAndEndedIsNull(User user);
-
-	/**
-	 * Find by user name and ended is null.
+	 * Find by user name.
 	 *
 	 * @param userName
 	 *          the user name
-	 * @return the user session
+	 * @return the user
 	 */
-	@Query("SELECT us FROM UserSession us JOIN FETCH us.user WHERE us.ended is null AND us.user.userName = :userName")
-	UserSession findOpenSession(@Param("userName") String userName);
+	User findByUserName(String userName);
 
 	/**
-	 * Find by id and ended is null.
+	 * Find by user name with friends.
 	 *
-	 * @param id
-	 *          the id
-	 * @return the user session
+	 * @param userName
+	 *          the user name
+	 * @return the user
 	 */
-	@Query("SELECT us FROM UserSession us JOIN FETCH us.user WHERE us.ended is null AND us.id = :id")
-	UserSession findOpenSession(@Param("id") Long id);
+	@Query("SELECT u FROM User u JOIN FETCH u.friends WHERE u.userName = :userName")
+	User findByUserNameWithFriends(@Param("userName") String userName);
 
 	/**
-	 * Find by ended is null.
+	 * Find by user name with blocked.
 	 *
-	 * @return the list
+	 * @param userName
+	 *          the user name
+	 * @return the user
 	 */
-	@Query("SELECT us FROM UserSession us JOIN FETCH us.user WHERE us.ended is null ORDER BY us.created DESC")
-	List<UserSession> openSessions();
+	@Query("SELECT u FROM User u JOIN FETCH u.blocked WHERE u.userName = :userName")
+	User findByUserNameWithBlocked(@Param("userName") String userName);
+
 }
