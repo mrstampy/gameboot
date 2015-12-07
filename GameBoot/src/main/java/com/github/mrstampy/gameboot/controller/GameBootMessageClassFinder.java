@@ -38,37 +38,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.processor;
+package com.github.mrstampy.gameboot.controller;
 
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
-import com.github.mrstampy.gameboot.messages.Response;
+import java.lang.invoke.MethodHandles;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.github.mrstampy.gameboot.messages.UserMessage;
 
 /**
- * The Interface GameBootProcessor is implemented by any class wishing to
- * process specific {@link AbstractGameBootMessage} messages.
- *
- * @param <M>
- *          the generic type
+ * The default implementation of the {@link MessageClassFinder} interface.
+ * 
+ * @see GameBootControllerConfiguration
  */
-public interface GameBootProcessor<M extends AbstractGameBootMessage> {
+public class GameBootMessageClassFinder implements MessageClassFinder {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  /**
-   * Process.
-   *
-   * @param message
-   *          the message
-   * @return the response
-   * @throws Exception
-   *           the exception
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.controller.MessageClassFinder#findClass(java.
+   * lang.String)
    */
-  Response process(M message) throws Exception;
+  @Override
+  public Class<?> findClass(String type) {
+    switch (type) {
+    case UserMessage.TYPE:
+      return UserMessage.class;
+    default:
+      log.error("No class defined for type {}", type);
+      return null;
+    }
+  }
 
-  /**
-   * Returns the type of message this processor can
-   * {@link #process(AbstractGameBootMessage)}.
-   *
-   * @return the type
-   * @see AbstractGameBootMessage#getType()
-   */
-  String getType();
 }

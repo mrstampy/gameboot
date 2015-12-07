@@ -54,6 +54,9 @@ import com.github.mrstampy.gameboot.data.entity.User.UserState;
  */
 public class UserMessage extends AbstractGameBootMessage {
 
+  /** The Constant TYPE. */
+  public static final String TYPE = "USER_MESSAGE";
+
   private String userName;
 
   private String newPassword;
@@ -89,6 +92,13 @@ public class UserMessage extends AbstractGameBootMessage {
   }
 
   private Function function;
+
+  /**
+   * Instantiates a new user message.
+   */
+  public UserMessage() {
+    super(TYPE);
+  }
 
   /**
    * Gets the user name.

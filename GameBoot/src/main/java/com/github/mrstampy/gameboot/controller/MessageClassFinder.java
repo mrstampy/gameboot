@@ -38,37 +38,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.processor;
+package com.github.mrstampy.gameboot.controller;
 
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
-import com.github.mrstampy.gameboot.messages.Response;
 
 /**
- * The Interface GameBootProcessor is implemented by any class wishing to
- * process specific {@link AbstractGameBootMessage} messages.
- *
- * @param <M>
- *          the generic type
+ * Interface for defining type:message class pairing for JSON to
+ * {@link AbstractGameBootMessage}s.
+ * 
+ * @see GameBootMessageController
+ * @see GameBootControllerConfiguration
  */
-public interface GameBootProcessor<M extends AbstractGameBootMessage> {
+public interface MessageClassFinder {
 
   /**
-   * Process.
+   * Returns the class for the specified type, null if none defined.
    *
-   * @param message
-   *          the message
-   * @return the response
-   * @throws Exception
-   *           the exception
+   * @param type
+   *          the type
+   * @return the class
    */
-  Response process(M message) throws Exception;
-
-  /**
-   * Returns the type of message this processor can
-   * {@link #process(AbstractGameBootMessage)}.
-   *
-   * @return the type
-   * @see AbstractGameBootMessage#getType()
-   */
-  String getType();
+  Class<?> findClass(String type);
 }

@@ -38,37 +38,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.processor;
+package com.github.mrstampy.gameboot.controller;
 
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
-import com.github.mrstampy.gameboot.messages.Response;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * The Interface GameBootProcessor is implemented by any class wishing to
- * process specific {@link AbstractGameBootMessage} messages.
- *
- * @param <M>
- *          the generic type
+ * The Class GameBootControllerConfiguration.
  */
-public interface GameBootProcessor<M extends AbstractGameBootMessage> {
+@Configuration
+public class GameBootControllerConfiguration {
 
   /**
-   * Process.
+   * Returns the type->class finder for {@link GameBootMessageController}.
    *
-   * @param message
-   *          the message
-   * @return the response
-   * @throws Exception
-   *           the exception
+   * @return the message class finder
    */
-  Response process(M message) throws Exception;
-
-  /**
-   * Returns the type of message this processor can
-   * {@link #process(AbstractGameBootMessage)}.
-   *
-   * @return the type
-   * @see AbstractGameBootMessage#getType()
-   */
-  String getType();
+  @Bean
+  public MessageClassFinder finder() {
+    return new GameBootMessageClassFinder();
+  }
 }

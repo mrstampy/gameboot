@@ -53,6 +53,12 @@ public abstract class AbstractGameBootMessage {
 
   private Integer id;
 
+  private String type;
+  
+  protected AbstractGameBootMessage(String type) {
+    setType(type);
+  }
+
   /**
    * Gets the id.
    *
@@ -70,6 +76,25 @@ public abstract class AbstractGameBootMessage {
    */
   public void setId(Integer id) {
     this.id = id;
+  }
+
+  /**
+   * Gets the type.
+   *
+   * @return the type
+   */
+  public String getType() {
+    return type;
+  }
+
+  /**
+   * Sets the type.
+   *
+   * @param type
+   *          the new type
+   */
+  public void setType(String type) {
+    this.type = type;
   }
 
   /*

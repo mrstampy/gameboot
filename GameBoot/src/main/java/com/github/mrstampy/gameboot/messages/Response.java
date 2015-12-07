@@ -49,6 +49,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  */
 public class Response extends AbstractGameBootMessage {
 
+  /** The Constant TYPE. */
+  public static final String TYPE = "RESPONSE";
+
   /**
    * The Enum ResponseCode.
    */
@@ -74,6 +77,7 @@ public class Response extends AbstractGameBootMessage {
    * Instantiates a new response.
    */
   public Response() {
+    super(TYPE);
   }
 
   /**
