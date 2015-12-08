@@ -40,6 +40,9 @@
  */
 package com.github.mrstampy.gameboot.netty;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 
 import javax.annotation.PostConstruct;
@@ -52,6 +55,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.concurrent.FiberCreator;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
@@ -86,6 +90,8 @@ import io.netty.channel.DefaultChannelPromise;
 @Component
 @Scope("prototype")
 public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
+  private static final String USER_NAME = "userName";
+
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String MESSAGE_COUNTER = "Netty Message Counter";
@@ -98,6 +104,8 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
   /** Logback {@link MDC} key for remote address (nettyRemote). */
   public static final String REMOTE_ADDRESS = "nettyRemote";
 
+  private static final String SESSION_ID = null;
+
   @Autowired
   private ObjectMapper mapper;
 
@@ -109,6 +117,13 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
 
   @Autowired
   private GameBootUtils utils;
+
+  @Autowired
+  private NettyConnectionRegistry registry;
+
+  private String userName;
+
+  private Long sessionId;
 
   /**
    * Post construct.
@@ -143,6 +158,13 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     log.info("Disconnected from {}", ctx.channel());
+
+    if (isNotEmpty(userName)) registry.remove(userName);
+
+    if (sessionId != null) registry.remove(sessionId);
+
+    userName = null;
+    sessionId = null;
   }
 
   /*
@@ -154,7 +176,9 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
    */
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    log.error("Unexpected error on {}", ctx.channel(), cause);
+    log.error("Unexpected error on {}, closing channel", ctx.channel(), cause);
+
+    ctx.disconnect();
   }
 
   /*
@@ -170,6 +194,8 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
     helper.incr(MESSAGE_COUNTER);
 
     log.debug("Received message {} on {}", msg, ctx.channel());
+
+    inspect(ctx, (String) msg);
 
     Fiber<Void> fiber = creator.newFiberForkJoin(new SuspendableCallable<Void>() {
 
@@ -220,6 +246,30 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
           e);
     } finally {
       clearMDC();
+    }
+  }
+
+  private void inspect(ChannelHandlerContext ctx, String msg) {
+    if (isNotEmpty(userName) && sessionId != null) return;
+
+    JsonNode node;
+    try {
+      node = mapper.readTree(msg);
+    } catch (IOException e) {
+      log.error("Unexpected exception processing message {} on {}", msg, ctx.channel(), e);
+      return;
+    }
+
+    if (node.has(USER_NAME)) {
+      userName = node.get(USER_NAME).asText();
+
+      if (isNotEmpty(userName)) registry.put(msg, ctx.channel());
+    }
+
+    if (node.has(SESSION_ID)) {
+      sessionId = node.get(SESSION_ID).asLong();
+
+      registry.put(sessionId, ctx.channel());
     }
   }
 
