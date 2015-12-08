@@ -50,7 +50,7 @@ import org.springframework.context.annotation.Configuration;
 public class GameBootControllerConfiguration {
 
   /**
-   * Returns the type->class finder for {@link GameBootMessageController}.
+   * Returns the type2class finder for {@link GameBootMessageController}.
    *
    * @return the message class finder
    */
