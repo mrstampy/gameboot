@@ -90,21 +90,21 @@ import io.netty.channel.DefaultChannelPromise;
 @Component
 @Scope("prototype")
 public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
-  private static final String USER_NAME = "userName";
-
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  
+  /** Logback {@link MDC} key for local address (nettyLocal). */
+  public static final String LOCAL_ADDRESS = "nettyLocal";
+  
+  /** Logback {@link MDC} key for remote address (nettyRemote). */
+  public static final String REMOTE_ADDRESS = "nettyRemote";
 
   private static final String MESSAGE_COUNTER = "Netty Message Counter";
 
   private static final String FAILED_MESSAGE_COUNTER = "Netty Failed Message Counter";
 
-  /** Logback {@link MDC} key for local address (nettyLocal). */
-  public static final String LOCAL_ADDRESS = "nettyLocal";
-
-  /** Logback {@link MDC} key for remote address (nettyRemote). */
-  public static final String REMOTE_ADDRESS = "nettyRemote";
-
-  private static final String SESSION_ID = null;
+  private static final String USER_NAME = "userName";
+  
+  private static final String SESSION_ID = "sessionId";
 
   @Autowired
   private ObjectMapper mapper;
