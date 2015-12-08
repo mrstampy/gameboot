@@ -38,40 +38,41 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot;
+package com.github.mrstampy.gameboot.servlet;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.web.servlet.ServletComponentScan;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
+import java.io.IOException;
 
-import co.paralleluniverse.springframework.boot.security.autoconfigure.web.FiberSecureSpringBootApplication;
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.annotation.WebFilter;
+
+import org.springframework.core.annotation.Order;
+
+import ch.qos.logback.classic.helpers.MDCInsertingServletFilter;
 
 /**
- * The Main Class for the GameBoot application.
+ * Ensures the Logback MDC context is initialized with information from the
+ * request. More information from the
+ * <a href="http://logback.qos.ch/manual/mdc.html#mis">Logback Manual</a>
  */
-@Configuration
-@EnableAutoConfiguration
-@ComponentScan(basePackages = "com.github.mrstampy.gameboot")
-@EnableAspectJAutoProxy(proxyTargetClass = true)
-@EnableCaching
-@FiberSecureSpringBootApplication
-@EnableWebMvc
-@ServletComponentScan
-public class GameBoot {
+@WebFilter
+@Order(1)
+public class GameBootMDCFilter extends MDCInsertingServletFilter {
 
-  /**
-   * The main method.
-   *
-   * @param args
-   *          the arguments
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * ch.qos.logback.classic.helpers.MDCInsertingServletFilter#doFilter(javax.
+   * servlet.ServletRequest, javax.servlet.ServletResponse,
+   * javax.servlet.FilterChain)
    */
-  public static void main(String[] args) {
-    SpringApplication.run(GameBoot.class, args);
+  @Override
+  public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+      throws IOException, ServletException {
+    super.doFilter(request, response, chain);
   }
 
 }
