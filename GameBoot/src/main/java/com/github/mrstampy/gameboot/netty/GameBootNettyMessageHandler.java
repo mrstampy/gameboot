@@ -165,6 +165,10 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
 
     userName = null;
     sessionId = null;
+    mapper = null;
+    helper = null;
+    creator = null;
+    registry = null;
   }
 
   /*
