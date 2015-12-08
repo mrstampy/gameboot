@@ -86,9 +86,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
       log.debug("Created response {} for {}", response, message);
 
       return response;
-    } catch (GameBootRuntimeException e) {
-      return gameBootErrorResponse(message, e);
-    } catch (GameBootException e) {
+    } catch (GameBootRuntimeException | GameBootException e) {
       return gameBootErrorResponse(message, e);
     } catch (Exception e) {
       log.error("Error in processing {}", message, e);
