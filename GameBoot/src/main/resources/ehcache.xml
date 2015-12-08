@@ -45,7 +45,7 @@
   <ehcache:cache-template name="gameBootCacheTemplate">
   
     <ehcache:expiry>
-      <ehcache:ttl unit="seconds">15</ehcache:ttl>
+      <ehcache:ttl unit="seconds">5</ehcache:ttl>
     </ehcache:expiry>
     
     <ehcache:eviction-prioritizer>LRU</ehcache:eviction-prioritizer>

@@ -235,10 +235,10 @@ public class UserSessionAssistTest {
     assertEquals(session.getId(), sessions.get(0).getId());
     assertNotNull(getCached());
 
-    // enable to test cache expiry, assumes 15 seconds
+    // enable to test cache expiry, assumes 5 seconds
     // @see src/main/resources/ehcache.xml
     //
-    // Thread.sleep(16000);
+    // Thread.sleep(6000);
     //
     // assertNull(getCached());
   }
