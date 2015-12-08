@@ -61,6 +61,8 @@ import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 
+import co.paralleluniverse.fibers.Suspendable;
+
 /**
  * This class is intended to be used to process incoming messages when the type
  * of message is not known in advance ie. web sockets. Incoming messages are
@@ -121,6 +123,7 @@ public class GameBootMessageController {
    *           the exception
    */
   @SuppressWarnings("unchecked")
+  @Suspendable
   public <AGBM extends AbstractGameBootMessage> String process(String message) throws Exception {
     helper.incr(MESSAGE_COUNTER);
 

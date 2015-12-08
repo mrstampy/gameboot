@@ -123,9 +123,9 @@ public class GameBootMessageControllerTest {
     Map<?, ?> blah = (Map<?, ?>) response[0];
 
     Object id = blah.get("id");
-    
+
     assertNotNull(id);
-    
+
     this.userId = Long.parseLong(id.toString());
   }
 

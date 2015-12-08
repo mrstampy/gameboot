@@ -48,13 +48,74 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 
+import org.slf4j.MDC;
 import org.springframework.core.annotation.Order;
 
 import ch.qos.logback.classic.helpers.MDCInsertingServletFilter;
 
 /**
- * Ensures the Logback MDC context is initialized with information from the
- * request. More information from the
+ * Ensures the Logback {@link MDC} context is initialized with information from
+ * the request:<br>
+ * <br>
+ *
+ * <table>
+ * <tr>
+ * <th>MDC key</th>
+ * <th>MDC value</th>
+ * </tr>
+ *
+ * <tr class="alt">
+ * <td><b>req.remoteHost</b></td>
+ * <td>as returned by the <a href=
+ * "http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/servlet/ServletRequest.html#getRemoteHost%28%29">
+ * getRemoteHost()</a> method</td>
+ * </tr>
+ *
+ * <tr >
+ * <td><b>req.xForwardedFor</b></td>
+ * <td>value of the
+ * <a href="http://en.wikipedia.org/wiki/X-Forwarded-For">"X-Forwarded-For"</a>
+ * header</td>
+ * </tr>
+ *
+ * <tr class="alt">
+ * <td><b>req.method</b></td>
+ * <td>as returned by <a href=
+ * "http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/servlet/http/HttpServletRequest.html#getMethod%28%29">
+ * getMethod()</a> method</td>
+ * </tr>
+ *
+ * <tr>
+ * <td><b>req.requestURI</b></td>
+ * <td>as returned by <a href=
+ * "http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/servlet/http/HttpServletRequest.html#getRequestURI%28%29">
+ * getRequestURI()</a> method</td>
+ * </tr>
+ *
+ * <tr class="alt">
+ * <td><b>req.requestURL</b></td>
+ * <td>as returned by <a href=
+ * "http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/servlet/http/HttpServletRequest.html#getRequestURL%28%29">
+ * getRequestURL()</a> method</td>
+ * </tr>
+ *
+ * <tr>
+ * <td><b>req.queryString</b></td>
+ * <td>as returned by <a href=
+ * "http://java.sun.com/j2ee/sdk_1.3/techdocs/api/javax/servlet/http/HttpServletRequest.html#getQueryString%28%29">
+ * getQueryString()</a> method</td>
+ * </tr>
+ *
+ * <tr class="alt">
+ * <td><b>req.userAgent</b></td>
+ * <td>value of the "User-Agent" header</td>
+ * </tr>
+ *
+ * </table>
+ *
+ * <br>
+ * 
+ * More information from the
  * <a href="http://logback.qos.ch/manual/mdc.html#mis">Logback Manual</a>
  */
 @WebFilter

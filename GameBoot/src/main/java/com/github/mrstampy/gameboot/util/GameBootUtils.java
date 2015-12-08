@@ -38,40 +38,46 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.processor;
+package com.github.mrstampy.gameboot.util;
 
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
-import com.github.mrstampy.gameboot.messages.Response;
-
-import co.paralleluniverse.fibers.Suspendable;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
- * The Interface GameBootProcessor is implemented by any class wishing to
- * process specific {@link AbstractGameBootMessage} messages.
- *
- * @param <M>
- *          the generic type
+ * A collection of utility methods.
  */
-@Suspendable
-public interface GameBootProcessor<M extends AbstractGameBootMessage> {
+@Component
+public class GameBootUtils implements ApplicationContextAware {
+
+  private ApplicationContext ctx;
 
   /**
-   * Process.
+   * Returns a context-initialized Spring managed bean of the specified type,
+   * useful for obtaining prototype-{@link Scope}ed bean instances and bean
+   * references from outside the {@link ApplicationContext}.
    *
-   * @param message
-   *          the message
-   * @return the response
-   * @throws Exception
-   *           the exception
+   * @param <T>
+   *          the generic type
+   * @param clz
+   *          the clz
+   * @return the bean
    */
-  Response process(M message) throws Exception;
+  public <T> T getBean(Class<T> clz) {
+    return ctx.getBean(clz);
+  }
 
-  /**
-   * Returns the type of message this processor can
-   * {@link #process(AbstractGameBootMessage)}.
-   *
-   * @return the type
-   * @see AbstractGameBootMessage#getType()
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.springframework.context.ApplicationContextAware#setApplicationContext(
+   * org.springframework.context.ApplicationContext)
    */
-  String getType();
+  @Override
+  public void setApplicationContext(ApplicationContext ctx) throws BeansException {
+    this.ctx = ctx;
+  }
 }
