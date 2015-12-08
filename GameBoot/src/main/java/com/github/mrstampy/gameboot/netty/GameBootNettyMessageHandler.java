@@ -260,17 +260,21 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
       return;
     }
 
-    if (node.has(USER_NAME)) {
+    if (hasValue(node, USER_NAME)) {
       userName = node.get(USER_NAME).asText();
 
-      if (isNotEmpty(userName)) registry.put(msg, ctx.channel());
+      registry.put(msg, ctx.channel());
     }
 
-    if (node.has(SESSION_ID)) {
+    if (hasValue(node, SESSION_ID)) {
       sessionId = node.get(SESSION_ID).asLong();
 
       registry.put(sessionId, ctx.channel());
     }
+  }
+
+  private boolean hasValue(JsonNode node, String key) {
+    return node.has(key) && isNotEmpty(node.get(key).asText());
   }
 
   private void initMDC(ChannelHandlerContext ctx) {
