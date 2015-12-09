@@ -43,8 +43,6 @@ package com.github.mrstampy.gameboot.processor;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 
-import co.paralleluniverse.fibers.Suspendable;
-
 /**
  * The Interface GameBootProcessor is implemented by any class wishing to
  * process specific {@link AbstractGameBootMessage} messages.
@@ -52,7 +50,6 @@ import co.paralleluniverse.fibers.Suspendable;
  * @param <M>
  *          the generic type
  */
-@Suspendable
 public interface GameBootProcessor<M extends AbstractGameBootMessage> {
 
   /**
