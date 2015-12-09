@@ -270,13 +270,13 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
       return;
     }
 
-    if (hasValue(node, USER_NAME)) {
+    if (userName == null && hasValue(node, USER_NAME)) {
       userName = node.get(USER_NAME).asText();
 
       registry.put(userName, ctx.channel());
     }
 
-    if (hasValue(node, SESSION_ID)) {
+    if (sessionId == null && hasValue(node, SESSION_ID)) {
       sessionId = node.get(SESSION_ID).asLong();
 
       registry.put(sessionId, ctx.channel());
