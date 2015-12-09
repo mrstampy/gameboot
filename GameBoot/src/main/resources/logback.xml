@@ -55,6 +55,9 @@
   </appender>
 
   <logger name="com.github.mrstampy.gameboot" level="debug" />
+  
+  <!-- From where do the resources come? -->
+  <logger name="com.github.mrstampy.gameboot.util.resource.ResourceLogger" level="debug"/>
 
   <root level="warn">
     <appender-ref ref="CONSOLE" />
