@@ -58,6 +58,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 
@@ -135,7 +136,9 @@ public class GameBootMessageController {
       fail("Unrecognized message");
     }
 
-    return mapper.writeValueAsString(processor.process(msg));
+    Response r = processor.process(msg);
+
+    return r == null ? null : mapper.writeValueAsString(r);
   }
 
   /**

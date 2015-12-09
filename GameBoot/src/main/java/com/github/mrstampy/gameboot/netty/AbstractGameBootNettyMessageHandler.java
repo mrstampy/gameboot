@@ -44,6 +44,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -229,11 +230,16 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
       response = fail("An unexpected error has occurred");
     }
 
-    String r = response;
+    if (response == null) return;
 
     ChannelFuture f = ctx.channel().writeAndFlush(response);
+    try {
+      f.await(5, TimeUnit.SECONDS);
 
-    f.addListener(e -> log(e, msg, r, ctx));
+      log(f, msg, response, ctx);
+    } catch (InterruptedException e) {
+      log.error("Sending response {} for message {} on {} was interrupted", response, msg, ctx.channel(), e);
+    }
   }
 
   private void log(Future<? super Void> f, String msg, String response, ChannelHandlerContext ctx) {

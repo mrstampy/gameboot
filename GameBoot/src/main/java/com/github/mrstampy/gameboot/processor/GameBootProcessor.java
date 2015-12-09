@@ -53,7 +53,7 @@ import com.github.mrstampy.gameboot.messages.Response;
 public interface GameBootProcessor<M extends AbstractGameBootMessage> {
 
   /**
-   * Process.
+   * Process, returning a response. Return null for no response.
    *
    * @param message
    *          the message
