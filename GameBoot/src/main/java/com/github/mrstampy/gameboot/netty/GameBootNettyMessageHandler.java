@@ -248,7 +248,9 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
     String r = response;
 
     ChannelFuture f = ctx.channel().writeAndFlush(response);
+
     f.addListener(e -> log(e, msg, r, ctx));
+    f.addListener(e -> clearMDC());
   }
 
   private void log(Future<? super Void> f, String msg, String response, ChannelHandlerContext ctx) {
@@ -257,7 +259,6 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
     } else {
       log.error("Could not send {} for message {} to {}", response, msg, ctx.channel(), f.cause());
     }
-    clearMDC();
   }
 
   private void inspect(ChannelHandlerContext ctx, String msg) {
