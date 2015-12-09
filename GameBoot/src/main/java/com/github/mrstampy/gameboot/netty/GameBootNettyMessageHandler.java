@@ -250,7 +250,7 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
     ChannelFuture f = ctx.channel().writeAndFlush(response);
 
     f.addListener(e -> log(e, msg, r, ctx));
-    f.addListener(e -> clearMDC());
+    clearMDC();
   }
 
   private void log(Future<? super Void> f, String msg, String response, ChannelHandlerContext ctx) {
