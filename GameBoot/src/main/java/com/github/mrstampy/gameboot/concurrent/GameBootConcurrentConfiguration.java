@@ -67,8 +67,10 @@ import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 @EnableScheduling
 public class GameBootConcurrentConfiguration {
 
+  /** The Constant GAME_BOOT_EXECUTOR. */
   public static final String GAME_BOOT_EXECUTOR = "GameBoot Executor";
 
+  /** The Constant GAME_BOOT_SCHEDULED_EXECUTOR. */
   public static final String GAME_BOOT_SCHEDULED_EXECUTOR = "GameBoot Scheduled Executor";
 
   @Value("${task.scheduler.name}")
