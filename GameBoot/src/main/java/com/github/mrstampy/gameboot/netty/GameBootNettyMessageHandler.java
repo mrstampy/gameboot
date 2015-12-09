@@ -270,7 +270,7 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
     if (hasValue(node, USER_NAME)) {
       userName = node.get(USER_NAME).asText();
 
-      registry.put(msg, ctx.channel());
+      registry.put(userName, ctx.channel());
     }
 
     if (hasValue(node, SESSION_ID)) {
