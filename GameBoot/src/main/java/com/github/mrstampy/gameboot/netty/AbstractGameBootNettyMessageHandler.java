@@ -90,9 +90,11 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   /** The Constant FAILED_MESSAGE_COUNTER. */
   protected static final String FAILED_MESSAGE_COUNTER = "Netty Failed Message Counter";
 
-  private static final String USER_NAME = "userName";
+  /** The Constant USER_NAME. */
+  public static final String USER_NAME = "userName";
 
-  private static final String SESSION_ID = "sessionId";
+  /** The Constant SESSION_ID. */
+  public static final String SESSION_ID = "sessionId";
 
   @Autowired
   private ObjectMapper mapper;

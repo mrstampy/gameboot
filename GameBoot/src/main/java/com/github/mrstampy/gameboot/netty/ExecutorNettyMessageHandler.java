@@ -40,6 +40,8 @@
  */
 package com.github.mrstampy.gameboot.netty;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ExecutorService;
 
@@ -138,6 +140,9 @@ public class ExecutorNettyMessageHandler extends AbstractGameBootNettyMessageHan
   private void initMDC(ChannelHandlerContext ctx) {
     MDC.put(REMOTE_ADDRESS, ctx.channel().remoteAddress().toString());
     MDC.put(LOCAL_ADDRESS, ctx.channel().localAddress().toString());
+
+    if (isNotEmpty(userName)) MDC.put(USER_NAME, userName);
+    if (sessionId != null) MDC.put(SESSION_ID, sessionId.toString());
   }
 
 }
