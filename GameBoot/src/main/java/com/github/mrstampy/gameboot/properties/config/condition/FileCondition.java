@@ -48,7 +48,7 @@ import com.github.mrstampy.gameboot.util.resource.AbstractResourceCondition;
 public class FileCondition extends AbstractResourceCondition {
 
   /** The Constant GAMEBOOT_PROPERTIES. */
-  public static final String GAMEBOOT_PROPERTIES = "file:/gameboot.properties";
+  public static final String GAMEBOOT_PROPERTIES = "file:gameboot.properties";
 
   /**
    * Instantiates a new file condition.

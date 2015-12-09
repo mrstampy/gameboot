@@ -48,7 +48,7 @@ import com.github.mrstampy.gameboot.util.resource.AbstractResourceCondition;
 public class FileCondition extends AbstractResourceCondition {
 
   /** The Constant DATABASE_PROPERTIES. */
-  public static final String DATABASE_PROPERTIES = "file:/database.properties";
+  public static final String DATABASE_PROPERTIES = "file:database.properties";
 
   /**
    * Instantiates a new file condition.
