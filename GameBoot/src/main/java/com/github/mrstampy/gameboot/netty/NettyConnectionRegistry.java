@@ -332,7 +332,7 @@ public class NettyConnectionRegistry {
     ChannelGroup group = groups.get(groupKey);
 
     ChannelGroupFuture f = group.writeAndFlush(message);
-    f.addListener(e -> log((ChannelFuture) e, groupKey, message));
+    f.addListener(e -> log((ChannelGroupFuture) e, groupKey, message));
   }
 
   /**
@@ -357,6 +357,10 @@ public class NettyConnectionRegistry {
   public Channel remove(Long sessionId) {
     check(sessionId);
     return bySessionId.remove(sessionId);
+  }
+
+  private void log(ChannelGroupFuture e, String groupKey, String message) {
+    e.iterator().forEachRemaining(cf -> log(cf, groupKey, message));
   }
 
   private void log(ChannelFuture f, Object key, String message) {
