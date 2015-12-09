@@ -81,7 +81,7 @@ import io.netty.channel.DefaultChannelPromise;
  * created for Netty sockets. The inbound message will have been converted to a
  * JSON string representing any {@link AbstractGameBootMessage}. The
  * {@link GameBootMessageController} is used to process the message and return
- * the result.<br<br>
+ * the result.<br><br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when

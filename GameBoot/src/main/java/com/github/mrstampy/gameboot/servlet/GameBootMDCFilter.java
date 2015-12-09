@@ -59,6 +59,7 @@ import ch.qos.logback.classic.helpers.MDCInsertingServletFilter;
  * <br>
  *
  * <table>
+ * <caption>MDC Keys and Values</caption>
  * <tr>
  * <th>MDC key</th>
  * <th>MDC value</th>
