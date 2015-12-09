@@ -49,15 +49,11 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.mrstampy.gameboot.concurrent.FiberCreator;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
@@ -67,42 +63,31 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
-import co.paralleluniverse.fibers.Fiber;
-import co.paralleluniverse.fibers.SuspendExecution;
-import co.paralleluniverse.fibers.Suspendable;
-import co.paralleluniverse.strands.SuspendableCallable;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
 import io.netty.util.concurrent.Future;
 
 /**
- * This class is intended to be added last to the {@link ChannelPipeline}
- * created for Netty sockets. The inbound message will have been converted to a
- * JSON string representing any {@link AbstractGameBootMessage}. The
- * {@link GameBootMessageController} is used to process the message and return
- * the result.<br>
+ * This class is the superclass for last-in-pipeline GameBoot Netty handlers.
+ * Messages are presumed to have been converted to JSON strings representing an
+ * {@link AbstractGameBootMessage} and are processed by the
+ * {@link GameBootMessageController}. Channels are added to the
+ * {@link NettyConnectionRegistry#ALL} group. <br>
  * <br>
  * 
- * Do not instantiate directly as this is a prototype Spring managed bean. Use
- * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
- * constructing the {@link ChannelPipeline}.
+ * The {@link #inspect(ChannelHandlerContext, String)} method searches incoming
+ * messages for 'userName' and 'sessionId' JSON nodes and if they exist they are
+ * used to register the channel against the {@link NettyConnectionRegistry}.
  */
-@Component
-@Scope("prototype")
-public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
+public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  /** Logback {@link MDC} key for local address (nettyLocal). */
-  public static final String LOCAL_ADDRESS = "nettyLocal";
+  /** The Constant MESSAGE_COUNTER. */
+  protected static final String MESSAGE_COUNTER = "Netty Message Counter";
 
-  /** Logback {@link MDC} key for remote address (nettyRemote). */
-  public static final String REMOTE_ADDRESS = "nettyRemote";
-
-  private static final String MESSAGE_COUNTER = "Netty Message Counter";
-
-  private static final String FAILED_MESSAGE_COUNTER = "Netty Failed Message Counter";
+  /** The Constant FAILED_MESSAGE_COUNTER. */
+  protected static final String FAILED_MESSAGE_COUNTER = "Netty Failed Message Counter";
 
   private static final String USER_NAME = "userName";
 
@@ -115,26 +100,25 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
   private MetricsHelper helper;
 
   @Autowired
-  private FiberCreator creator;
-
-  @Autowired
   private GameBootUtils utils;
 
   @Autowired
   private NettyConnectionRegistry registry;
 
-  private String userName;
+  /** The user name. */
+  protected String userName;
 
-  private Long sessionId;
+  /** The session id. */
+  protected Long sessionId;
 
   /**
-   * Post construct.
+   * Post construct created message counters if necessary. Subclasses will need
+   * to invoke this in an annotated {@link PostConstruct} method.
    *
    * @throws Exception
    *           the exception
    */
-  @PostConstruct
-  public void postConstruct() throws Exception {
+  protected void postConstruct() throws Exception {
     if (!helper.containsCounter(MESSAGE_COUNTER)) {
       helper.counter(MESSAGE_COUNTER, getClass(), "inbound", "messages");
     }
@@ -171,7 +155,6 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
     sessionId = null;
     mapper = null;
     helper = null;
-    creator = null;
     registry = null;
     utils = null;
   }
@@ -198,7 +181,6 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
    * ChannelHandlerContext, java.lang.Object)
    */
   @Override
-  @SuppressWarnings("serial")
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     helper.incr(MESSAGE_COUNTER);
 
@@ -206,31 +188,33 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
 
     inspect(ctx, (String) msg);
 
-    Fiber<Void> fiber = creator.newFiberForkJoin(new SuspendableCallable<Void>() {
-
-      @Override
-      public Void run() throws SuspendExecution, InterruptedException {
-        process(ctx, (String) msg);
-
-        return null;
-      }
-    });
-
-    fiber.start();
+    channelReadImpl(ctx, (String) msg);
   }
 
   /**
-   * Exposed for instrumentation.
+   * Channel read impl.
    *
    * @param ctx
    *          the ctx
    * @param msg
    *          the msg
+   * @throws Exception
+   *           the exception
    */
-  @Suspendable
-  public void process(ChannelHandlerContext ctx, String msg) {
-    initMDC(ctx);
+  protected abstract void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception;
 
+  /**
+   * Process, should be invoked from
+   * {@link #channelReadImpl(ChannelHandlerContext, String)}.
+   *
+   * @param ctx
+   *          the ctx
+   * @param msg
+   *          the msg
+   * @throws Exception
+   *           the exception
+   */
+  protected void process(ChannelHandlerContext ctx, String msg) throws Exception {
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
 
     String response = null;
@@ -250,7 +234,6 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
     ChannelFuture f = ctx.channel().writeAndFlush(response);
 
     f.addListener(e -> log(e, msg, r, ctx));
-    clearMDC();
   }
 
   private void log(Future<? super Void> f, String msg, String response, ChannelHandlerContext ctx) {
@@ -261,7 +244,16 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
     }
   }
 
-  private void inspect(ChannelHandlerContext ctx, String msg) {
+  /**
+   * Inspect, setting {@link #userName} and {@link #sessionId} and registering
+   * the channel with the {@link NettyConnectionRegistry}.
+   *
+   * @param ctx
+   *          the ctx
+   * @param msg
+   *          the msg
+   */
+  protected void inspect(ChannelHandlerContext ctx, String msg) {
     if (isNotEmpty(userName) && sessionId != null) return;
 
     JsonNode node;
@@ -285,21 +277,27 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
     }
   }
 
-  private boolean hasValue(JsonNode node, String key) {
+  /**
+   * Checks the node for the specified key, as existing and non-mt text.
+   *
+   * @param node
+   *          the node
+   * @param key
+   *          the key
+   * @return true, if successful
+   */
+  protected boolean hasValue(JsonNode node, String key) {
     return node.has(key) && isNotEmpty(node.get(key).asText());
   }
 
-  private void initMDC(ChannelHandlerContext ctx) {
-    MDC.put(REMOTE_ADDRESS, ctx.channel().remoteAddress().toString());
-    MDC.put(LOCAL_ADDRESS, ctx.channel().localAddress().toString());
-  }
-
-  private void clearMDC() {
-    MDC.remove(REMOTE_ADDRESS);
-    MDC.remove(LOCAL_ADDRESS);
-  }
-
-  private String fail(String message) {
+  /**
+   * Returns a fail message.
+   *
+   * @param message
+   *          the message
+   * @return the string
+   */
+  protected String fail(String message) {
     try {
       return mapper.writeValueAsString(new Response(ResponseCode.FAILURE, message));
     } catch (JsonProcessingException e) {
