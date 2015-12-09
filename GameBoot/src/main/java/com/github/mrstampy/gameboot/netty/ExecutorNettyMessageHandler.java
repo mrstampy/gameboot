@@ -41,30 +41,29 @@
 package com.github.mrstampy.gameboot.netty;
 
 import java.lang.invoke.MethodHandles;
+import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.concurrent.FiberCreator;
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
+import com.github.mrstampy.gameboot.concurrent.MDCRunnable;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
-import co.paralleluniverse.fibers.Fiber;
-import co.paralleluniverse.fibers.FiberForkJoinScheduler;
-import co.paralleluniverse.fibers.SuspendExecution;
-import co.paralleluniverse.strands.SuspendableCallable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 
 /**
- * This class uses the configured {@link FiberForkJoinScheduler} to execute
- * incoming messages. It is intended to be added last to the
- * {@link ChannelPipeline}. <br>
+ * This class uses the configured {@link ExecutorService} to process incoming
+ * messages, preserving the Logback mapped diagnostic context. It is intended to
+ * be added last to the {@link ChannelPipeline}.<br>
  * <br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
@@ -75,11 +74,18 @@ import io.netty.channel.ChannelPipeline;
  */
 @Component
 @Scope("prototype")
-public class FiberGameBootNettyMessageHandler extends AbstractGameBootNettyMessageHandler {
+public class ExecutorNettyMessageHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  /** Logback {@link MDC} key for local address (nettyLocal). */
+  public static final String LOCAL_ADDRESS = "nettyLocal";
+
+  /** Logback {@link MDC} key for remote address (nettyRemote). */
+  public static final String REMOTE_ADDRESS = "nettyRemote";
+
   @Autowired
-  private FiberCreator creator;
+  @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
+  private ExecutorService svc;
 
   /**
    * Post construct.
@@ -101,8 +107,8 @@ public class FiberGameBootNettyMessageHandler extends AbstractGameBootNettyMessa
    */
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    creator = null;
     super.channelInactive(ctx);
+    svc = null;
   }
 
   /*
@@ -113,41 +119,25 @@ public class FiberGameBootNettyMessageHandler extends AbstractGameBootNettyMessa
    * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
    */
   @Override
-  @SuppressWarnings("serial")
   protected void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception {
-    Fiber<Void> fiber = creator.newFiberForkJoin(new SuspendableCallable<Void>() {
+    initMDC(ctx);
+
+    svc.execute(new MDCRunnable() {
 
       @Override
-      public Void run() throws SuspendExecution, InterruptedException {
-        process(ctx, msg);
-
-        return null;
+      protected void runImpl() {
+        try {
+          process(ctx, msg);
+        } catch (Exception e) {
+          log.error("Unexpected exception", e);
+        }
       }
     });
-
-    fiber.start();
   }
 
-  /**
-   * Exposed for instrumentation.
-   *
-   * @param ctx
-   *          the ctx
-   * @param msg
-   *          the msg
-   * @throws SuspendExecution
-   *           the suspend execution
-   * @throws InterruptedException
-   *           the interrupted exception
-   */
-  public void process(ChannelHandlerContext ctx, String msg) throws SuspendExecution, InterruptedException {
-    try {
-      super.process(ctx, msg);
-    } catch (SuspendExecution | InterruptedException e) {
-      throw e;
-    } catch (Exception e) {
-      log.error("Unexpected exception", e);
-    }
+  private void initMDC(ChannelHandlerContext ctx) {
+    MDC.put(REMOTE_ADDRESS, ctx.channel().remoteAddress().toString());
+    MDC.put(LOCAL_ADDRESS, ctx.channel().localAddress().toString());
   }
 
 }
