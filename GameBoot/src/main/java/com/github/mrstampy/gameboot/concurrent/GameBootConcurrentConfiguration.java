@@ -67,6 +67,10 @@ import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 @EnableScheduling
 public class GameBootConcurrentConfiguration {
 
+  public static final String GAME_BOOT_EXECUTOR = "GameBoot Executor";
+
+  public static final String GAME_BOOT_SCHEDULED_EXECUTOR = "GameBoot Scheduled Executor";
+
   @Value("${task.scheduler.name}")
   private String taskSchedulerName;
 
@@ -142,8 +146,7 @@ public class GameBootConcurrentConfiguration {
    *
    * @return the executor service
    */
-  @Bean
-  @Primary
+  @Bean(name = GAME_BOOT_EXECUTOR)
   public ExecutorService executorService() {
     String name = isEmpty(executorName) ? "GameBoot Executor" : executorName;
 
@@ -157,8 +160,7 @@ public class GameBootConcurrentConfiguration {
    *
    * @return the scheduled executor service
    */
-  @Bean
-  @Primary
+  @Bean(name = GAME_BOOT_SCHEDULED_EXECUTOR)
   public ScheduledExecutorService scheduledExecutorService() {
     String name = isEmpty(schedulerName) ? "GameBoot Scheduled Executor" : schedulerName;
 
