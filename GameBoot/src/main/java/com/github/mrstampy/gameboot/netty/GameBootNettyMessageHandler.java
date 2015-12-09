@@ -91,10 +91,10 @@ import io.netty.channel.DefaultChannelPromise;
 @Scope("prototype")
 public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  
+
   /** Logback {@link MDC} key for local address (nettyLocal). */
   public static final String LOCAL_ADDRESS = "nettyLocal";
-  
+
   /** Logback {@link MDC} key for remote address (nettyRemote). */
   public static final String REMOTE_ADDRESS = "nettyRemote";
 
@@ -103,7 +103,7 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
   private static final String FAILED_MESSAGE_COUNTER = "Netty Failed Message Counter";
 
   private static final String USER_NAME = "userName";
-  
+
   private static final String SESSION_ID = "sessionId";
 
   @Autowired
@@ -159,9 +159,7 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     log.info("Disconnected from {}", ctx.channel());
 
-    if (isNotEmpty(userName)) registry.remove(userName);
-
-    if (sessionId != null) registry.remove(sessionId);
+    registry.remove(userName, sessionId);
 
     userName = null;
     sessionId = null;
