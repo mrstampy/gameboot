@@ -51,6 +51,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.concurrent.FiberCreator;
+import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import co.paralleluniverse.fibers.Fiber;
@@ -69,6 +70,8 @@ import io.netty.channel.ChannelPipeline;
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
  * constructing the {@link ChannelPipeline}.
+ * 
+ * @see GameBootConcurrentConfiguration
  */
 @Component
 @Scope("prototype")
