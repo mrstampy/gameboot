@@ -38,53 +38,44 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.concurrent;
+package com.github.mrstampy.gameboot.util.concurrent;
 
 import java.util.Map;
-import java.util.concurrent.Callable;
 
 import org.slf4j.MDC;
 
 /**
- * The Class MDCCallable preserves the Logback mapped diagnostic context when
- * executing this {@link Callable} in a separate thread.
- *
- * @param <V>
- *          the value type
+ * The Class MDCRunnable preserves the Logback mapped diagnostic context when
+ * executing this {@link Runnable} in a separate thread.
  */
-public abstract class MDCCallable<V> implements Callable<V> {
+public abstract class MDCRunnable implements Runnable {
 
   private Map<String, String> mdc;
 
   /**
-   * Instantiates a new MDC callable.
+   * Instantiates a new MDC runnable.
    */
-  public MDCCallable() {
+  public MDCRunnable() {
     this.mdc = MDC.getCopyOfContextMap();
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see java.util.concurrent.Callable#call()
+   * @see java.lang.Runnable#run()
    */
   @Override
-  public V call() throws Exception {
+  public final void run() {
     MDC.setContextMap(mdc);
 
-    try {
-      return callImpl();
-    } finally {
-      MDC.clear();
-    }
+    runImpl();
+
+    MDC.clear();
   }
 
   /**
    * Implement to perform the task.
-   *
-   * @return the v
-   * @throws Exception
-   *           the exception
    */
-  protected abstract V callImpl() throws Exception;
+  protected abstract void runImpl();
+
 }
