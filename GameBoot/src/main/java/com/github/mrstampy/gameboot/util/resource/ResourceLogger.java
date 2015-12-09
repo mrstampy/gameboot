@@ -48,7 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * The Class ResourceLogger.
+ * The Class ResourceLogger logs the resource chosen, at debug level.
  */
 class ResourceLogger {
 
