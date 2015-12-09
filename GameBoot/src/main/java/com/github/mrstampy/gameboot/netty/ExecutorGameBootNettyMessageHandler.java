@@ -131,18 +131,11 @@ public class ExecutorGameBootNettyMessageHandler extends AbstractGameBootNettyMe
         }
       }
     });
-
-    clearMDC();
   }
 
   private void initMDC(ChannelHandlerContext ctx) {
     MDC.put(REMOTE_ADDRESS, ctx.channel().remoteAddress().toString());
     MDC.put(LOCAL_ADDRESS, ctx.channel().localAddress().toString());
-  }
-
-  private void clearMDC() {
-    MDC.remove(REMOTE_ADDRESS);
-    MDC.remove(LOCAL_ADDRESS);
   }
 
 }
