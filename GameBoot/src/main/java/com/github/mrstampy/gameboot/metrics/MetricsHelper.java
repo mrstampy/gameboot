@@ -50,6 +50,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -96,6 +97,7 @@ public class MetricsHelper {
    *          the qualifiers
    */
   public void counter(String key, Class<?> clz, String... qualifiers) {
+    check(key);
     if (counters.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
     counters.put(key, registry.counter(name(clz, qualifiers)));
   }
@@ -111,6 +113,7 @@ public class MetricsHelper {
    *          the qualifiers
    */
   public void timer(String key, Class<?> clz, String... qualifiers) {
+    check(key);
     if (timers.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
     timers.put(key, registry.timer(name(clz, qualifiers)));
   }
@@ -128,6 +131,7 @@ public class MetricsHelper {
    *          the qualifiers
    */
   public void gauge(Gauge<?> gauge, String key, Class<?> clz, String... qualifiers) {
+    check(key);
     if (gauges.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
     gauges.put(key, registry.register(name(clz, qualifiers), gauge));
   }
@@ -167,6 +171,7 @@ public class MetricsHelper {
    * @return true, if successful
    */
   public boolean containsCounter(String key) {
+    check(key);
     return counters.containsKey(key);
   }
 
@@ -178,6 +183,7 @@ public class MetricsHelper {
    * @return true, if successful
    */
   public boolean containsGauge(String key) {
+    check(key);
     return gauges.containsKey(key);
   }
 
@@ -189,6 +195,7 @@ public class MetricsHelper {
    * @return true, if successful
    */
   public boolean containsTimer(String key) {
+    check(key);
     return timers.containsKey(key);
   }
 
@@ -200,6 +207,7 @@ public class MetricsHelper {
    * @return the context
    */
   public Context startTimer(String key) {
+    check(key);
     Timer t = timers.get(key);
 
     if (t == null) throw new GameBootRuntimeException("No timer for key " + key);
@@ -216,6 +224,7 @@ public class MetricsHelper {
    *          the key
    */
   public void incr(String key) {
+    check(key);
     getCounter(key).inc();
   }
 
@@ -226,7 +235,12 @@ public class MetricsHelper {
    *          the key
    */
   public void decr(String key) {
+    check(key);
     getCounter(key).dec();
+  }
+
+  private void check(String key) {
+    if (StringUtils.isEmpty(key)) throw new IllegalArgumentException("No key specified");
   }
 
   private Counter getCounter(String key) {
