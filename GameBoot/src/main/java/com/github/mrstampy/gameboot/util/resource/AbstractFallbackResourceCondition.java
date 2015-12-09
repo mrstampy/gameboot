@@ -47,7 +47,9 @@ import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
- * The Class AbstractFallbackResourceCondition.
+ * The Class AbstractFallbackResourceCondition allows a {@link Condition} to be
+ * written where a fallback {@link Resource} can be overridden by any of the
+ * supplied overrides should they exist.
  */
 public abstract class AbstractFallbackResourceCondition implements Condition {
 
@@ -58,7 +60,8 @@ public abstract class AbstractFallbackResourceCondition implements Condition {
   private String[] overrides;
 
   /**
-   * Instantiates a new abstract fallback resource condition.
+   * Instantiates a new abstract fallback resource condition with a fallback
+   * {@link Resource} and overrides.
    *
    * @param fallBack
    *          the fall back

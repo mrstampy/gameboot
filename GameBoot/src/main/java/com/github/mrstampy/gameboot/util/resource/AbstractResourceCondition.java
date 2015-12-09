@@ -46,14 +46,16 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 /**
- * The Class AbstractResourceCondition.
+ * The Class AbstractResourceCondition is a {@link Condition} which returns true
+ * if the specified {@link Resource} exists.
  */
 public abstract class AbstractResourceCondition implements Condition {
 
   private String resource;
 
   /**
-   * Instantiates a new abstract resource condition.
+   * Instantiates a new abstract resource condition for the specified
+   * {@link Resource}.
    *
    * @param resource
    *          the resource
