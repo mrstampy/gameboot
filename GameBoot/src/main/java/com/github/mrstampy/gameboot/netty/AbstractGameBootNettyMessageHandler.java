@@ -258,6 +258,8 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    *          the ctx
    * @param msg
    *          the msg
+   * @see NettyConnectionRegistry#put(Long, io.netty.channel.Channel)
+   * @see NettyConnectionRegistry#put(String, io.netty.channel.Channel)
    */
   protected void inspect(ChannelHandlerContext ctx, String msg) {
     if (isNotEmpty(userName) && sessionId != null) return;
