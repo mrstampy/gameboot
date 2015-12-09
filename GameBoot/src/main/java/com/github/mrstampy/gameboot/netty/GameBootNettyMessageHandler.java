@@ -253,9 +253,9 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
 
   private void log(Future<? super Void> f, String msg, String response, ChannelHandlerContext ctx) {
     if (f.isSuccess()) {
-      log.debug("Successfully sent {} for message {} to {}", msg, response, ctx.channel());
+      log.debug("Successfully sent {} for message {} to {}", response, msg, ctx.channel());
     } else {
-      log.error("Could not send {} for message {} to {}", msg, response, ctx.channel(), f.cause());
+      log.error("Could not send {} for message {} to {}", response, msg, ctx.channel(), f.cause());
     }
     clearMDC();
   }
