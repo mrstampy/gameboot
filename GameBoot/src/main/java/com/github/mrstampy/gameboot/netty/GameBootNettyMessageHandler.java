@@ -72,16 +72,18 @@ import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.fibers.Suspendable;
 import co.paralleluniverse.strands.SuspendableCallable;
 import io.netty.channel.ChannelDuplexHandler;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.DefaultChannelPromise;
+import io.netty.util.concurrent.Future;
 
 /**
  * This class is intended to be added last to the {@link ChannelPipeline}
  * created for Netty sockets. The inbound message will have been converted to a
  * JSON string representing any {@link AbstractGameBootMessage}. The
  * {@link GameBootMessageController} is used to process the message and return
- * the result.<br><br>
+ * the result.<br>
+ * <br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
@@ -243,17 +245,19 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
       response = fail("An unexpected error has occurred");
     }
 
-    try {
-      write(ctx, response, new DefaultChannelPromise(ctx.channel()));
-    } catch (Exception e) {
-      log.error("Unexpected exception processing message {} with response {} on channel {}",
-          msg,
-          response,
-          ctx.channel(),
-          e);
-    } finally {
-      clearMDC();
+    String r = response;
+
+    ChannelFuture f = ctx.channel().writeAndFlush(response);
+    f.addListener(e -> log(e, msg, r, ctx));
+  }
+
+  private void log(Future<? super Void> f, String msg, String response, ChannelHandlerContext ctx) {
+    if (f.isSuccess()) {
+      log.debug("Successfully sent {} for message {} to {}", msg, response, ctx.channel());
+    } else {
+      log.error("Could not send {} for message {} to {}", msg, response, ctx.channel(), f.cause());
     }
+    clearMDC();
   }
 
   private void inspect(ChannelHandlerContext ctx, String msg) {
