@@ -159,35 +159,33 @@ public class NettyConnectionRegistry {
   }
 
   /**
-   * Adds the channel mapped by sessionId to the registry and to the
-   * {@link #ALL} {@link ChannelGroup}.
+   * Adds the channel mapped by sessionId to the registry.
    *
    * @param sessionId
    *          the session id
    * @param channel
    *          the channel
-   * @see #putInGroup(String, Channel)
    */
   public void put(Long sessionId, Channel channel) {
     check(sessionId);
+    check(channel);
     bySessionId.put(sessionId, channel);
-    putInGroup(ALL, channel);
+    channel.closeFuture().addListener(f -> bySessionId.remove(sessionId));
   }
 
   /**
-   * Adds the channel mapped by userName to the registry and to the {@link #ALL}
-   * {@link ChannelGroup}.
+   * Adds the channel mapped by userName to the registry.
    *
    * @param userName
    *          the user name
    * @param channel
    *          the channel
-   * @see #putInGroup(String, Channel)
    */
   public void put(String userName, Channel channel) {
     check(userName);
+    check(channel);
     byUserName.put(userName, channel);
-    putInGroup(ALL, channel);
+    channel.closeFuture().addListener(f -> byUserName.remove(userName));
   }
 
   /**
@@ -361,25 +359,6 @@ public class NettyConnectionRegistry {
     return bySessionId.remove(sessionId);
   }
 
-  /**
-   * Removes the channel from userName, sessionId and group pairings.
-   *
-   * @param userName
-   *          the user name
-   * @param sessionId
-   *          the session id
-   */
-  public void remove(String userName, Long sessionId) {
-    Channel channel = null;
-
-    if (!isEmpty(userName)) channel = remove(userName);
-    if (sessionId != null && sessionId > 0) {
-      if (channel == null) channel = remove(sessionId);
-    }
-
-    if (channel != null) removeFromGroups(channel);
-  }
-
   private void log(ChannelFuture f, Object key, String message) {
     if (f.isSuccess()) {
       log.debug("Successful send of {} to {}", message, key);
@@ -402,13 +381,17 @@ public class NettyConnectionRegistry {
     if (sessionId == null || sessionId <= 0) fail("Invalid sessionId: " + sessionId);
   }
 
+  private void check(Channel channel) {
+    if (channel == null) fail("Null channel");
+  }
+
   private void groupCheck(String groupKey) {
     if (isEmpty(groupKey)) fail("groupKey not defined");
   }
 
   private void groupCheck(String groupKey, Channel channel) {
     groupCheck(groupKey);
-    if (channel == null) fail("Null channel for group " + groupKey);
+    check(channel);
   }
 
   private void fail(String message) {

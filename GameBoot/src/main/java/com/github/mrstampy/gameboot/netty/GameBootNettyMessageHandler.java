@@ -133,8 +133,13 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
    */
   @PostConstruct
   public void postConstruct() throws Exception {
-    helper.counter(MESSAGE_COUNTER, GameBootNettyMessageHandler.class, "inbound", "messages");
-    helper.counter(FAILED_MESSAGE_COUNTER, GameBootNettyMessageHandler.class, "failed", "messages");
+    if (!helper.containsCounter(MESSAGE_COUNTER)) {
+      helper.counter(MESSAGE_COUNTER, getClass(), "inbound", "messages");
+    }
+
+    if (!helper.containsCounter(FAILED_MESSAGE_COUNTER)) {
+      helper.counter(FAILED_MESSAGE_COUNTER, getClass(), "failed", "messages");
+    }
   }
 
   /*
@@ -146,6 +151,7 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     log.info("Connected to {}", ctx.channel());
+    registry.putInGroup(NettyConnectionRegistry.ALL, ctx.channel());
   }
 
   /*
@@ -158,8 +164,6 @@ public class GameBootNettyMessageHandler extends ChannelDuplexHandler {
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     log.info("Disconnected from {}", ctx.channel());
-
-    registry.remove(userName, sessionId);
 
     userName = null;
     sessionId = null;

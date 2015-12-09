@@ -160,6 +160,39 @@ public class MetricsHelper {
   }
 
   /**
+   * Contains counter.
+   *
+   * @param key
+   *          the key
+   * @return true, if successful
+   */
+  public boolean containsCounter(String key) {
+    return counters.containsKey(key);
+  }
+
+  /**
+   * Contains gauge.
+   *
+   * @param key
+   *          the key
+   * @return true, if successful
+   */
+  public boolean containsGauge(String key) {
+    return gauges.containsKey(key);
+  }
+
+  /**
+   * Contains timer.
+   *
+   * @param key
+   *          the key
+   * @return true, if successful
+   */
+  public boolean containsTimer(String key) {
+    return timers.containsKey(key);
+  }
+
+  /**
    * Start timer.
    *
    * @param key
