@@ -365,9 +365,9 @@ public class NettyConnectionRegistry {
 
   private void log(ChannelFuture f, Object key, String message) {
     if (f.isSuccess()) {
-      log.debug("Successful send of {} to {}", message, key);
+      log.debug("Successful send of {} to {} on {}", message, key, f.channel());
     } else {
-      log.error("Failed sending {} to {}", message, key, f.cause());
+      log.error("Failed sending {} to {} on {}", message, key, f.channel(), f.cause());
     }
   }
 
