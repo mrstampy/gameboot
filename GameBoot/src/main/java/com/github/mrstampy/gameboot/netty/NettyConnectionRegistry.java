@@ -131,7 +131,6 @@ public class NettyConnectionRegistry {
    */
   public boolean containsGroup(String groupKey) {
     groupCheck(groupKey);
-
     return groups.containsKey(groupKey);
   }
 
@@ -241,8 +240,7 @@ public class NettyConnectionRegistry {
    *          the channel
    */
   public void putInGroup(String groupKey, Channel channel) {
-    groupCheck(groupKey);
-    if (channel == null) fail("Null channel for group " + groupKey);
+    groupCheck(groupKey, channel);
 
     ChannelGroup group = groups.get(groupKey);
     if (group == null) {
@@ -262,7 +260,6 @@ public class NettyConnectionRegistry {
    */
   public ChannelGroup getGroup(String groupKey) {
     groupCheck(groupKey);
-
     return groups.get(groupKey);
   }
 
@@ -275,8 +272,7 @@ public class NettyConnectionRegistry {
    *          the channel
    */
   public void removeFromGroup(String groupKey, Channel channel) {
-    groupCheck(groupKey);
-    if (channel == null) fail("Null channel for group " + groupKey);
+    groupCheck(groupKey, channel);
 
     ChannelGroup group = groups.get(groupKey);
     if (group == null) return;
@@ -408,6 +404,11 @@ public class NettyConnectionRegistry {
 
   private void groupCheck(String groupKey) {
     if (isEmpty(groupKey)) fail("groupKey not defined");
+  }
+
+  private void groupCheck(String groupKey, Channel channel) {
+    groupCheck(groupKey);
+    if (channel == null) fail("Null channel for group " + groupKey);
   }
 
   private void fail(String message) {
