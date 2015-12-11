@@ -87,6 +87,8 @@ public class NettyConnectionRegistry {
 
   private Map<String, ChannelGroup> groups = new ConcurrentHashMap<>();
 
+  private Map<Object, Channel> byCustomKey = new ConcurrentHashMap<>();
+
   /**
    * Post construct.
    *
@@ -159,6 +161,20 @@ public class NettyConnectionRegistry {
   }
 
   /**
+   * Gets the channel specified by the {@link Map}-keyable generic type.
+   *
+   * @param <T>
+   *          the generic type
+   * @param key
+   *          the key
+   * @return the channel
+   */
+  public <T> Channel get(T key) {
+    check(key);
+    return byCustomKey.get(key);
+  }
+
+  /**
    * Adds the channel mapped by sessionId to the registry.
    *
    * @param sessionId
@@ -186,6 +202,24 @@ public class NettyConnectionRegistry {
     check(channel);
     byUserName.put(userName, channel);
     channel.closeFuture().addListener(f -> byUserName.remove(userName));
+  }
+
+  /**
+   * Adds the channel mapped by the {@link Map}-keyable generic type to the
+   * registry.
+   *
+   * @param <T>
+   *          the generic type
+   * @param key
+   *          the key
+   * @param channel
+   *          the channel
+   */
+  public <T> void put(T key, Channel channel) {
+    check(key);
+    check(channel);
+    byCustomKey.put(key, channel);
+    channel.closeFuture().addListener(f -> byCustomKey.remove(key));
   }
 
   /**
@@ -226,6 +260,28 @@ public class NettyConnectionRegistry {
 
     ChannelFuture f = channel.writeAndFlush(message);
     f.addListener(e -> log((ChannelFuture) e, sessionId, message));
+  }
+
+  /**
+   * Sends the message to the specified {@link Map}-keyable channel.
+   *
+   * @param <T>
+   *          the generic type
+   * @param key
+   *          the key
+   * @param message
+   *          the message
+   */
+  public <T> void send(T key, String message) {
+    check(key);
+    if (isEmpty(message)) fail("No message");
+
+    Channel channel = byCustomKey.get(key);
+
+    if (channel == null) fail("Key " + key + " not connected");
+
+    ChannelFuture f = channel.writeAndFlush(message);
+    f.addListener(e -> log((ChannelFuture) e, key, message));
   }
 
   /**
@@ -276,6 +332,51 @@ public class NettyConnectionRegistry {
     if (group == null) return;
 
     group.remove(channel);
+  }
+
+  /**
+   * Removes the channel from group specified by groupKey and userName.
+   *
+   * @param groupKey
+   *          the group key
+   * @param userName
+   *          the user name
+   */
+  public void removeFromGroup(String groupKey, String userName) {
+    check(userName);
+    Channel channel = get(userName);
+    if (channel != null) removeFromGroup(groupKey, channel);
+  }
+
+  /**
+   * Removes the channel from group specified by groupKey and sessionId.
+   *
+   * @param groupKey
+   *          the group key
+   * @param sessionId
+   *          the session id
+   */
+  public void removeFromGroup(String groupKey, Long sessionId) {
+    check(sessionId);
+    Channel channel = get(sessionId);
+    if (channel != null) removeFromGroup(groupKey, channel);
+  }
+
+  /**
+   * Removes the channel from group specified by groupKey and the {@link Map}
+   * -keyable generic type.
+   *
+   * @param <T>
+   *          the generic type
+   * @param groupKey
+   *          the group key
+   * @param key
+   *          the key
+   */
+  public <T> void removeFromGroup(String groupKey, T key) {
+    check(key);
+    Channel channel = get(key);
+    if (channel != null) removeFromGroup(groupKey, channel);
   }
 
   /**
@@ -359,6 +460,20 @@ public class NettyConnectionRegistry {
     return bySessionId.remove(sessionId);
   }
 
+  /**
+   * Removes the channel from the {@link Map}-keyable generic type pairing.
+   *
+   * @param <T>
+   *          the generic type
+   * @param key
+   *          the key
+   * @return the channel
+   */
+  public <T> Channel remove(T key) {
+    check(key);
+    return byCustomKey.remove(key);
+  }
+
   private void log(ChannelGroupFuture e, String groupKey, String message) {
     e.iterator().forEachRemaining(cf -> log(cf, groupKey, message));
   }
@@ -387,6 +502,10 @@ public class NettyConnectionRegistry {
 
   private void check(Channel channel) {
     if (channel == null) fail("Null channel");
+  }
+
+  private <T> void check(T key) {
+    if (key == null) fail("Null key");
   }
 
   private void groupCheck(String groupKey) {
