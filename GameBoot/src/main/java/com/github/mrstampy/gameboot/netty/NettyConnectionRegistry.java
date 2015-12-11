@@ -63,9 +63,8 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 
 /**
- * Keeps up-to-date maps of userName/sessionId/Channel pairs and facilitates
- * easy creation of {@link ChannelGroup}s. Messages can be sent to individuals
- * or groups.
+ * Keeps up-to-date maps of key/key/Channel pairs and facilitates easy creation
+ * of {@link ChannelGroup}s. Messages can be sent to individuals or groups.
  * 
  * @see FiberForkJoinNettyMessageHandler
  */
@@ -81,9 +80,9 @@ public class NettyConnectionRegistry {
   @Autowired
   private MetricsHelper helper;
 
-  private Map<String, Channel> byUserName = new ConcurrentHashMap<>();
+  private Map<String, Channel> byString = new ConcurrentHashMap<>();
 
-  private Map<Long, Channel> bySessionId = new ConcurrentHashMap<>();
+  private Map<Long, Channel> byLong = new ConcurrentHashMap<>();
 
   private Map<String, ChannelGroup> groups = new ConcurrentHashMap<>();
 
@@ -101,27 +100,27 @@ public class NettyConnectionRegistry {
   }
 
   /**
-   * Returns true if the channel specified by the userName exists.
+   * Returns true if the channel specified by the key exists.
    *
-   * @param userName
-   *          the user name
+   * @param key
+   *          the key specifying the channel
    * @return true, if successful
    */
-  public boolean contains(String userName) {
-    check(userName);
-    return byUserName.containsKey(userName);
+  public boolean contains(String key) {
+    check(key);
+    return byString.containsKey(key);
   }
 
   /**
-   * Returns true if the channel specified by the sessionId exists.
+   * Returns true if the channel specified by the key exists.
    *
-   * @param sessionId
-   *          the session id
+   * @param key
+   *          the key specifying the channel
    * @return true, if successful
    */
-  public boolean contains(Long sessionId) {
-    check(sessionId);
-    return bySessionId.containsKey(sessionId);
+  public boolean contains(Long key) {
+    check(key);
+    return byLong.containsKey(key);
   }
 
   /**
@@ -152,27 +151,27 @@ public class NettyConnectionRegistry {
   }
 
   /**
-   * Gets the channel specified by the userName.
+   * Gets the channel specified by the key.
    *
-   * @param userName
-   *          the user name
+   * @param key
+   *          the key specifying the channel
    * @return the channel
    */
-  public Channel get(String userName) {
-    check(userName);
-    return byUserName.get(userName);
+  public Channel get(String key) {
+    check(key);
+    return byString.get(key);
   }
 
   /**
-   * Gets the channel specified by the sessionId.
+   * Gets the channel specified by the key.
    *
-   * @param sessionId
-   *          the session id
+   * @param key
+   *          the key specifying the channel
    * @return the channel
    */
-  public Channel get(Long sessionId) {
-    check(sessionId);
-    return bySessionId.get(sessionId);
+  public Channel get(Long key) {
+    check(key);
+    return byLong.get(key);
   }
 
   /**
@@ -190,33 +189,33 @@ public class NettyConnectionRegistry {
   }
 
   /**
-   * Adds the channel mapped by sessionId to the registry.
+   * Adds the channel mapped by key to the registry.
    *
-   * @param sessionId
-   *          the session id
+   * @param key
+   *          the key specifying the channel
    * @param channel
    *          the channel
    */
-  public void put(Long sessionId, Channel channel) {
-    check(sessionId);
+  public void put(Long key, Channel channel) {
+    check(key);
     check(channel);
-    bySessionId.put(sessionId, channel);
-    channel.closeFuture().addListener(f -> bySessionId.remove(sessionId));
+    byLong.put(key, channel);
+    channel.closeFuture().addListener(f -> byLong.remove(key));
   }
 
   /**
-   * Adds the channel mapped by userName to the registry.
+   * Adds the channel mapped by key to the registry.
    *
-   * @param userName
-   *          the user name
+   * @param key
+   *          the key specifying the channel
    * @param channel
    *          the channel
    */
-  public void put(String userName, Channel channel) {
-    check(userName);
+  public void put(String key, Channel channel) {
+    check(key);
     check(channel);
-    byUserName.put(userName, channel);
-    channel.closeFuture().addListener(f -> byUserName.remove(userName));
+    byString.put(key, channel);
+    channel.closeFuture().addListener(f -> byString.remove(key));
   }
 
   /**
@@ -238,35 +237,35 @@ public class NettyConnectionRegistry {
   }
 
   /**
-   * Send the message to the specified userName.
+   * Send the message to the specified key.
    *
-   * @param userName
-   *          the user name
+   * @param key
+   *          the key specifying the channel
    * @param message
    *          the message
    */
-  public void send(String userName, String message) {
-    check(userName);
+  public void send(String key, String message) {
+    check(key);
 
-    Channel channel = byUserName.get(userName);
+    Channel channel = byString.get(key);
 
-    sendMessage(userName, message, channel);
+    sendMessage(key, message, channel);
   }
 
   /**
-   * Send the message to the specified sessionId.
+   * Send the message to the specified key.
    *
-   * @param sessionId
-   *          the session id
+   * @param key
+   *          the key specifying the channel
    * @param message
    *          the message
    */
-  public void send(Long sessionId, String message) {
-    check(sessionId);
+  public void send(Long key, String message) {
+    check(key);
 
-    Channel channel = bySessionId.get(sessionId);
+    Channel channel = byLong.get(key);
 
-    sendMessage(sessionId, message, channel);
+    sendMessage(key, message, channel);
   }
 
   /**
@@ -338,30 +337,30 @@ public class NettyConnectionRegistry {
   }
 
   /**
-   * Removes the channel from group specified by groupKey and userName.
+   * Removes the channel from group specified by groupKey and key.
    *
    * @param groupKey
    *          the group key
-   * @param userName
-   *          the user name
+   * @param key
+   *          the key specifying the channel
    */
-  public void removeFromGroup(String groupKey, String userName) {
-    check(userName);
-    Channel channel = get(userName);
+  public void removeFromGroup(String groupKey, String key) {
+    check(key);
+    Channel channel = get(key);
     if (channel != null) removeFromGroup(groupKey, channel);
   }
 
   /**
-   * Removes the channel from group specified by groupKey and sessionId.
+   * Removes the channel from group specified by groupKey and key.
    *
    * @param groupKey
    *          the group key
-   * @param sessionId
-   *          the session id
+   * @param key
+   *          the key specifying the channel
    */
-  public void removeFromGroup(String groupKey, Long sessionId) {
-    check(sessionId);
-    Channel channel = get(sessionId);
+  public void removeFromGroup(String groupKey, Long key) {
+    check(key);
+    Channel channel = get(key);
     if (channel != null) removeFromGroup(groupKey, channel);
   }
 
@@ -443,27 +442,27 @@ public class NettyConnectionRegistry {
   }
 
   /**
-   * Removes the channel from userName pairing.
+   * Removes the channel from key pairing.
    *
-   * @param userName
-   *          the user name
+   * @param key
+   *          the key specifying the channel
    * @return the channel
    */
-  public Channel remove(String userName) {
-    check(userName);
-    return byUserName.remove(userName);
+  public Channel remove(String key) {
+    check(key);
+    return byString.remove(key);
   }
 
   /**
-   * Removes the channel from the sessionId pairing.
+   * Removes the channel from the key pairing.
    *
-   * @param sessionId
-   *          the session id
+   * @param key
+   *          the key specifying the channel
    * @return the channel
    */
-  public Channel remove(Long sessionId) {
-    check(sessionId);
-    return bySessionId.remove(sessionId);
+  public Channel remove(Long key) {
+    check(key);
+    return byLong.remove(key);
   }
 
   /**
@@ -508,12 +507,12 @@ public class NettyConnectionRegistry {
     return group == null ? 0 : group.size();
   }
 
-  private void check(String userName) {
-    if (isEmpty(userName)) fail("userName not specified");
+  private void check(String key) {
+    if (isEmpty(key)) fail("key not specified");
   }
 
-  private void check(Long sessionId) {
-    if (sessionId == null || sessionId <= 0) fail("Invalid sessionId: " + sessionId);
+  private void check(Long key) {
+    if (key == null || key <= 0) fail("Invalid key: " + key);
   }
 
   private void check(Channel channel) {
