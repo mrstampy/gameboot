@@ -138,13 +138,17 @@ public class OneTimePad {
     keyCheck(key);
     if (isEmpty(message)) fail("No message");
 
-    if (key.length < message.length()) fail("Key length too short for message");
+    lengthCheck(key, message.getBytes());
   }
 
   private void check(byte[] key, byte[] message) {
     keyCheck(key);
     if (mtArray(message)) fail("No message");
 
+    lengthCheck(key, message);
+  }
+
+  private void lengthCheck(byte[] key, byte[] message) {
     if (key.length < message.length) fail("Key length too short for message");
   }
 
