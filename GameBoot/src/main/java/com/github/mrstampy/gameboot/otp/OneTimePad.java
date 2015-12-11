@@ -130,17 +130,21 @@ public class OneTimePad {
   }
 
   private void check(byte[] key, String message) {
-    if (key == null || key.length == 0) fail("No key");
+    if (mtArray(key)) fail("No key");
     if (isEmpty(message)) fail("No message");
 
     if (key.length < message.length()) fail("Key length too short for message");
   }
 
   private void check(byte[] key, byte[] message) {
-    if (key == null || key.length == 0) fail("No key");
-    if (message == null || message.length == 0) fail("No message");
+    if (mtArray(key)) fail("No key");
+    if (mtArray(message)) fail("No message");
 
     if (key.length < message.length) fail("Key length too short for message");
+  }
+
+  protected boolean mtArray(byte[] key) {
+    return key == null || key.length == 0;
   }
 
   private void fail(String message) {
