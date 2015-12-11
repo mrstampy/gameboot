@@ -88,7 +88,7 @@ public class OneTimePadTest {
    *           the exception
    */
   @Test
-  public void tesIllegalArgs() throws Exception {
+  public void testIllegalArgs() throws Exception {
     byte[] key = null;
     byte[] msg = "Hello".getBytes();
 
