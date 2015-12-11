@@ -58,6 +58,8 @@ import com.codahale.metrics.Timer.Context;
  */
 public class NullMetricsHelper implements MetricsHelper {
 
+  private Optional<Context> nulled = Optional.of(null);
+
   /*
    * (non-Javadoc)
    * 
@@ -167,7 +169,7 @@ public class NullMetricsHelper implements MetricsHelper {
    */
   @Override
   public Optional<Context> startTimer(String key) {
-    return Optional.of(null);
+    return nulled;
   }
 
   /*
