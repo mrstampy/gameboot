@@ -40,12 +40,12 @@
  */
 package com.github.mrstampy.gameboot.security.properties.config.condition;
 
-import com.github.mrstampy.gameboot.util.resource.AbstractResourceCondition;
+import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondition;
 
 /**
  * The Class FileCondition.
  */
-public class FileCondition extends AbstractResourceCondition {
+public class FileCondition extends AbstractFallbackResourceCondition {
 
   /** The Constant SECURITY_PROPERTIES. */
   public static final String SECURITY_PROPERTIES = "file:security.properties";

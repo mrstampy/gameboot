@@ -84,19 +84,27 @@ public abstract class AbstractFallbackResourceCondition implements Condition {
   public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
     ResourceLoader loader = context.getResourceLoader();
 
-    for (String override : overrides) {
-      Resource o = loader.getResource(override);
-      if (o.exists()) {
-        ResourceLogger.log(override, fallback);
-        return false;
-      }
-    }
+    if (hasOverride(loader)) return false;
 
     boolean b = loader.getResource(fallback).exists();
 
     if (b) ResourceLogger.log(fallback);
 
     return b;
+  }
+
+  private boolean hasOverride(ResourceLoader loader) {
+    if (overrides == null || overrides.length == 0) return false;
+
+    for (String override : overrides) {
+      Resource o = loader.getResource(override);
+      if (o.exists()) {
+        ResourceLogger.log(override, fallback);
+        return true;
+      }
+    }
+
+    return false;
   }
 
 }
