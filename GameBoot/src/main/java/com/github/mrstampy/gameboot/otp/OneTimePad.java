@@ -69,7 +69,7 @@ public class OneTimePad {
    * Generate key to share securely (https/wss) with the client.
    *
    * @param size
-   *          the size
+   *          the size of the key string
    * @return the string
    * @throws Exception
    *           the exception
