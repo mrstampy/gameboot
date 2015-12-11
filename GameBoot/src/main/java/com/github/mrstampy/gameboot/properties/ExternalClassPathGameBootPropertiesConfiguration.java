@@ -38,13 +38,13 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.properties.config;
+package com.github.mrstampy.gameboot.properties;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import com.github.mrstampy.gameboot.properties.config.condition.ExternalClassPathCondition;
+import com.github.mrstampy.gameboot.properties.condition.ExternalClassPathCondition;
 
 /**
  * The Class ExternalClassPathGameBootPropertiesConfiguration allows overriding

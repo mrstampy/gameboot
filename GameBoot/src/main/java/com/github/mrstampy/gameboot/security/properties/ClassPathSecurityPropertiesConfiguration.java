@@ -38,23 +38,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.security.properties.config.condition;
+package com.github.mrstampy.gameboot.security.properties;
 
-import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondition;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+
+import com.github.mrstampy.gameboot.security.properties.condition.ClassPathCondition;
 
 /**
- * The Class ClassPathCondition.
+ * The Class ClassPathSecurityPropertiesConfiguration is the fallback for the
+ * security.properties file, selecting it from the root of the classpath (the
+ * GameBoot.jar file is the fallback's fallback).
  */
-public class ClassPathCondition extends AbstractFallbackResourceCondition {
-
-  /** The Constant SECURITY_PROPERTIES. */
-  public static final String SECURITY_PROPERTIES = "classpath:security.properties";
-
-  /**
-   * Instantiates a new class path condition.
-   */
-  public ClassPathCondition() {
-    super(SECURITY_PROPERTIES, FileCondition.SECURITY_PROPERTIES, ExternalClassPathCondition.SECURITY_PROPERTIES);
-  }
+@Configuration
+@Conditional(ClassPathCondition.class)
+@PropertySource(ClassPathCondition.SECURITY_PROPERTIES)
+public class ClassPathSecurityPropertiesConfiguration {
 
 }

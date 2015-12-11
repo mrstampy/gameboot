@@ -38,22 +38,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.security.properties.config;
+package com.github.mrstampy.gameboot.properties.condition;
 
-import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-
-import com.github.mrstampy.gameboot.security.properties.config.condition.ClassPathCondition;
+import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondition;
 
 /**
- * The Class ClassPathSecurityPropertiesConfiguration is the fallback for the
- * security.properties file, selecting it from the root of the classpath (the
- * GameBoot.jar file is the fallback's fallback).
+ * The Class FileCondition.
  */
-@Configuration
-@Conditional(ClassPathCondition.class)
-@PropertySource(ClassPathCondition.SECURITY_PROPERTIES)
-public class ClassPathSecurityPropertiesConfiguration {
+public class FileCondition extends AbstractFallbackResourceCondition {
+
+  /** The Constant GAMEBOOT_PROPERTIES. */
+  public static final String GAMEBOOT_PROPERTIES = "file:gameboot.properties";
+
+  /**
+   * Instantiates a new file condition.
+   */
+  public FileCondition() {
+    super(GAMEBOOT_PROPERTIES);
+  }
 
 }

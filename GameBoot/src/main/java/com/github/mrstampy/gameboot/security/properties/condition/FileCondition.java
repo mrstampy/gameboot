@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.properties.config.condition;
+package com.github.mrstampy.gameboot.security.properties.condition;
 
 import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondition;
 
@@ -47,14 +47,14 @@ import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondit
  */
 public class FileCondition extends AbstractFallbackResourceCondition {
 
-  /** The Constant DATABASE_PROPERTIES. */
-  public static final String DATABASE_PROPERTIES = "file:database.properties";
+  /** The Constant SECURITY_PROPERTIES. */
+  public static final String SECURITY_PROPERTIES = "file:security.properties";
 
   /**
    * Instantiates a new file condition.
    */
   public FileCondition() {
-    super(DATABASE_PROPERTIES);
+    super(SECURITY_PROPERTIES);
   }
 
 }

@@ -38,22 +38,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.properties.config;
+package com.github.mrstampy.gameboot.data.properties;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import com.github.mrstampy.gameboot.properties.config.condition.ClassPathCondition;
+import com.github.mrstampy.gameboot.data.properties.condition.FileCondition;
 
 /**
- * The Class ClassPathGameBootPropertiesConfiguration is the fallback for the
- * gameboot.properties file, selecting it from the root of the classpath (the
- * GameBoot.jar file is the fallback's fallback).
+ * The Class FileDatabasePropertiesConfiguration allows a database.properties
+ * file to be placed in the directory where the application is started,
+ * overriding all defaults.
  */
 @Configuration
-@Conditional(ClassPathCondition.class)
-@PropertySource(ClassPathCondition.GAMEBOOT_PROPERTIES)
-public class ClassPathGameBootPropertiesConfiguration {
+@Conditional(FileCondition.class)
+@PropertySource(FileCondition.DATABASE_PROPERTIES)
+public class FileDatabasePropertiesConfiguration {
 
 }

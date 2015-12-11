@@ -38,22 +38,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.security.properties.config;
+package com.github.mrstampy.gameboot.properties.condition;
 
-import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
-
-import com.github.mrstampy.gameboot.security.properties.config.condition.ExternalClassPathCondition;
+import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondition;
 
 /**
- * The Class ExternalClassPathSecurityPropertiesConfiguration allows overriding
- * the {@link ClassPathSecurityPropertiesConfiguration} should the
- * security.properties file be found in the package 'gameboot'.
+ * The Class ExternalClassPathCondition.
  */
-@Configuration
-@Conditional(ExternalClassPathCondition.class)
-@PropertySource(ExternalClassPathCondition.SECURITY_PROPERTIES)
-public class ExternalClassPathSecurityPropertiesConfiguration {
+public class ExternalClassPathCondition extends AbstractFallbackResourceCondition {
+
+  /** The Constant GAMEBOOT_PROPERTIES. */
+  public static final String GAMEBOOT_PROPERTIES = "classpath:" + AbstractFallbackResourceCondition.EXT_CLASSPATH
+      + "gameboot.properties";
+
+  /**
+   * Instantiates a new external class path condition.
+   */
+  public ExternalClassPathCondition() {
+    super(GAMEBOOT_PROPERTIES, FileCondition.GAMEBOOT_PROPERTIES);
+  }
 
 }

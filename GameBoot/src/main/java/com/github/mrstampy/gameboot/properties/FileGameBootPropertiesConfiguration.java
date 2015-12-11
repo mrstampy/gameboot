@@ -38,23 +38,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.properties.config.condition;
+package com.github.mrstampy.gameboot.properties;
 
-import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondition;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+
+import com.github.mrstampy.gameboot.properties.condition.FileCondition;
 
 /**
- * The Class FileCondition.
+ * The Class FileGameBootPropertiesConfiguration allows a gameboot.properties
+ * file to be placed in the directory where the application is started,
+ * overriding all defaults.
  */
-public class FileCondition extends AbstractFallbackResourceCondition {
-
-  /** The Constant GAMEBOOT_PROPERTIES. */
-  public static final String GAMEBOOT_PROPERTIES = "file:gameboot.properties";
-
-  /**
-   * Instantiates a new file condition.
-   */
-  public FileCondition() {
-    super(GAMEBOOT_PROPERTIES);
-  }
+@Configuration
+@Conditional(FileCondition.class)
+@PropertySource(FileCondition.GAMEBOOT_PROPERTIES)
+public class FileGameBootPropertiesConfiguration {
 
 }

@@ -38,22 +38,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.properties.config;
+package com.github.mrstampy.gameboot.security.properties;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 
-import com.github.mrstampy.gameboot.data.properties.config.condition.ClassPathCondition;
+import com.github.mrstampy.gameboot.security.properties.condition.ExternalClassPathCondition;
 
 /**
- * The Class ClassPathDatabasePropertiesConfiguration is the fallback for the
- * database.properties file, selecting it from the root of the classpath (the
- * GameBoot.jar file is the fallback's fallback).
+ * The Class ExternalClassPathSecurityPropertiesConfiguration allows overriding
+ * the {@link ClassPathSecurityPropertiesConfiguration} should the
+ * security.properties file be found in the package 'gameboot'.
  */
 @Configuration
-@Conditional(ClassPathCondition.class)
-@PropertySource(ClassPathCondition.DATABASE_PROPERTIES)
-public class ClassPathDatabasePropertiesConfiguration {
+@Conditional(ExternalClassPathCondition.class)
+@PropertySource(ExternalClassPathCondition.SECURITY_PROPERTIES)
+public class ExternalClassPathSecurityPropertiesConfiguration {
 
 }

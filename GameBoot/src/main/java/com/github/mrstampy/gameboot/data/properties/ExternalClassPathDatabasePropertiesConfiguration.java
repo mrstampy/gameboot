@@ -38,24 +38,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.properties.config.condition;
+package com.github.mrstampy.gameboot.data.properties;
 
-import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondition;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+
+import com.github.mrstampy.gameboot.data.properties.condition.ExternalClassPathCondition;
 
 /**
- * The Class ExternalClassPathCondition.
+ * The Class ExternalClassPathDatabasePropertiesConfiguration allows overriding
+ * the {@link ClassPathDatabasePropertiesConfiguration} should the
+ * database.properties file be found in the package 'gameboot'.
  */
-public class ExternalClassPathCondition extends AbstractFallbackResourceCondition {
-
-  /** The Constant GAMEBOOT_PROPERTIES. */
-  public static final String GAMEBOOT_PROPERTIES = "classpath:" + AbstractFallbackResourceCondition.EXT_CLASSPATH
-      + "gameboot.properties";
-
-  /**
-   * Instantiates a new external class path condition.
-   */
-  public ExternalClassPathCondition() {
-    super(GAMEBOOT_PROPERTIES, FileCondition.GAMEBOOT_PROPERTIES);
-  }
+@Configuration
+@Conditional(ExternalClassPathCondition.class)
+@PropertySource(ExternalClassPathCondition.DATABASE_PROPERTIES)
+public class ExternalClassPathDatabasePropertiesConfiguration {
 
 }

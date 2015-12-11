@@ -38,24 +38,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.properties.config.condition;
+package com.github.mrstampy.gameboot.security.properties.condition;
 
 import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondition;
 
 /**
- * The Class ExternalClassPathCondition.
+ * The Class ClassPathCondition.
  */
-public class ExternalClassPathCondition extends AbstractFallbackResourceCondition {
+public class ClassPathCondition extends AbstractFallbackResourceCondition {
 
-  /** The Constant DATABASE_PROPERTIES. */
-  public static final String DATABASE_PROPERTIES = "classpath:" + AbstractFallbackResourceCondition.EXT_CLASSPATH
-      + "database.properties";
+  /** The Constant SECURITY_PROPERTIES. */
+  public static final String SECURITY_PROPERTIES = "classpath:security.properties";
 
   /**
-   * Instantiates a new external class path condition.
+   * Instantiates a new class path condition.
    */
-  public ExternalClassPathCondition() {
-    super(DATABASE_PROPERTIES, FileCondition.DATABASE_PROPERTIES);
+  public ClassPathCondition() {
+    super(SECURITY_PROPERTIES, FileCondition.SECURITY_PROPERTIES, ExternalClassPathCondition.SECURITY_PROPERTIES);
   }
 
 }
