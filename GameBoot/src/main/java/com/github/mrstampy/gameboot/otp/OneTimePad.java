@@ -48,7 +48,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * The Class OneTimePad.
+ * The Class OneTimePad is an implementation of the <a href="">One Time Pad</a>
+ * algorithm. The intended use is to generate a secret key which is passed
+ * securely to the client (https, wss etc). All messages are then encrypted and
+ * decrypted with this key and the encrypted messages can be exchanged clear
+ * text (http, ws etc), negating the overhead of secure connections.<br>
+ * <br>
+ * 
+ * Key length must be >= message length.
+ * 
+ * @see KeyRegistry
  */
 @Component
 public class OneTimePad {
@@ -57,13 +66,14 @@ public class OneTimePad {
   private SecureRandom random;
 
   /**
-   * Generate key.
+   * Generate key to share securely (https/wss) with the client.
    *
    * @param size
    *          the size
    * @return the string
    * @throws Exception
    *           the exception
+   * @see KeyRegistry
    */
   public String generateKey(int size) throws Exception {
     check(size);
@@ -76,47 +86,47 @@ public class OneTimePad {
   }
 
   /**
-   * Encrypt.
+   * Will encode the message if decoded, decode the message if encoded.
    *
    * @param key
    *          the key
-   * @param decoded
-   *          the decoded
-   * @return the string
+   * @param message
+   *          the message
+   * @return the converted string
    * @throws Exception
    *           the exception
    */
-  public String encrypt(String key, String decoded) throws Exception {
-    return otp(key, decoded);
+  public String convert(String key, String message) throws Exception {
+    check(key, message);
+
+    return new String(convert(key.getBytes(), message.getBytes()));
   }
 
   /**
-   * Decrypt.
+   * Will encode the message if decoded, decode the message if encoded.
    *
    * @param key
    *          the key
-   * @param encoded
-   *          the encoded
-   * @return the string
+   * @param message
+   *          the message byte array
+   * @return the converted byte array
    * @throws Exception
    *           the exception
    */
-  public String decrypt(String key, String encoded) throws Exception {
-    return otp(key, encoded);
-  }
-
-  private String otp(String key, String message) {
+  public byte[] convert(String key, byte[] message) throws Exception {
     check(key, message);
 
-    byte[] kb = key.getBytes();
-    byte[] mb = message.getBytes();
-    byte[] ed = new byte[mb.length];
+    return convert(key.getBytes(), message);
+  }
 
-    for (int i = 0; i < mb.length; i++) {
-      ed[i] = (byte) (mb[i] ^ kb[i]);
+  protected byte[] convert(byte[] key, byte[] message) {
+    byte[] converted = new byte[message.length];
+
+    for (int i = 0; i < message.length; i++) {
+      converted[i] = (byte) (message[i] ^ key[i]);
     }
 
-    return new String(ed);
+    return converted;
   }
 
   private void check(int size) {
@@ -128,6 +138,13 @@ public class OneTimePad {
     if (isEmpty(message)) fail("No message");
 
     if (key.length() < message.length()) fail("Key length too short for message");
+  }
+
+  private void check(String key, byte[] message) {
+    if (isEmpty(key)) fail("No key");
+    if (message == null || message.length == 0) fail("No message");
+
+    if (key.length() < message.length) fail("Key length too short for message");
   }
 
   private void fail(String message) {
