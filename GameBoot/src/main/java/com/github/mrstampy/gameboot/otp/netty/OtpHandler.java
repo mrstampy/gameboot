@@ -60,8 +60,10 @@ import io.netty.channel.ChannelPromise;
 /**
  * The Class OtpHandler is intended to provide a transparent means of using the
  * {@link OneTimePad} utility to encrypt outgoing and decrypt incoming messages
- * on unencrypted Netty connections. It is intended that the message is a string
- * at the point in which this class is inserted into the pipeline.<br>
+ * on unencrypted Netty connections. It is intended that the message is a byte
+ * array at the point in which this class is inserted into the pipeline. Inbound
+ * messages are later converted to strings, all outbound messages are byte
+ * arrays.<br>
  * <br>
  * 
  * This class uses the {@link Channel#remoteAddress()#toString()} as a key to
@@ -145,7 +147,7 @@ public class OtpHandler extends ChannelDuplexHandler {
 
     helper.incr(OTP_DECRYPT_COUNTER);
 
-    String converted = oneTimePad.convert(key, (String) msg);
+    byte[] converted = oneTimePad.convert(key, (byte[]) msg);
 
     ctx.fireChannelRead(converted);
   }
@@ -167,7 +169,7 @@ public class OtpHandler extends ChannelDuplexHandler {
 
     helper.incr(OTP_ENCRYPT_COUNTER);
 
-    String converted = oneTimePad.convert(key, (String) msg);
+    byte[] converted = oneTimePad.convert(key, (byte[]) msg);
 
     ctx.write(converted, promise);
   }

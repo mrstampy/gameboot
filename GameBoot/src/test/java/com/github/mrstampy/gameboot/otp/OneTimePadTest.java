@@ -40,97 +40,97 @@
  */
 package com.github.mrstampy.gameboot.otp;
 
-import java.security.SecureRandom;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.fail;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import com.github.mrstampy.gameboot.TestConfiguration;
 
 /**
- * The Class OneTimePad is an implementation of the
- * <a href="https://en.wikipedia.org/wiki/One-time_pad">One Time Pad</a>
- * algorithm. The intended use is to generate a secret key which is passed
- * securely to the client (https, wss etc). All messages are then encrypted and
- * decrypted with this key and the encrypted messages can be exchanged clear
- * text (http, ws etc), negating the overhead of secure connections.<br>
- * <br>
- * 
- * Key length must be >= message length.
- * 
- * @see KeyRegistry
+ * The Class OneTimePadTest.
  */
-@Component
-public class OneTimePad {
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(TestConfiguration.class)
+public class OneTimePadTest {
 
   @Autowired
-  private SecureRandom random;
+  private OneTimePad pad;
 
   /**
-   * Generate key to share securely (https/wss) with the client.
+   * Test one time pad.
    *
-   * @param size
-   *          the size of the key string
-   * @return the string
    * @throws Exception
    *           the exception
-   * @see KeyRegistry
    */
-  public byte[] generateKey(int size) throws Exception {
-    check(size);
+  @Test
+  public void testOneTimePad() throws Exception {
+    byte[] shush = pad.generateKey(5);
+    byte[] msg = "Hello".getBytes();
 
-    byte[] key = new byte[size];
+    byte[] converted = pad.convert(shush, msg);
+    assertNotEquals(new String(msg), new String(converted));
 
-    random.nextBytes(key);
+    converted = pad.convert(shush, converted);
 
-    return key;
+    assertEquals(new String(msg), new String(converted));
   }
 
   /**
-   * Will encode the message if decoded, decode the message if encoded.
+   * Test illegal args.
    *
-   * @param key
-   *          the key
-   * @param message
-   *          the message byte array
-   * @return the converted byte array
    * @throws Exception
    *           the exception
    */
-  public byte[] convert(byte[] key, byte[] message) throws Exception {
-    check(key, message);
+  @Test
+  public void tesIllegalArgs() throws Exception {
+    byte[] key = null;
+    byte[] msg = "Hello".getBytes();
 
-    byte[] converted = new byte[message.length];
+    illegalArgumentExpected(key, msg, "null key");
 
-    for (int i = 0; i < message.length; i++) {
-      converted[i] = (byte) (message[i] ^ key[i]);
+    key = new byte[0];
+
+    illegalArgumentExpected(key, msg, "mt key");
+
+    key = new byte[1];
+
+    illegalArgumentExpected(key, msg, "key too short");
+
+    msg = new byte[0];
+
+    illegalArgumentExpected(key, msg, "mt byte[] message");
+
+    key = new byte[5];
+    msg = null;
+
+    illegalArgumentExpected(key, msg, "null byte[] message");
+  }
+
+  private void illegalArgumentExpected(byte[] key, byte[] message, String failMsg) {
+    illegalArgumentRunner(() -> {
+      try {
+        pad.convert(key, message);
+      } catch (IllegalArgumentException expected) {
+        throw expected;
+      } catch (Exception e) {
+        e.printStackTrace();
+        fail(e.getMessage());
+      }
+    } , failMsg);
+  }
+
+  private void illegalArgumentRunner(Runnable r, String failMsg) {
+    try {
+      r.run();
+      fail(failMsg);
+    } catch (IllegalArgumentException expected) {
     }
-
-    return converted;
   }
 
-  private void check(int size) {
-    if (size <= 0) fail("Size must be > 0");
-  }
-
-  private void check(byte[] key, byte[] message) {
-    keyCheck(key);
-    if (mtArray(message)) fail("No message");
-
-    lengthCheck(key, message);
-  }
-
-  private void lengthCheck(byte[] key, byte[] message) {
-    if (key.length < message.length) fail("Key length too short for message");
-  }
-
-  private void keyCheck(byte[] key) {
-    if (mtArray(key)) fail("No key");
-  }
-
-  protected boolean mtArray(byte[] key) {
-    return key == null || key.length == 0;
-  }
-
-  private void fail(String message) {
-    throw new IllegalArgumentException(message);
-  }
 }
