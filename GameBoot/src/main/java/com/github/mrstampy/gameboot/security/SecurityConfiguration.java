@@ -40,6 +40,10 @@
  */
 package com.github.mrstampy.gameboot.security;
 
+import java.security.SecureRandom;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -51,5 +55,27 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @EnableWebSecurity
 @PropertySource("/security.properties")
 public class SecurityConfiguration {
+
+  @Value("${secure.random.seed.size}")
+  private int seedSize;
+
+  /**
+   * Returns a strong instance of the secure random seeded with a byte array the
+   * size of which is specified by the gameboot property
+   * 'secure.random.seed.size'.
+   *
+   * @return the secure random
+   * @throws Exception
+   *           the exception
+   */
+  @Bean
+  public SecureRandom secureRandom() throws Exception {
+    SecureRandom random = SecureRandom.getInstanceStrong();
+
+    byte[] seed = new byte[seedSize];
+    random.nextBytes(seed);
+
+    return random;
+  }
 
 }
