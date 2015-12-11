@@ -48,7 +48,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * The Class OneTimePad is an implementation of the <a href="">One Time Pad</a>
+ * The Class OneTimePad is an implementation of the
+ * <a href="https://en.wikipedia.org/wiki/One-time_pad">One Time Pad</a>
  * algorithm. The intended use is to generate a secret key which is passed
  * securely to the client (https, wss etc). All messages are then encrypted and
  * decrypted with this key and the encrypted messages can be exchanged clear
