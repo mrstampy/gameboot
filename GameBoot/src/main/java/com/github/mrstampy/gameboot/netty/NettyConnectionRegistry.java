@@ -54,6 +54,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.util.GameBootRegistry;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -69,7 +70,7 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
  * @see FiberForkJoinNettyMessageHandler
  */
 @Component
-public class NettyConnectionRegistry {
+public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /** Group key for ALL Netty connections. */
@@ -80,13 +81,7 @@ public class NettyConnectionRegistry {
   @Autowired
   private MetricsHelper helper;
 
-  private Map<String, Channel> byString = new ConcurrentHashMap<>();
-
-  private Map<Long, Channel> byLong = new ConcurrentHashMap<>();
-
   private Map<String, ChannelGroup> groups = new ConcurrentHashMap<>();
-
-  private Map<Object, Channel> byCustomKey = new ConcurrentHashMap<>();
 
   /**
    * Post construct.
@@ -97,45 +92,6 @@ public class NettyConnectionRegistry {
   @PostConstruct
   public void postConstruct() throws Exception {
     helper.gauge(() -> allConnected(), NETTY_CONNECTIONS, getClass(), "netty", "connections");
-  }
-
-  /**
-   * Returns true if the channel specified by the key exists.
-   *
-   * @param key
-   *          the key specifying the channel
-   * @return true, if successful
-   */
-  public boolean contains(String key) {
-    check(key);
-    return byString.containsKey(key);
-  }
-
-  /**
-   * Returns true if the channel specified by the key exists.
-   *
-   * @param key
-   *          the key specifying the channel
-   * @return true, if successful
-   */
-  public boolean contains(Long key) {
-    check(key);
-    return byLong.containsKey(key);
-  }
-
-  /**
-   * Returns true if the channel specified by the {@link Map}-keyable generic
-   * type exists.
-   *
-   * @param <T>
-   *          the generic type
-   * @param key
-   *          the key
-   * @return true, if successful
-   */
-  public <T> boolean contains(T key) {
-    check(key);
-    return byCustomKey.containsKey(key);
   }
 
   /**
@@ -151,137 +107,31 @@ public class NettyConnectionRegistry {
   }
 
   /**
-   * Gets the channel specified by the key.
-   *
-   * @param key
-   *          the key specifying the channel
-   * @return the channel
-   */
-  public Channel get(String key) {
-    check(key);
-    return byString.get(key);
-  }
-
-  /**
-   * Gets the channel specified by the key.
-   *
-   * @param key
-   *          the key specifying the channel
-   * @return the channel
-   */
-  public Channel get(Long key) {
-    check(key);
-    return byLong.get(key);
-  }
-
-  /**
-   * Gets the channel specified by the {@link Map}-keyable generic type.
-   *
-   * @param <T>
-   *          the generic type
-   * @param key
-   *          the key
-   * @return the channel
-   */
-  public <T> Channel get(T key) {
-    check(key);
-    return byCustomKey.get(key);
-  }
-
-  /**
-   * Adds the channel mapped by key to the registry.
-   *
-   * @param key
-   *          the key specifying the channel
-   * @param channel
-   *          the channel
-   */
-  public void put(Long key, Channel channel) {
-    check(key);
-    check(channel);
-    byLong.put(key, channel);
-    channel.closeFuture().addListener(f -> byLong.remove(key));
-  }
-
-  /**
-   * Adds the channel mapped by key to the registry.
-   *
-   * @param key
-   *          the key specifying the channel
-   * @param channel
-   *          the channel
-   */
-  public void put(String key, Channel channel) {
-    check(key);
-    check(channel);
-    byString.put(key, channel);
-    channel.closeFuture().addListener(f -> byString.remove(key));
-  }
-
-  /**
-   * Adds the channel mapped by the {@link Map}-keyable generic type to the
+   * Adds the channel mapped by the key to the
    * registry.
    *
-   * @param <T>
-   *          the generic type
    * @param key
    *          the key
    * @param channel
    *          the channel
    */
-  public <T> void put(T key, Channel channel) {
-    check(key);
-    check(channel);
-    byCustomKey.put(key, channel);
-    channel.closeFuture().addListener(f -> byCustomKey.remove(key));
-  }
-
-  /**
-   * Send the message to the specified key.
-   *
-   * @param key
-   *          the key specifying the channel
-   * @param message
-   *          the message
-   */
-  public void send(String key, String message) {
-    check(key);
-
-    Channel channel = byString.get(key);
-
-    sendMessage(key, message, channel);
-  }
-
-  /**
-   * Send the message to the specified key.
-   *
-   * @param key
-   *          the key specifying the channel
-   * @param message
-   *          the message
-   */
-  public void send(Long key, String message) {
-    check(key);
-
-    Channel channel = byLong.get(key);
-
-    sendMessage(key, message, channel);
+  public void put(Comparable<?> key, Channel channel) {
+    super.put(key, channel);
+    channel.closeFuture().addListener(f -> map.remove(key));
   }
 
   /**
    * Sends the message to the specified {@link Map}-keyable channel.
    *
-   * @param <T>
-   *          the generic type
    * @param key
    *          the key
    * @param message
    *          the message
    */
-  public <T> void send(T key, String message) {
-    check(key);
+  public void send(Comparable<?> key, String message) {
+    checkKey(key);
 
-    Channel channel = byCustomKey.get(key);
+    Channel channel = get(key);
 
     sendMessage(key, message, channel);
   }
@@ -337,46 +187,15 @@ public class NettyConnectionRegistry {
   }
 
   /**
-   * Removes the channel from group specified by groupKey and key.
+   * Removes the channel from group specified by groupKey and the key.
    *
-   * @param groupKey
-   *          the group key
-   * @param key
-   *          the key specifying the channel
-   */
-  public void removeFromGroup(String groupKey, String key) {
-    check(key);
-    Channel channel = get(key);
-    if (channel != null) removeFromGroup(groupKey, channel);
-  }
-
-  /**
-   * Removes the channel from group specified by groupKey and key.
-   *
-   * @param groupKey
-   *          the group key
-   * @param key
-   *          the key specifying the channel
-   */
-  public void removeFromGroup(String groupKey, Long key) {
-    check(key);
-    Channel channel = get(key);
-    if (channel != null) removeFromGroup(groupKey, channel);
-  }
-
-  /**
-   * Removes the channel from group specified by groupKey and the {@link Map}
-   * -keyable generic type.
-   *
-   * @param <T>
-   *          the generic type
    * @param groupKey
    *          the group key
    * @param key
    *          the key
    */
-  public <T> void removeFromGroup(String groupKey, T key) {
-    check(key);
+  public void removeFromGroup(String groupKey, Comparable<?> key) {
+    checkKey(key);
     Channel channel = get(key);
     if (channel != null) removeFromGroup(groupKey, channel);
   }
@@ -441,45 +260,7 @@ public class NettyConnectionRegistry {
     f.addListener(e -> log((ChannelGroupFuture) e, groupKey, message));
   }
 
-  /**
-   * Removes the channel from key pairing.
-   *
-   * @param key
-   *          the key specifying the channel
-   * @return the channel
-   */
-  public Channel remove(String key) {
-    check(key);
-    return byString.remove(key);
-  }
-
-  /**
-   * Removes the channel from the key pairing.
-   *
-   * @param key
-   *          the key specifying the channel
-   * @return the channel
-   */
-  public Channel remove(Long key) {
-    check(key);
-    return byLong.remove(key);
-  }
-
-  /**
-   * Removes the channel from the {@link Map}-keyable generic type pairing.
-   *
-   * @param <T>
-   *          the generic type
-   * @param key
-   *          the key
-   * @return the channel
-   */
-  public <T> Channel remove(T key) {
-    check(key);
-    return byCustomKey.remove(key);
-  }
-
-  private <T> void sendMessage(T key, String message, Channel channel) {
+  private void sendMessage(Comparable<?> key, String message, Channel channel) {
     checkMessage(message);
     if (channel == null || !channel.isWritable()) {
       log.warn("Cannot send {} to {}", message, channel);
@@ -507,22 +288,6 @@ public class NettyConnectionRegistry {
     return group == null ? 0 : group.size();
   }
 
-  private void check(String key) {
-    if (isEmpty(key)) fail("key not specified");
-  }
-
-  private void check(Long key) {
-    if (key == null || key <= 0) fail("Invalid key: " + key);
-  }
-
-  private void check(Channel channel) {
-    if (channel == null) fail("Null channel");
-  }
-
-  private <T> void check(T key) {
-    if (key == null) fail("Null key");
-  }
-
   private void checkMessage(String message) {
     if (isEmpty(message)) fail("No message");
   }
@@ -533,10 +298,6 @@ public class NettyConnectionRegistry {
 
   private void groupCheck(String groupKey, Channel channel) {
     groupCheck(groupKey);
-    check(channel);
-  }
-
-  private void fail(String message) {
-    throw new IllegalArgumentException(message);
+    checkValue(channel);
   }
 }

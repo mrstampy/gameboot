@@ -38,17 +38,109 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.otp;
+package com.github.mrstampy.gameboot.util;
 
-import org.springframework.stereotype.Component;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import com.github.mrstampy.gameboot.util.GameBootRegistry;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * The Class KeyRegistry is intended to keep OTP secret keys mapped to any
- * {@link Comparable} object.
+ * Simple registry superclass backed by a {@link ConcurrentHashMap}.
+ *
+ * @param <V>
+ *          the value type
  */
-@Component
-public class KeyRegistry extends GameBootRegistry<String> {
+public abstract class GameBootRegistry<V> {
+
+  /** The map. */
+  protected Map<Comparable<?>, V> map = new ConcurrentHashMap<>();
+
+  /**
+   * Put.
+   *
+   * @param key
+   *          the key
+   * @param value
+   *          the value
+   */
+  public void put(Comparable<?> key, V value) {
+    checkKey(key);
+    checkValue(value);
+
+    map.put(key, value);
+  }
+
+  /**
+   * Gets the.
+   *
+   * @param key
+   *          the key
+   * @return the v
+   */
+  public V get(Comparable<?> key) {
+    checkKey(key);
+
+    return map.get(key);
+  }
+
+  /**
+   * Removes the.
+   *
+   * @param key
+   *          the key
+   * @return the v
+   */
+  public V remove(Comparable<?> key) {
+    checkKey(key);
+
+    return map.remove(key);
+  }
+
+  /**
+   * Contains.
+   *
+   * @param key
+   *          the key
+   * @return true, if successful
+   */
+  public boolean contains(Comparable<?> key) {
+    checkKey(key);
+    return map.containsKey(key);
+  }
+
+  /**
+   * Check key.
+   *
+   * @param key
+   *          the key
+   */
+  protected void checkKey(Comparable<?> key) {
+    if (key == null) fail("No key");
+
+    if (key instanceof String) {
+      if (isEmpty((String) key)) fail("No key");
+    }
+  }
+
+  /**
+   * Check value.
+   *
+   * @param value
+   *          the value
+   */
+  protected void checkValue(V value) {
+    if (value == null) fail("No value");
+  }
+
+  /**
+   * Fail.
+   *
+   * @param message
+   *          the message
+   */
+  protected void fail(String message) {
+    throw new IllegalArgumentException(message);
+  }
 
 }
