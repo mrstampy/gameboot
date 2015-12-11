@@ -49,8 +49,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
+import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import co.paralleluniverse.fibers.Fiber;
@@ -68,7 +70,16 @@ import io.netty.channel.ChannelPipeline;
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
- * constructing the {@link ChannelPipeline}.
+ * constructing the {@link ChannelPipeline}.<br>
+ * <br>
+ * 
+ * Note that {@link GameBootProcessor}s which define a {@link Transactional}
+ * boundary around the
+ * {@link GameBootProcessor#process(com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)}
+ * method are not suitable for execution within a {@link FiberExecutorScheduler}
+ * (unless instrumentation is turned off). See the
+ * <a href="http://docs.paralleluniverse.co/quasar/">Quasar documentation</a>
+ * for more information about Fibers vs. Threads.
  * 
  * @see GameBootConcurrentConfiguration
  */

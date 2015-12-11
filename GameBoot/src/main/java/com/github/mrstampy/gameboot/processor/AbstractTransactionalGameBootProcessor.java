@@ -45,9 +45,17 @@ import org.springframework.transaction.annotation.Transactional;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 
+import co.paralleluniverse.fibers.FiberExecutorScheduler;
+import co.paralleluniverse.fibers.FiberForkJoinScheduler;
+
 /**
  * The Class AbstractTransactionalGameBootProcessor ensures processing occurs
- * within {@link Transactional} boundaries (database etc).
+ * within {@link Transactional} boundaries (database etc). Note that subclasses
+ * are not suitable to be executed within either a
+ * {@link FiberForkJoinScheduler} or a {@link FiberExecutorScheduler} (unless
+ * instrumentation is off). See the
+ * <a href="http://docs.paralleluniverse.co/quasar/">Quasar documentation</a>
+ * for more information about Fibers vs. Threads.
  *
  * @param <M>
  *          the generic type
