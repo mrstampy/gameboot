@@ -139,7 +139,11 @@ public class OtpHandler extends ChannelDuplexHandler {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     String key = keyRegistry.get(getKey(ctx));
-    if (isEmpty(key)) ctx.fireChannelRead(msg);
+
+    if (isEmpty(key)) {
+      ctx.fireChannelRead(msg);
+      return;
+    }
 
     helper.incr(OTP_DECRYPT_COUNTER);
 
@@ -157,7 +161,11 @@ public class OtpHandler extends ChannelDuplexHandler {
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
     String key = keyRegistry.get(getKey(ctx));
-    if (isEmpty(key)) ctx.write(msg, promise);
+
+    if (isEmpty(key)) {
+      ctx.write(msg, promise);
+      return;
+    }
 
     helper.incr(OTP_ENCRYPT_COUNTER);
 
