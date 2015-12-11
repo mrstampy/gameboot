@@ -40,89 +40,58 @@
  */
 package com.github.mrstampy.gameboot.netty;
 
-import java.lang.invoke.MethodHandles;
-import java.util.concurrent.ExecutorService;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import org.slf4j.MDC;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 
 /**
- * This class uses the configured {@link ExecutorService} to process incoming
- * messages, preserving the Logback mapped diagnostic context. It is intended to
- * be added last to the {@link ChannelPipeline}.<br>
+ * The Class MDCUserSessionInboundHandler clears the Logback {@link MDC} context
+ * and sets the {@link #USER_NAME} (userName) and {@link #SESSION_ID}
+ * (sessionId) in the {@link MDC} context should these values have been
+ * extracted by the {@link UserSessionInboundHandler} superclass. It is intended
+ * to be added as the penultimate handler before an instance of
+ * {@link MDCExecutorNettyMessageHandler}. <br>
  * <br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
  * constructing the {@link ChannelPipeline}.
- * 
- * @see GameBootConcurrentConfiguration
  */
 @Component
 @Scope("prototype")
-public class ExecutorNettyMessageHandler extends AbstractGameBootNettyMessageHandler {
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public class MDCUserSessionInboundHandler extends UserSessionInboundHandler {
 
-  @Autowired
-  @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
-  private ExecutorService svc;
+  /** The Constant USER_NAME. */
+  public static final String USER_NAME = "userName";
 
-  /**
-   * Post construct.
-   *
-   * @throws Exception
-   *           the exception
-   */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    super.postConstruct();
-  }
+  /** The Constant SESSION_ID. */
+  public static final String SESSION_ID = "sessionId";
 
   /*
    * (non-Javadoc)
    * 
    * @see
-   * io.netty.channel.ChannelInboundHandlerAdapter#channelInactive(io.netty.
-   * channel.ChannelHandlerContext)
+   * io.netty.channel.SimpleChannelInboundHandler#channelRead0(io.netty.channel.
+   * ChannelHandlerContext, java.lang.Object)
    */
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    super.channelInactive(ctx);
-    svc = null;
+  protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+    super.channelRead0(ctx, msg);
+
+    MDC.clear();
+    initMdc();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
-   * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
-   */
-  @Override
-  protected void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception {
-    svc.execute(new Runnable() {
+  private void initMdc() {
+    if (isNotEmpty(userName)) MDC.put(USER_NAME, userName);
 
-      @Override
-      public void run() {
-        try {
-          process(ctx, msg);
-        } catch (Exception e) {
-          log.error("Unexpected exception", e);
-        }
-      }
-    });
+    if (sessionId != null) MDC.put(SESSION_ID, sessionId.toString());
   }
-
 }

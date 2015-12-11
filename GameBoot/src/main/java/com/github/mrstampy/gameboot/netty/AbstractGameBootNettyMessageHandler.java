@@ -40,9 +40,6 @@
  */
 package com.github.mrstampy.gameboot.netty;
 
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.TimeUnit;
 
@@ -53,7 +50,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
@@ -76,10 +72,6 @@ import io.netty.util.concurrent.Future;
  * {@link GameBootMessageController}. Channels are added to the
  * {@link NettyConnectionRegistry#ALL} group. <br>
  * <br>
- * 
- * The {@link #inspect(ChannelHandlerContext, String)} method searches incoming
- * messages for 'userName' and 'sessionId' JSON nodes and if they exist they are
- * used to register the channel against the {@link NettyConnectionRegistry}.
  */
 public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -89,12 +81,6 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
 
   /** The Constant FAILED_MESSAGE_COUNTER. */
   protected static final String FAILED_MESSAGE_COUNTER = "Netty Failed Message Counter";
-
-  /** The Constant USER_NAME. */
-  public static final String USER_NAME = "userName";
-
-  /** The Constant SESSION_ID. */
-  public static final String SESSION_ID = "sessionId";
 
   @Autowired
   private ObjectMapper mapper;
@@ -107,12 +93,6 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
 
   @Autowired
   private NettyConnectionRegistry registry;
-
-  /** The user name. */
-  protected String userName;
-
-  /** The session id. */
-  protected Long sessionId;
 
   /**
    * Post construct created message counters if necessary. Subclasses will need
@@ -154,8 +134,6 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     log.info("Disconnected from {}", ctx.channel());
 
-    userName = null;
-    sessionId = null;
     mapper = null;
     helper = null;
     registry = null;
@@ -188,8 +166,6 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     helper.incr(MESSAGE_COUNTER);
 
     log.debug("Received message {} on {}", msg, ctx.channel());
-
-    inspect(ctx, (String) msg);
 
     channelReadImpl(ctx, (String) msg);
   }
@@ -250,54 +226,6 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     } else {
       log.error("Could not send {} for message {} to {}", response, msg, ctx.channel(), f.cause());
     }
-  }
-
-  /**
-   * Inspect, setting {@link #userName} and {@link #sessionId} and registering
-   * the channel with the {@link NettyConnectionRegistry}.
-   *
-   * @param ctx
-   *          the ctx
-   * @param msg
-   *          the msg
-   * @see NettyConnectionRegistry#put(Long, io.netty.channel.Channel)
-   * @see NettyConnectionRegistry#put(String, io.netty.channel.Channel)
-   */
-  protected void inspect(ChannelHandlerContext ctx, String msg) {
-    if (isNotEmpty(userName) && sessionId != null) return;
-
-    JsonNode node;
-    try {
-      node = mapper.readTree(msg);
-    } catch (IOException e) {
-      log.error("Unexpected exception processing message {} on {}", msg, ctx.channel(), e);
-      return;
-    }
-
-    if (userName == null && hasValue(node, USER_NAME)) {
-      userName = node.get(USER_NAME).asText();
-
-      registry.put(userName, ctx.channel());
-    }
-
-    if (sessionId == null && hasValue(node, SESSION_ID)) {
-      sessionId = node.get(SESSION_ID).asLong();
-
-      registry.put(sessionId, ctx.channel());
-    }
-  }
-
-  /**
-   * Checks the node for the specified key, as existing and non-mt text.
-   *
-   * @param node
-   *          the node
-   * @param key
-   *          the key
-   * @return true, if successful
-   */
-  protected boolean hasValue(JsonNode node, String key) {
-    return node.has(key) && isNotEmpty(node.get(key).asText());
   }
 
   /**

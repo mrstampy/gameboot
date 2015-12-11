@@ -40,9 +40,10 @@
  */
 package com.github.mrstampy.gameboot.netty;
 
-import java.lang.invoke.MethodHandles;
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
-import javax.annotation.PostConstruct;
+import java.io.IOException;
+import java.lang.invoke.MethodHandles;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,47 +51,50 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.concurrent.FiberCreator;
-import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
-import co.paralleluniverse.fibers.Fiber;
-import co.paralleluniverse.fibers.FiberForkJoinScheduler;
-import co.paralleluniverse.fibers.SuspendExecution;
-import co.paralleluniverse.strands.SuspendableCallable;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
- * This class uses the configured {@link FiberForkJoinScheduler} to execute
- * incoming messages. It is intended to be added last to the
- * {@link ChannelPipeline}. <br>
+ * This handler is intended to be the penultimate handler before an instance of
+ * any {@link AbstractGameBootNettyMessageHandler} for
+ * {@link AbstractGameBootMessage} subclasses which expose a 'userName' (string)
+ * or a 'sessionId' (long). These values are used to add the {@link Channel} to
+ * the {@link NettyConnectionRegistry}.<br>
  * <br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
  * constructing the {@link ChannelPipeline}.
- * 
- * @see GameBootConcurrentConfiguration
  */
 @Component
 @Scope("prototype")
-public class FiberForkJoinNettyMessageHandler extends AbstractGameBootNettyMessageHandler {
+public class UserSessionInboundHandler extends SimpleChannelInboundHandler<String> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  @Autowired
-  private FiberCreator creator;
+  /** The Constant USER_NAME. */
+  public static final String USER_NAME = "userName";
 
-  /**
-   * Post construct.
-   *
-   * @throws Exception
-   *           the exception
-   */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    super.postConstruct();
-  }
+  /** The Constant SESSION_ID. */
+  public static final String SESSION_ID = "sessionId";
+
+  @Autowired
+  private NettyConnectionRegistry registry;
+
+  @Autowired
+  private ObjectMapper mapper;
+
+  /** The user name. */
+  protected String userName;
+
+  /** The session id. */
+  protected Long sessionId;
 
   /*
    * (non-Javadoc)
@@ -102,52 +106,47 @@ public class FiberForkJoinNettyMessageHandler extends AbstractGameBootNettyMessa
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
-    creator = null;
+
+    registry = null;
+    mapper = null;
+    userName = null;
+    sessionId = null;
   }
 
   /*
    * (non-Javadoc)
    * 
    * @see
-   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
-   * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
+   * io.netty.channel.SimpleChannelInboundHandler#channelRead0(io.netty.channel.
+   * ChannelHandlerContext, java.lang.Object)
    */
   @Override
-  @SuppressWarnings("serial")
-  protected void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception {
-    Fiber<Void> fiber = creator.newFiberForkJoin(new SuspendableCallable<Void>() {
+  protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+    if (isNotEmpty(userName) && sessionId != null) return;
 
-      @Override
-      public Void run() throws SuspendExecution, InterruptedException {
-        process(ctx, msg);
+    JsonNode node;
+    try {
+      node = mapper.readTree(msg);
+    } catch (IOException e) {
+      log.error("Unexpected exception processing message {} on {}", msg, ctx.channel(), e);
+      return;
+    }
 
-        return null;
-      }
-    });
+    if (userName == null && hasValue(node, USER_NAME)) {
+      userName = node.get(USER_NAME).asText();
 
-    fiber.start();
+      registry.put(userName, ctx.channel());
+    }
+
+    if (sessionId == null && hasValue(node, SESSION_ID)) {
+      sessionId = node.get(SESSION_ID).asLong();
+
+      registry.put(sessionId, ctx.channel());
+    }
   }
 
-  /**
-   * Exposed for instrumentation.
-   *
-   * @param ctx
-   *          the ctx
-   * @param msg
-   *          the msg
-   * @throws SuspendExecution
-   *           the suspend execution
-   * @throws InterruptedException
-   *           the interrupted exception
-   */
-  public void process(ChannelHandlerContext ctx, String msg) throws SuspendExecution, InterruptedException {
-    try {
-      super.process(ctx, msg);
-    } catch (SuspendExecution | InterruptedException e) {
-      throw e;
-    } catch (Exception e) {
-      log.error("Unexpected exception", e);
-    }
+  private boolean hasValue(JsonNode node, String key) {
+    return node.has(key) && isNotEmpty(node.get(key).asText());
   }
 
 }

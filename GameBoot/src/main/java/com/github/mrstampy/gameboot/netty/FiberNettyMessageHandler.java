@@ -101,8 +101,8 @@ public class FiberNettyMessageHandler extends AbstractGameBootNettyMessageHandle
    */
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    creator = null;
     super.channelInactive(ctx);
+    creator = null;
   }
 
   /*
