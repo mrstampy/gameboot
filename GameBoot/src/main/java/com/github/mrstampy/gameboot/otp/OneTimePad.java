@@ -119,7 +119,7 @@ public class OneTimePad {
     return convert(key.getBytes(), message);
   }
 
-  protected byte[] convert(byte[] key, byte[] message) {
+  private byte[] convert(byte[] key, byte[] message) {
     byte[] converted = new byte[message.length];
 
     for (int i = 0; i < message.length; i++) {
