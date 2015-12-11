@@ -105,8 +105,6 @@ public class UserSessionInboundHandler extends SimpleChannelInboundHandler<Strin
    */
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    super.channelInactive(ctx);
-
     registry = null;
     mapper = null;
     userName = null;
