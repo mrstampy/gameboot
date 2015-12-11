@@ -69,6 +69,9 @@ public class OneTimePad {
   /** The Constant OTP_KEY_GENERATION. */
   public static final String OTP_KEY_GENERATION = "OTP key generation timer";
 
+  /** The Constant OTP_CONVERSION. */
+  public static final String OTP_CONVERSION = "OTP message conversion timer";
+
   @Autowired
   private SecureRandom random;
 
@@ -84,6 +87,7 @@ public class OneTimePad {
   @PostConstruct
   public void postConstruct() throws Exception {
     helper.timer(OTP_KEY_GENERATION, getClass(), "otp", "key", "generation", "timer");
+    helper.timer(OTP_CONVERSION, getClass(), "otp", "message", "conversion", "timer");
   }
 
   /**
@@ -123,15 +127,20 @@ public class OneTimePad {
    *           the exception
    */
   public byte[] convert(byte[] key, byte[] message) throws Exception {
-    check(key, message);
+    Context ctx = helper.startTimer(OTP_CONVERSION);
+    try {
+      check(key, message);
 
-    byte[] converted = new byte[message.length];
+      byte[] converted = new byte[message.length];
 
-    for (int i = 0; i < message.length; i++) {
-      converted[i] = (byte) (message[i] ^ key[i]);
+      for (int i = 0; i < message.length; i++) {
+        converted[i] = (byte) (message[i] ^ key[i]);
+      }
+
+      return converted;
+    } finally {
+      ctx.stop();
     }
-
-    return converted;
   }
 
   private void check(int size) {

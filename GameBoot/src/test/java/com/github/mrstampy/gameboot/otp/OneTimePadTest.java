@@ -181,7 +181,7 @@ public class OneTimePadTest {
   }
 
   private boolean isMetric(String key) {
-    return OneTimePad.OTP_KEY_GENERATION.equals(key);
+    return OneTimePad.OTP_KEY_GENERATION.equals(key) || OneTimePad.OTP_CONVERSION.equals(key);
   }
 
   private void display(Entry<String, ?> t) {
