@@ -125,6 +125,21 @@ public class NettyConnectionRegistry {
   }
 
   /**
+   * Returns true if the channel specified by the {@link Map}-keyable generic
+   * type exists.
+   *
+   * @param <T>
+   *          the generic type
+   * @param key
+   *          the key
+   * @return true, if successful
+   */
+  public <T> boolean contains(T key) {
+    check(key);
+    return byCustomKey.containsKey(key);
+  }
+
+  /**
    * Returns true if the group specified by the groupKey exists.
    *
    * @param groupKey
@@ -232,14 +247,10 @@ public class NettyConnectionRegistry {
    */
   public void send(String userName, String message) {
     check(userName);
-    if (isEmpty(message)) fail("No message");
 
     Channel channel = byUserName.get(userName);
 
-    if (channel == null) fail("User " + userName + " not connected");
-
-    ChannelFuture f = channel.writeAndFlush(message);
-    f.addListener(e -> log((ChannelFuture) e, userName, message));
+    sendMessage(userName, message, channel);
   }
 
   /**
@@ -252,14 +263,10 @@ public class NettyConnectionRegistry {
    */
   public void send(Long sessionId, String message) {
     check(sessionId);
-    if (isEmpty(message)) fail("No message");
 
     Channel channel = bySessionId.get(sessionId);
 
-    if (channel == null) fail("Session id " + sessionId + " not connected");
-
-    ChannelFuture f = channel.writeAndFlush(message);
-    f.addListener(e -> log((ChannelFuture) e, sessionId, message));
+    sendMessage(sessionId, message, channel);
   }
 
   /**
@@ -274,14 +281,10 @@ public class NettyConnectionRegistry {
    */
   public <T> void send(T key, String message) {
     check(key);
-    if (isEmpty(message)) fail("No message");
 
     Channel channel = byCustomKey.get(key);
 
-    if (channel == null) fail("Key " + key + " not connected");
-
-    ChannelFuture f = channel.writeAndFlush(message);
-    f.addListener(e -> log((ChannelFuture) e, key, message));
+    sendMessage(key, message, channel);
   }
 
   /**
@@ -428,7 +431,10 @@ public class NettyConnectionRegistry {
    */
   public void sendToGroup(String groupKey, String message) {
     groupCheck(groupKey);
-    if (!groups.containsKey(groupKey)) fail("No group for " + groupKey);
+    if (!groups.containsKey(groupKey)) {
+      log.warn("No group {} to send message {}", groupKey, message);
+      return;
+    }
 
     ChannelGroup group = groups.get(groupKey);
 
@@ -474,6 +480,16 @@ public class NettyConnectionRegistry {
     return byCustomKey.remove(key);
   }
 
+  private <T> void sendMessage(T key, String message, Channel channel) {
+    checkMessage(message);
+    if (channel == null || !channel.isWritable()) {
+      log.warn("Cannot send {} to {}", message, channel);
+      return;
+    }
+    ChannelFuture f = channel.writeAndFlush(message);
+    f.addListener(e -> log((ChannelFuture) e, key, message));
+  }
+
   private void log(ChannelGroupFuture e, String groupKey, String message) {
     e.iterator().forEachRemaining(cf -> log(cf, groupKey, message));
   }
@@ -506,6 +522,10 @@ public class NettyConnectionRegistry {
 
   private <T> void check(T key) {
     if (key == null) fail("Null key");
+  }
+
+  private void checkMessage(String message) {
+    if (isEmpty(message)) fail("No message");
   }
 
   private void groupCheck(String groupKey) {
