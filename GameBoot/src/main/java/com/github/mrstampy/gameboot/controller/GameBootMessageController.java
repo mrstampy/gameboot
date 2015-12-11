@@ -115,30 +115,49 @@ public class GameBootMessageController {
    *
    * @param <AGBM>
    *          the generic type
-   * @param message
+   * @param request
    *          the message
    * @return the response
    * @throws Exception
    *           the exception
    */
   @SuppressWarnings("unchecked")
-  public <AGBM extends AbstractGameBootMessage> String process(String message) throws Exception {
+  public <AGBM extends AbstractGameBootMessage> String process(String request) throws Exception {
     helper.incr(MESSAGE_COUNTER);
 
-    if (isEmpty(message)) fail("Empty message");
+    if (isEmpty(request)) fail("Empty message");
 
-    AGBM msg = (AGBM) fromJson(message);
+    AGBM msg = (AGBM) fromJson(request);
 
+    Response r = process(request, msg);
+
+    return r == null ? null : mapper.writeValueAsString(r);
+  }
+
+  /**
+   * Exposed for {@link AbstractGameBootMessage}-encapsulating protocols
+   * (JSON-RPC, Stomp etc).
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param request
+   *          the request
+   * @param msg
+   *          the msg
+   * @return the response
+   * @throws Exception
+   *           the exception
+   */
+  @SuppressWarnings("unchecked")
+  public <AGBM extends AbstractGameBootMessage> Response process(String request, AGBM msg) throws Exception {
     GameBootProcessor<AGBM> processor = (GameBootProcessor<AGBM>) map.get(msg.getType());
 
     if (processor == null) {
-      log.error("No processor for {}", message);
+      log.error("No processor for {}", request);
       fail("Unrecognized message");
     }
 
-    Response r = processor.process(msg);
-
-    return r == null ? null : mapper.writeValueAsString(r);
+    return processor.process(msg);
   }
 
   /**
