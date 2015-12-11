@@ -67,7 +67,7 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
  * Keeps up-to-date maps of key/key/Channel pairs and facilitates easy creation
  * of {@link ChannelGroup}s. Messages can be sent to individuals or groups.
  * 
- * @see FiberForkJoinNettyMessageHandler
+ * @see AbstractGameBootNettyMessageHandler
  */
 @Component
 public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
@@ -107,8 +107,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   }
 
   /**
-   * Adds the channel mapped by the key to the
-   * registry.
+   * Adds the channel mapped by the key to the registry.
    *
    * @param key
    *          the key
