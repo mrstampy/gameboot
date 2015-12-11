@@ -50,7 +50,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.concurrent.FiberCreator;
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
@@ -79,7 +78,7 @@ public class FiberNettyMessageHandler extends AbstractGameBootNettyMessageHandle
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Autowired
-  private FiberCreator creator;
+  private FiberExecutorScheduler svc;
 
   /**
    * Post construct.
@@ -102,7 +101,7 @@ public class FiberNettyMessageHandler extends AbstractGameBootNettyMessageHandle
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
-    creator = null;
+    svc = null;
   }
 
   /*
@@ -115,7 +114,7 @@ public class FiberNettyMessageHandler extends AbstractGameBootNettyMessageHandle
   @Override
   @SuppressWarnings("serial")
   protected void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception {
-    Fiber<Void> fiber = creator.newFiber(new SuspendableCallable<Void>() {
+    Fiber<Void> fiber = svc.newFiber(new SuspendableCallable<Void>() {
 
       @Override
       public Void run() throws SuspendExecution, InterruptedException {
