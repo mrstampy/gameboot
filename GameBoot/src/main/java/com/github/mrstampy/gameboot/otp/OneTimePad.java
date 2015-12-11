@@ -99,7 +99,7 @@ public class OneTimePad {
   public String convert(byte[] key, String message) throws Exception {
     check(key, message);
 
-    return new String(convert(key, message.getBytes()));
+    return new String(convertImpl(key, message.getBytes()));
   }
 
   /**
@@ -116,6 +116,10 @@ public class OneTimePad {
   public byte[] convert(byte[] key, byte[] message) throws Exception {
     check(key, message);
 
+    return convertImpl(key, message);
+  }
+
+  private byte[] convertImpl(byte[] key, byte[] message) {
     byte[] converted = new byte[message.length];
 
     for (int i = 0; i < message.length; i++) {
