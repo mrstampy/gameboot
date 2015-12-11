@@ -42,8 +42,13 @@ package com.github.mrstampy.gameboot.otp;
 
 import java.security.SecureRandom;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import com.codahale.metrics.Timer.Context;
+import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 /**
  * The Class OneTimePad is an implementation of the
@@ -61,8 +66,25 @@ import org.springframework.stereotype.Component;
 @Component
 public class OneTimePad {
 
+  /** The Constant OTP_KEY_GENERATION. */
+  public static final String OTP_KEY_GENERATION = "OTP key generation timer";
+
   @Autowired
   private SecureRandom random;
+
+  @Autowired
+  private MetricsHelper helper;
+
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    helper.timer(OTP_KEY_GENERATION, getClass(), "otp", "key", "generation", "timer");
+  }
 
   /**
    * Generate key to share securely (https/wss) with the client.
@@ -75,13 +97,18 @@ public class OneTimePad {
    * @see KeyRegistry
    */
   public byte[] generateKey(int size) throws Exception {
-    check(size);
+    Context ctx = helper.startTimer(OTP_KEY_GENERATION);
+    try {
+      check(size);
 
-    byte[] key = new byte[size];
+      byte[] key = new byte[size];
 
-    random.nextBytes(key);
+      random.nextBytes(key);
 
-    return key;
+      return key;
+    } finally {
+      ctx.stop();
+    }
   }
 
   /**
@@ -126,6 +153,13 @@ public class OneTimePad {
     if (mtArray(key)) fail("No key");
   }
 
+  /**
+   * Mt array.
+   *
+   * @param key
+   *          the key
+   * @return true, if successful
+   */
   protected boolean mtArray(byte[] key) {
     return key == null || key.length == 0;
   }

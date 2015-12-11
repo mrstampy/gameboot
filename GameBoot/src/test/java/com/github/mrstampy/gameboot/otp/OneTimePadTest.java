@@ -44,13 +44,23 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.fail;
 
+import java.lang.invoke.MethodHandles;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.codahale.metrics.Timer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.TestConfiguration;
+import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 /**
  * The Class OneTimePadTest.
@@ -58,9 +68,16 @@ import com.github.mrstampy.gameboot.TestConfiguration;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(TestConfiguration.class)
 public class OneTimePadTest {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Autowired
   private OneTimePad pad;
+
+  @Autowired
+  private MetricsHelper helper;
+
+  @Autowired
+  private ObjectMapper mapper;
 
   /**
    * Test one time pad.
@@ -79,6 +96,30 @@ public class OneTimePadTest {
     converted = pad.convert(shush, converted);
 
     assertEquals(new String(msg), new String(converted));
+  }
+
+  /**
+   * Test32 kilo byte messages for metrics.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  public void test32KiloByteMessagesForMetrics() throws Exception {
+    int k32 = 1024 * 32;
+
+    for (int i = 0; i < 5; i++) {
+      byte[] shush = pad.generateKey(k32);
+      byte[] msg = pad.generateKey(k32);
+      byte[] converted = pad.convert(shush, msg);
+      assertNotEquals(new String(msg), new String(converted));
+
+      converted = pad.convert(shush, converted);
+
+      assertEquals(new String(msg), new String(converted));
+    }
+
+    metrics();
   }
 
   /**
@@ -130,6 +171,24 @@ public class OneTimePadTest {
       r.run();
       fail(failMsg);
     } catch (IllegalArgumentException expected) {
+    }
+  }
+
+  private void metrics() throws Exception {
+    Set<Entry<String, Timer>> timers = helper.getTimers();
+
+    timers.stream().filter(e -> isMetric(e.getKey())).forEach(e -> display(e));
+  }
+
+  private boolean isMetric(String key) {
+    return OneTimePad.OTP_KEY_GENERATION.equals(key);
+  }
+
+  private void display(Entry<String, ?> t) {
+    try {
+      log.debug(mapper.writeValueAsString(t));
+    } catch (JsonProcessingException e) {
+      log.error("Unexpected exception", e);
     }
   }
 
