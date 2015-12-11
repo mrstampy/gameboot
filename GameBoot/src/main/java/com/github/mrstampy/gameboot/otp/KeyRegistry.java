@@ -49,6 +49,6 @@ import com.github.mrstampy.gameboot.util.GameBootRegistry;
  * {@link Comparable} object.
  */
 @Component
-public class KeyRegistry extends GameBootRegistry<String> {
+public class KeyRegistry extends GameBootRegistry<byte[]> {
 
 }

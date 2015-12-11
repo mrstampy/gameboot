@@ -75,14 +75,14 @@ public class OneTimePad {
    *           the exception
    * @see KeyRegistry
    */
-  public String generateKey(int size) throws Exception {
+  public byte[] generateKey(int size) throws Exception {
     check(size);
 
     byte[] key = new byte[size];
 
     random.nextBytes(key);
 
-    return new String(key);
+    return key;
   }
 
   /**
@@ -96,10 +96,10 @@ public class OneTimePad {
    * @throws Exception
    *           the exception
    */
-  public String convert(String key, String message) throws Exception {
+  public String convert(byte[] key, String message) throws Exception {
     check(key, message);
 
-    return new String(convert(key.getBytes(), message.getBytes()));
+    return new String(convert(key, message.getBytes()));
   }
 
   /**
@@ -113,13 +113,9 @@ public class OneTimePad {
    * @throws Exception
    *           the exception
    */
-  public byte[] convert(String key, byte[] message) throws Exception {
+  public byte[] convert(byte[] key, byte[] message) throws Exception {
     check(key, message);
 
-    return convert(key.getBytes(), message);
-  }
-
-  private byte[] convert(byte[] key, byte[] message) {
     byte[] converted = new byte[message.length];
 
     for (int i = 0; i < message.length; i++) {
@@ -133,18 +129,18 @@ public class OneTimePad {
     if (size <= 0) fail("Size must be > 0");
   }
 
-  private void check(String key, String message) {
-    if (isEmpty(key)) fail("No key");
+  private void check(byte[] key, String message) {
+    if (key == null || key.length == 0) fail("No key");
     if (isEmpty(message)) fail("No message");
 
-    if (key.length() < message.length()) fail("Key length too short for message");
+    if (key.length < message.length()) fail("Key length too short for message");
   }
 
-  private void check(String key, byte[] message) {
-    if (isEmpty(key)) fail("No key");
+  private void check(byte[] key, byte[] message) {
+    if (key == null || key.length == 0) fail("No key");
     if (message == null || message.length == 0) fail("No message");
 
-    if (key.length() < message.length) fail("Key length too short for message");
+    if (key.length < message.length) fail("Key length too short for message");
   }
 
   private void fail(String message) {

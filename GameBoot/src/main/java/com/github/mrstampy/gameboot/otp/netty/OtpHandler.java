@@ -40,8 +40,6 @@
  */
 package com.github.mrstampy.gameboot.otp.netty;
 
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -138,9 +136,9 @@ public class OtpHandler extends ChannelDuplexHandler {
    */
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    String key = keyRegistry.get(getKey(ctx));
+    byte[] key = keyRegistry.get(getKey(ctx));
 
-    if (isEmpty(key)) {
+    if (key == null) {
       ctx.fireChannelRead(msg);
       return;
     }
@@ -160,9 +158,9 @@ public class OtpHandler extends ChannelDuplexHandler {
    */
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    String key = keyRegistry.get(getKey(ctx));
+    byte[] key = keyRegistry.get(getKey(ctx));
 
-    if (isEmpty(key)) {
+    if (key == null) {
       ctx.write(msg, promise);
       return;
     }
