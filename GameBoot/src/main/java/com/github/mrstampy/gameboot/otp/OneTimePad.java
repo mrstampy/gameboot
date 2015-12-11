@@ -47,7 +47,6 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
 /**
@@ -101,7 +100,7 @@ public class OneTimePad {
    * @see KeyRegistry
    */
   public byte[] generateKey(int size) throws Exception {
-    Context ctx = helper.startTimer(OTP_KEY_GENERATION);
+    helper.startTimer(OTP_KEY_GENERATION);
     try {
       check(size);
 
@@ -111,7 +110,7 @@ public class OneTimePad {
 
       return key;
     } finally {
-      ctx.stop();
+      helper.stopTimer(OTP_KEY_GENERATION);
     }
   }
 
@@ -127,7 +126,7 @@ public class OneTimePad {
    *           the exception
    */
   public byte[] convert(byte[] key, byte[] message) throws Exception {
-    Context ctx = helper.startTimer(OTP_CONVERSION);
+    helper.startTimer(OTP_CONVERSION);
     try {
       check(key, message);
 
@@ -139,7 +138,7 @@ public class OneTimePad {
 
       return converted;
     } finally {
-      ctx.stop();
+      helper.stopTimer(OTP_CONVERSION);
     }
   }
 

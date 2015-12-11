@@ -40,26 +40,15 @@
  */
 package com.github.mrstampy.gameboot.metrics;
 
-import static com.codahale.metrics.MetricRegistry.name;
-
-import java.util.Collections;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.codahale.metrics.Timer.Context;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;;
 
 /**
  * The {@link MetricRegistry} has an excellent naming standard which defines the
@@ -74,17 +63,7 @@ import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;;
  * {@link #gauge(Gauge, String, Class, String...)}, usually in a
  * {@link PostConstruct} block.
  */
-@Component
-public class MetricsHelper {
-
-  @Autowired
-  private MetricRegistry registry;
-
-  private Map<String, Timer> timers = new ConcurrentHashMap<>();
-
-  private Map<String, Counter> counters = new ConcurrentHashMap<>();
-
-  private Map<String, Gauge<?>> gauges = new ConcurrentHashMap<>();
+public interface MetricsHelper {
 
   /**
    * Counter register.
@@ -96,11 +75,7 @@ public class MetricsHelper {
    * @param qualifiers
    *          the qualifiers
    */
-  public void counter(String key, Class<?> clz, String... qualifiers) {
-    check(key);
-    if (counters.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
-    counters.put(key, registry.counter(name(clz, qualifiers)));
-  }
+  void counter(String key, Class<?> clz, String... qualifiers);
 
   /**
    * Timer register.
@@ -112,11 +87,7 @@ public class MetricsHelper {
    * @param qualifiers
    *          the qualifiers
    */
-  public void timer(String key, Class<?> clz, String... qualifiers) {
-    check(key);
-    if (timers.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
-    timers.put(key, registry.timer(name(clz, qualifiers)));
-  }
+  void timer(String key, Class<?> clz, String... qualifiers);
 
   /**
    * Gauge register.
@@ -130,38 +101,28 @@ public class MetricsHelper {
    * @param qualifiers
    *          the qualifiers
    */
-  public void gauge(Gauge<?> gauge, String key, Class<?> clz, String... qualifiers) {
-    check(key);
-    if (gauges.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
-    gauges.put(key, registry.register(name(clz, qualifiers), gauge));
-  }
+  void gauge(Gauge<?> gauge, String key, Class<?> clz, String... qualifiers);
 
   /**
    * Gets the timers.
    *
    * @return the timers
    */
-  public Set<Entry<String, Timer>> getTimers() {
-    return Collections.unmodifiableSet(timers.entrySet());
-  }
+  Set<Entry<String, Timer>> getTimers();
 
   /**
    * Gets the counters.
    *
    * @return the counters
    */
-  public Set<Entry<String, Counter>> getCounters() {
-    return Collections.unmodifiableSet(counters.entrySet());
-  }
+  Set<Entry<String, Counter>> getCounters();
 
   /**
    * Gets the gauges.
    *
    * @return the gauges
    */
-  public Set<Entry<String, Gauge<?>>> getGauges() {
-    return Collections.unmodifiableSet(gauges.entrySet());
-  }
+  Set<Entry<String, Gauge<?>>> getGauges();
 
   /**
    * Contains counter.
@@ -170,10 +131,7 @@ public class MetricsHelper {
    *          the key
    * @return true, if successful
    */
-  public boolean containsCounter(String key) {
-    check(key);
-    return counters.containsKey(key);
-  }
+  boolean containsCounter(String key);
 
   /**
    * Contains gauge.
@@ -182,10 +140,7 @@ public class MetricsHelper {
    *          the key
    * @return true, if successful
    */
-  public boolean containsGauge(String key) {
-    check(key);
-    return gauges.containsKey(key);
-  }
+  boolean containsGauge(String key);
 
   /**
    * Contains timer.
@@ -194,28 +149,23 @@ public class MetricsHelper {
    *          the key
    * @return true, if successful
    */
-  public boolean containsTimer(String key) {
-    check(key);
-    return timers.containsKey(key);
-  }
+  boolean containsTimer(String key);
 
   /**
    * Start timer.
    *
    * @param key
    *          the key
-   * @return the context
    */
-  public Context startTimer(String key) {
-    check(key);
-    Timer t = timers.get(key);
+  void startTimer(String key);
 
-    if (t == null) throw new GameBootRuntimeException("No timer for key " + key);
-
-    Context ctx = t.time();
-
-    return ctx;
-  }
+  /**
+   * Stop timer.
+   *
+   * @param key
+   *          the key
+   */
+  void stopTimer(String key);
 
   /**
    * Incr counter.
@@ -223,10 +173,7 @@ public class MetricsHelper {
    * @param key
    *          the key
    */
-  public void incr(String key) {
-    check(key);
-    getCounter(key).inc();
-  }
+  void incr(String key);
 
   /**
    * Decr counter.
@@ -234,20 +181,6 @@ public class MetricsHelper {
    * @param key
    *          the key
    */
-  public void decr(String key) {
-    check(key);
-    getCounter(key).dec();
-  }
+  void decr(String key);
 
-  private void check(String key) {
-    if (StringUtils.isEmpty(key)) throw new IllegalArgumentException("No key specified");
-  }
-
-  private Counter getCounter(String key) {
-    Counter c = counters.get(key);
-
-    if (c == null) throw new GameBootRuntimeException("No counter for key " + key);
-
-    return c;
-  }
 }

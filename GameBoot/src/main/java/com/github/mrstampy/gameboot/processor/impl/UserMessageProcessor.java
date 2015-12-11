@@ -55,7 +55,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
-import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
@@ -165,7 +164,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
    */
   @Override
   protected Response processImpl(UserMessage message) throws Exception {
-    Context ctx = helper.startTimer(USER_TIMER);
+    helper.startTimer(USER_TIMER);
     try {
       switch (message.getFunction()) {
       case CREATE:
@@ -188,7 +187,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
         return failure("Should never reach here");
       }
     } finally {
-      ctx.stop();
+      helper.stopTimer(USER_TIMER);
     }
   }
 

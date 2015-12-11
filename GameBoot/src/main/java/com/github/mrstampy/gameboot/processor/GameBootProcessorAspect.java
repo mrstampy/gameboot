@@ -48,7 +48,6 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 
@@ -104,7 +103,7 @@ public class GameBootProcessorAspect {
    */
   @Around("this(com.github.mrstampy.gameboot.processor.GameBootProcessor) && execution(com.github.mrstampy.gameboot.messages.Response *.*(..))")
   public Object metrics(ProceedingJoinPoint pjp) throws Throwable {
-    Context ctx = helper.startTimer(PROCESS_TIMER);
+    helper.startTimer(PROCESS_TIMER);
 
     try {
       Response r = (Response) pjp.proceed();
@@ -131,7 +130,7 @@ public class GameBootProcessorAspect {
 
       return r;
     } finally {
-      ctx.stop();
+      helper.stopTimer(PROCESS_TIMER);
     }
   }
 }
