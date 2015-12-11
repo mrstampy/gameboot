@@ -42,8 +42,6 @@ package com.github.mrstampy.gameboot.processor;
 
 import java.lang.invoke.MethodHandles;
 
-import javax.transaction.Transactional;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,8 +52,7 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 
 /**
- * Abstract superclass for {@link GameBootProcessor}s ensuring processing occurs
- * within a transaction.
+ * Abstract superclass for {@link GameBootProcessor}s.
  *
  * @param <M>
  *          the generic type
@@ -70,9 +67,8 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    * com.github.mrstampy.gameboot.processor.GameBootProcessor#process(com.github
    * .mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
-  @Transactional
   @Override
-  public final Response process(M message) throws Exception {
+  public Response process(M message) throws Exception {
     log.debug("Processing message {}", message);
 
     if (message == null) fail("Null message");

@@ -64,7 +64,7 @@ import com.github.mrstampy.gameboot.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
-import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
+import com.github.mrstampy.gameboot.processor.AbstractTransactionalGameBootProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 import com.github.mrstampy.gameboot.usersession.UserSessionLookup;
@@ -74,7 +74,7 @@ import com.github.mrstampy.gameboot.usersession.UserSessionLookup;
  * {@link UserMessage}s for user creation, update, delete, login and logout.
  */
 @Component
-public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage> {
+public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor<UserMessage> {
   private static final String USER_UPDATE_COUNTER = "UserUpdateCounter";
 
   private static final String USER_DELETE_COUNTER = "UserDeleteCounter";
