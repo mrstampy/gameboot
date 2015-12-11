@@ -76,6 +76,8 @@ import io.netty.channel.ChannelPromise;
  * constructing the {@link ChannelPipeline}.
  * 
  * @see NettyConnectionRegistry
+ * @see KeyRegistry
+ * @see OneTimePad
  */
 @Component
 @Scope("prototype")
@@ -121,7 +123,7 @@ public class OtpHandler extends ChannelDuplexHandler {
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     keyRegistry.remove(getKey(ctx));
-    
+
     oneTimePad = null;
     keyRegistry = null;
     helper = null;
