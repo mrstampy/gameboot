@@ -52,6 +52,7 @@ import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
@@ -107,7 +108,7 @@ public class UserSessionLookup {
    *           the game boot runtime exception
    */
   public UserSession expected(String userName) throws GameBootRuntimeException {
-    helper.startTimer(CACHED_SESSION_TIMER);
+    Optional<Context> ctx = helper.startTimer(CACHED_SESSION_TIMER);
 
     try {
       String noSession = "No session for " + userName;
@@ -123,7 +124,7 @@ public class UserSessionLookup {
       // may not yet be in the cached list
       return o.isPresent() ? o.get() : sessionCheck(repository.findOpenSession(userName));
     } finally {
-      helper.stopTimer(CACHED_SESSION_TIMER);
+      helper.stopTimer(ctx);
     }
   }
 
@@ -138,7 +139,7 @@ public class UserSessionLookup {
    *           the game boot runtime exception
    */
   public UserSession expected(Long id) throws GameBootRuntimeException {
-    helper.startTimer(CACHED_SESSION_TIMER);
+    Optional<Context> ctx = helper.startTimer(CACHED_SESSION_TIMER);
 
     try {
       String noSession = "No session for " + id;
@@ -154,7 +155,7 @@ public class UserSessionLookup {
       // may not yet be in the cached list
       return o.isPresent() ? o.get() : sessionCheck(repository.findOpenSession(id));
     } finally {
-      helper.stopTimer(CACHED_SESSION_TIMER);
+      helper.stopTimer(ctx);
     }
   }
 

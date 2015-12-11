@@ -41,6 +41,7 @@
 package com.github.mrstampy.gameboot.metrics;
 
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -49,6 +50,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import com.codahale.metrics.Timer.Context;
 
 /**
  * The {@link MetricRegistry} has an excellent naming standard which defines the
@@ -156,16 +158,17 @@ public interface MetricsHelper {
    *
    * @param key
    *          the key
+   * @return the optional
    */
-  void startTimer(String key);
+  Optional<Context> startTimer(String key);
 
   /**
    * Stop timer.
    *
-   * @param key
-   *          the key
+   * @param ctx
+   *          the ctx
    */
-  void stopTimer(String key);
+  void stopTimer(Optional<Context> ctx);
 
   /**
    * Incr counter.

@@ -45,6 +45,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Date;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -55,6 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
+import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
@@ -164,7 +166,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
    */
   @Override
   protected Response processImpl(UserMessage message) throws Exception {
-    helper.startTimer(USER_TIMER);
+    Optional<Context> ctx = helper.startTimer(USER_TIMER);
     try {
       switch (message.getFunction()) {
       case CREATE:
@@ -187,7 +189,7 @@ public class UserMessageProcessor extends AbstractGameBootProcessor<UserMessage>
         return failure("Should never reach here");
       }
     } finally {
-      helper.stopTimer(USER_TIMER);
+      helper.stopTimer(ctx);
     }
   }
 

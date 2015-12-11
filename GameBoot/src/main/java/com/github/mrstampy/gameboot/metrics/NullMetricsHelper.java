@@ -42,11 +42,13 @@ package com.github.mrstampy.gameboot.metrics;
 
 import java.util.Collections;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.Timer;
+import com.codahale.metrics.Timer.Context;
 
 /**
  * The Class NullMetricsHelper allows the disabling of GameBoot metrics
@@ -164,18 +166,18 @@ public class NullMetricsHelper implements MetricsHelper {
    * String)
    */
   @Override
-  public void startTimer(String key) {
+  public Optional<Context> startTimer(String key) {
+    return Optional.of(null);
   }
 
   /*
    * (non-Javadoc)
    * 
    * @see
-   * com.github.mrstampy.gameboot.metrics.MetricsHelper#stopTimer(java.lang.
-   * String)
+   * com.github.mrstampy.gameboot.metrics.MetricsHelper#stopTimer(java.util.
+   * Optional)
    */
-  @Override
-  public void stopTimer(String key) {
+  public void stopTimer(Optional<Context> ctx) {
   }
 
   /*

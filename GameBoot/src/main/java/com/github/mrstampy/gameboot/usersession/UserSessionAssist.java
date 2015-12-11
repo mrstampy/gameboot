@@ -46,6 +46,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.PostConstruct;
 
@@ -55,6 +56,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
+import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.repository.UserRepository;
@@ -274,11 +276,11 @@ public class UserSessionAssist {
    */
   @Cacheable(cacheNames = SESSIONS_CACHE, key = "target.sessionsKey")
   public List<UserSession> activeSessions() {
-    helper.startTimer(UNCACHED_SESSION_TIMER);
+    Optional<Context> ctx = helper.startTimer(UNCACHED_SESSION_TIMER);
     try {
       return Collections.unmodifiableList(userSessionRepo.openSessions());
     } finally {
-      helper.stopTimer(UNCACHED_SESSION_TIMER);
+      helper.stopTimer(ctx);
     }
   }
 

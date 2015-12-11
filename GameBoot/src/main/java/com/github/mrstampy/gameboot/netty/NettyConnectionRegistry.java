@@ -64,8 +64,9 @@ import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 
 /**
- * Keeps up-to-date maps of key/{@link Channel} pairs and facilitates easy creation
- * of {@link ChannelGroup}s. Messages can be sent to individuals or groups.
+ * Keeps up-to-date maps of key/{@link Channel} pairs and facilitates easy
+ * creation of {@link ChannelGroup}s. Messages can be sent to individuals or
+ * groups.
  * 
  * @see AbstractGameBootNettyMessageHandler
  */

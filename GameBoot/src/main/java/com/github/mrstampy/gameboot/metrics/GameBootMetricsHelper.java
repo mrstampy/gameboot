@@ -42,16 +42,14 @@ package com.github.mrstampy.gameboot.metrics;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
-import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.codahale.metrics.Counter;
@@ -68,14 +66,10 @@ import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;;
  */
 public class GameBootMetricsHelper implements MetricsHelper {
 
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
   @Autowired
   private MetricRegistry registry;
 
   private Map<String, Timer> timers = new ConcurrentHashMap<>();
-
-  private Map<String, Context> contexts = new ConcurrentHashMap<>();
 
   private Map<String, Counter> counters = new ConcurrentHashMap<>();
 
@@ -198,7 +192,7 @@ public class GameBootMetricsHelper implements MetricsHelper {
    * com.github.mrstampy.gameboot.metrics.MetHelper#startTimer(java.lang.String)
    */
   @Override
-  public void startTimer(String key) {
+  public Optional<Context> startTimer(String key) {
     check(key);
     Timer t = timers.get(key);
 
@@ -206,27 +200,18 @@ public class GameBootMetricsHelper implements MetricsHelper {
 
     Context ctx = t.time();
 
-    contexts.put(key, ctx);
+    return Optional.of(ctx);
   }
 
   /*
    * (non-Javadoc)
    * 
    * @see
-   * com.github.mrstampy.gameboot.metrics.MetricsHelper#stopTimer(java.lang.
-   * String)
+   * com.github.mrstampy.gameboot.metrics.MetricsHelper#stopTimer(java.util.
+   * Optional)
    */
-  @Override
-  public void stopTimer(String key) {
-    check(key);
-
-    Context ctx = contexts.remove(key);
-    if (ctx == null) {
-      log.warn("No timer context for {}", key);
-      return;
-    }
-
-    ctx.stop();
+  public void stopTimer(Optional<Context> ctx) {
+    if (ctx.isPresent()) ctx.get().stop();
   }
 
   /*
