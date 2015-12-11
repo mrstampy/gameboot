@@ -120,11 +120,11 @@ public class OtpHandler extends ChannelDuplexHandler {
    */
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    keyRegistry.remove(getKey(ctx));
+    
     oneTimePad = null;
     keyRegistry = null;
     helper = null;
-
-    keyRegistry.remove(getKey(ctx));
   }
 
   /*
