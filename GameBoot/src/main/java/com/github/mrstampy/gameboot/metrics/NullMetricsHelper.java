@@ -58,7 +58,7 @@ import com.codahale.metrics.Timer.Context;
  */
 public class NullMetricsHelper implements MetricsHelper {
 
-  private static final Optional<Context> NULLED = Optional.of(null);
+  private static final Optional<Context> NULLED = Optional.ofNullable(null);
 
   /*
    * (non-Javadoc)
