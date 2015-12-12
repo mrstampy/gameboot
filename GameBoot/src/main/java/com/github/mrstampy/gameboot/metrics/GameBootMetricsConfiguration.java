@@ -44,6 +44,7 @@ import java.lang.invoke.MethodHandles;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -81,7 +82,7 @@ public class GameBootMetricsConfiguration {
    *           the exception
    */
   @Bean
-  @ConditionalOnProperty(name = "game.boot.metrics", havingValue = "false")
+  @ConditionalOnMissingBean(MetricsHelper.class)
   public MetricsHelper nullHelper() throws Exception {
     log.info("Ignoring GameBoot metrics");
     return new NullMetricsHelper();
