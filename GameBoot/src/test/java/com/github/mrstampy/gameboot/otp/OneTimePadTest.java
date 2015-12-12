@@ -93,6 +93,10 @@ public class OneTimePadTest {
     byte[] converted = pad.convert(shush, msg);
     assertNotEquals(new String(msg), new String(converted));
 
+    byte[] badkey = "This is not the key you are looking for".getBytes();
+    byte[] perverted = pad.convert(badkey, converted);
+    assertNotEquals(new String(msg), new String(perverted));
+
     converted = pad.convert(shush, converted);
 
     assertEquals(new String(msg), new String(converted));
