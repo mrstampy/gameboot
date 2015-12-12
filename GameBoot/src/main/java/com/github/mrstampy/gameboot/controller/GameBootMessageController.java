@@ -54,10 +54,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
@@ -77,21 +76,16 @@ import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 public class GameBootMessageController {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final String TYPE_NODE_NAME = "type";
-
   private static final String MESSAGE_COUNTER = "Message Controller Counter";
 
   @Autowired
   private List<GameBootProcessor<? extends AbstractGameBootMessage>> processors;
 
   @Autowired
-  private ObjectMapper mapper;
-
-  @Autowired
   private MetricsHelper helper;
 
   @Autowired
-  private MessageClassFinder finder;
+  private GameBootMessageConverter converter;
 
   /** The map. */
   protected Map<String, GameBootProcessor<?>> map = new ConcurrentHashMap<>();
@@ -121,17 +115,16 @@ public class GameBootMessageController {
    * @throws Exception
    *           the exception
    */
-  @SuppressWarnings("unchecked")
   public <AGBM extends AbstractGameBootMessage> String process(String request) throws Exception {
     helper.incr(MESSAGE_COUNTER);
 
     if (isEmpty(request)) fail("Empty message");
 
-    AGBM msg = (AGBM) fromJson(request);
+    AGBM msg = converter.fromJson(request);
 
     Response r = process(request, msg);
 
-    return r == null ? null : mapper.writeValueAsString(r);
+    return r == null ? null : converter.toJson(r);
   }
 
   /**
@@ -158,39 +151,6 @@ public class GameBootMessageController {
     }
 
     return processor.process(msg);
-  }
-
-  /**
-   * From json.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param message
-   *          the message
-   * @return the agbm
-   * @throws Exception
-   *           the exception
-   */
-  @SuppressWarnings("unchecked")
-  protected <AGBM extends AbstractGameBootMessage> AGBM fromJson(String message) throws Exception {
-    JsonNode node = mapper.readTree(message);
-
-    JsonNode typeNode = node.get(TYPE_NODE_NAME);
-
-    if (typeNode == null) fail("No type specified");
-
-    String type = typeNode.asText();
-
-    if (isEmpty(type)) fail("No type specified");
-
-    Class<?> clz = finder.findClass(type);
-
-    if (clz == null) {
-      log.error("Unknown message type for message {}", message);
-      fail("Unrecognized message");
-    }
-
-    return (AGBM) mapper.readValue(message, clz);
   }
 
   /**

@@ -38,104 +38,60 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messages;
+package com.github.mrstampy.gameboot.websocket;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import java.lang.invoke.MethodHandles;
+import java.util.concurrent.ExecutorService;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.github.mrstampy.gameboot.util.GameBootRegistry;
+import javax.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 
 /**
- * The superclass for all GameBoot JSON messages.
+ * The Class ExecutorWebSocketHandler.
  */
-@JsonInclude(Include.NON_NULL)
-public abstract class AbstractGameBootMessage {
+public class ExecutorWebSocketHandler extends AbstractGameBootWebSocketHandler {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private Integer id;
-
-  private String type;
-
-  private String systemSessionId;
+  @Autowired
+  @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
+  private ExecutorService svc;
 
   /**
-   * Instantiates a new abstract game boot message.
+   * Post construct.
    *
-   * @param type
-   *          the type
+   * @throws Exception
+   *           the exception
    */
-  protected AbstractGameBootMessage(String type) {
-    setType(type);
-  }
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public Integer getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id
-   *          the new id
-   */
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-  /**
-   * Gets the type.
-   *
-   * @return the type
-   */
-  public String getType() {
-    return type;
-  }
-
-  /**
-   * Sets the type.
-   *
-   * @param type
-   *          the new type
-   */
-  public void setType(String type) {
-    this.type = type;
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    super.postConstruct();
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see java.lang.Object#toString()
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * handleTextMessageImpl(org.springframework.web.socket.WebSocketSession,
+   * org.springframework.web.socket.TextMessage)
    */
   @Override
-  public String toString() {
-    return ToStringBuilder.reflectionToString(this);
-  }
-
-  /**
-   * Gets the system session id, transient data set (or not) by message
-   * processing to indicate keys for the various {@link GameBootRegistry}s.
-   *
-   * @return the system session id
-   */
-  @JsonIgnore
-  public String getSystemSessionId() {
-    return systemSessionId;
-  }
-
-  /**
-   * Sets the system session id.
-   *
-   * @param systemSessionId
-   *          the new system session id
-   */
-  public void setSystemSessionId(String systemSessionId) {
-    this.systemSessionId = systemSessionId;
+  protected void handleTextMessageImpl(WebSocketSession session, TextMessage message) throws Exception {
+    svc.execute(() -> {
+      try {
+        process(session, message.getPayload());
+      } catch (Exception e) {
+        log.error("Unexpected exception", e);
+      }
+    });
   }
 
 }

@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.netty;
+package com.github.mrstampy.gameboot.websocket;
 
 import java.lang.invoke.MethodHandles;
 
@@ -47,6 +47,10 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
@@ -59,28 +63,15 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
-import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.concurrent.Future;
-
 /**
- * This class is the superclass for last-in-pipeline GameBoot Netty handlers.
- * Messages are presumed to have been converted to JSON strings representing an
- * {@link AbstractGameBootMessage} and are processed by the
- * {@link GameBootMessageController}. Channels are added to the
- * {@link NettyConnectionRegistry#ALL} group and registering the channel against
- * the {@link Channel#remoteAddress()#toString()}. <br>
- * <br>
+ * The Class AbstractGameBootWebSocketHandler.
  */
-public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexHandler {
+public abstract class AbstractGameBootWebSocketHandler extends TextWebSocketHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  /** The Constant MESSAGE_COUNTER. */
-  protected static final String MESSAGE_COUNTER = "Netty Message Counter";
+  private static final String MESSAGE_COUNTER = "GameBoot Web Socket Message Counter";
 
-  /** The Constant FAILED_MESSAGE_COUNTER. */
-  protected static final String FAILED_MESSAGE_COUNTER = "Netty Failed Message Counter";
+  private static final String FAILED_MESSAGE_COUNTER = "GameBoot Web Socket Failed Message Counter";
 
   @Autowired
   private MetricsHelper helper;
@@ -89,7 +80,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   private GameBootUtils utils;
 
   @Autowired
-  private NettyConnectionRegistry registry;
+  private WebSocketSessionRegistry registry;
 
   @Autowired
   private GameBootMessageConverter converter;
@@ -114,98 +105,70 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   /*
    * (non-Javadoc)
    * 
-   * @see io.netty.channel.ChannelInboundHandlerAdapter#channelActive(io.netty.
-   * channel.ChannelHandlerContext)
+   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
+   * afterConnectionEstablished(org.springframework.web.socket.WebSocketSession)
    */
   @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    String key = ctx.channel().remoteAddress().toString();
-
-    log.info("Connected to {}, adding to registry with key {}", ctx.channel(), key);
-
-    registry.putInGroup(NettyConnectionRegistry.ALL, ctx.channel());
-    registry.put(key, ctx.channel());
+  public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    addToRegistry(session);
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * io.netty.channel.ChannelInboundHandlerAdapter#channelInactive(io.netty.
-   * channel.ChannelHandlerContext)
+   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
+   * afterConnectionClosed(org.springframework.web.socket.WebSocketSession,
+   * org.springframework.web.socket.CloseStatus)
    */
   @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    log.info("Disconnected from {}", ctx.channel());
-
-    helper = null;
-    registry = null;
-    utils = null;
+  public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    registry.remove(session.getId());
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * io.netty.channel.ChannelInboundHandlerAdapter#exceptionCaught(io.netty.
-   * channel.ChannelHandlerContext, java.lang.Throwable)
+   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
+   * handleTextMessage(org.springframework.web.socket.WebSocketSession,
+   * org.springframework.web.socket.TextMessage)
    */
-  @Override
-  public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    log.error("Unexpected error on {}, closing channel", ctx.channel(), cause);
+  protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+    if (message.getPayloadLength() <= 0) return;
 
-    ctx.disconnect();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * io.netty.channel.ChannelInboundHandlerAdapter#channelRead(io.netty.channel.
-   * ChannelHandlerContext, java.lang.Object)
-   */
-  @Override
-  public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    helper.incr(MESSAGE_COUNTER);
-
-    log.debug("Received message {} on {}", msg, ctx.channel());
-
-    channelReadImpl(ctx, (String) msg);
+    handleTextMessageImpl(session, message);
   }
 
   /**
-   * Channel read impl.
+   * Handle text message impl.
    *
-   * @param ctx
-   *          the ctx
-   * @param msg
-   *          the msg
+   * @param session
+   *          the session
+   * @param message
+   *          the message
    * @throws Exception
    *           the exception
    */
-  protected abstract void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception;
+  protected abstract void handleTextMessageImpl(WebSocketSession session, TextMessage message) throws Exception;
 
   /**
-   * Process, should be invoked from
-   * {@link #channelReadImpl(ChannelHandlerContext, String)}.
+   * Process.
    *
    * @param <AGBM>
    *          the generic type
-   * @param ctx
-   *          the ctx
+   * @param session
+   *          the session
    * @param msg
    *          the msg
    * @throws Exception
    *           the exception
    */
-  protected <AGBM extends AbstractGameBootMessage> void process(ChannelHandlerContext ctx, String msg)
-      throws Exception {
+  protected <AGBM extends AbstractGameBootMessage> void process(WebSocketSession session, String msg) throws Exception {
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
 
     String response = null;
     try {
       AGBM agbm = converter.fromJson(msg);
-      agbm.setSystemSessionId(ctx.channel().remoteAddress().toString());
+      agbm.setSystemSessionId(session.getId());
       Response r = controller.process(msg, agbm);
       response = converter.toJson(r);
     } catch (GameBootException | GameBootRuntimeException e) {
@@ -213,25 +176,26 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
       response = fail(e.getMessage());
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message {} on channel {}", msg, ctx.channel(), e);
+      log.error("Unexpected exception processing message {} on channel {}", msg, session.getRemoteAddress(), e);
       response = fail("An unexpected error has occurred");
     }
 
     if (response == null) return;
 
-    ChannelFuture f = ctx.channel().writeAndFlush(response);
+    TextMessage r = new TextMessage(response.getBytes());
 
-    String r = response;
-
-    f.addListener(e -> log(e, msg, r, ctx));
+    session.sendMessage(r);
   }
 
-  private void log(Future<? super Void> f, String msg, String response, ChannelHandlerContext ctx) {
-    if (f.isSuccess()) {
-      log.debug("Successfully sent {} for message {} to {}", response, msg, ctx.channel());
-    } else {
-      log.error("Could not send {} for message {} to {}", response, msg, ctx.channel(), f.cause());
-    }
+  /**
+   * Adds the to registry.
+   *
+   * @param session
+   *          the session
+   */
+  protected void addToRegistry(WebSocketSession session) {
+    String id = session.getId();
+    if (!registry.contains(id)) registry.put(id, session);
   }
 
   /**
@@ -251,5 +215,4 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
       throw new RuntimeException("Unexpected JSON error", e);
     }
   }
-
 }

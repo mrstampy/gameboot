@@ -38,104 +38,15 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messages;
+package com.github.mrstampy.gameboot.websocket;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.springframework.web.socket.WebSocketSession;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.github.mrstampy.gameboot.util.GameBootRegistry;
 
 /**
- * The superclass for all GameBoot JSON messages.
+ * The Class WebSocketSessionRegistry.
  */
-@JsonInclude(Include.NON_NULL)
-public abstract class AbstractGameBootMessage {
-
-  private Integer id;
-
-  private String type;
-
-  private String systemSessionId;
-
-  /**
-   * Instantiates a new abstract game boot message.
-   *
-   * @param type
-   *          the type
-   */
-  protected AbstractGameBootMessage(String type) {
-    setType(type);
-  }
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public Integer getId() {
-    return id;
-  }
-
-  /**
-   * Sets the id.
-   *
-   * @param id
-   *          the new id
-   */
-  public void setId(Integer id) {
-    this.id = id;
-  }
-
-  /**
-   * Gets the type.
-   *
-   * @return the type
-   */
-  public String getType() {
-    return type;
-  }
-
-  /**
-   * Sets the type.
-   *
-   * @param type
-   *          the new type
-   */
-  public void setType(String type) {
-    this.type = type;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
-  @Override
-  public String toString() {
-    return ToStringBuilder.reflectionToString(this);
-  }
-
-  /**
-   * Gets the system session id, transient data set (or not) by message
-   * processing to indicate keys for the various {@link GameBootRegistry}s.
-   *
-   * @return the system session id
-   */
-  @JsonIgnore
-  public String getSystemSessionId() {
-    return systemSessionId;
-  }
-
-  /**
-   * Sets the system session id.
-   *
-   * @param systemSessionId
-   *          the new system session id
-   */
-  public void setSystemSessionId(String systemSessionId) {
-    this.systemSessionId = systemSessionId;
-  }
+public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession> {
 
 }
