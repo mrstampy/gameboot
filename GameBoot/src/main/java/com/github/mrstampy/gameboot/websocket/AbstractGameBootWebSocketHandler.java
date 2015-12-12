@@ -57,6 +57,7 @@ import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
@@ -168,7 +169,10 @@ public abstract class AbstractGameBootWebSocketHandler extends TextWebSocketHand
     String response = null;
     try {
       AGBM agbm = converter.fromJson(msg);
+
       agbm.setSystemSessionId(session.getId());
+      agbm.setTransport(Transport.WEB_SOCKET);
+
       Response r = controller.process(msg, agbm);
       response = converter.toJson(r);
     } catch (GameBootException | GameBootRuntimeException e) {

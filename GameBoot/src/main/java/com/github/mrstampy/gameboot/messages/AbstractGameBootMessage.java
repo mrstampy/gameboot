@@ -60,6 +60,21 @@ public abstract class AbstractGameBootMessage {
   private String systemSessionId;
 
   /**
+   * The Enum Transport.
+   */
+  public enum Transport {
+
+    /** The web. */
+    WEB,
+    /** The web socket. */
+    WEB_SOCKET,
+    /** The netty. */
+    NETTY;
+  }
+
+  private Transport transport = Transport.WEB;
+
+  /**
    * Instantiates a new abstract game boot message.
    *
    * @param type
@@ -136,6 +151,26 @@ public abstract class AbstractGameBootMessage {
    */
   public void setSystemSessionId(String systemSessionId) {
     this.systemSessionId = systemSessionId;
+  }
+
+  /**
+   * Gets the transport.
+   *
+   * @return the transport
+   */
+  @JsonIgnore
+  public Transport getTransport() {
+    return transport;
+  }
+
+  /**
+   * Sets the transport.
+   *
+   * @param transport
+   *          the new transport
+   */
+  public void setTransport(Transport transport) {
+    this.transport = transport;
   }
 
 }
