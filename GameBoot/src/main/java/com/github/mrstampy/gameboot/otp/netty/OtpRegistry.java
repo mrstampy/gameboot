@@ -291,7 +291,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
     OtpConnections connections = get(key);
     if (connections == null) return;
 
-    if (connections.isActive()) return;
+    if (connections.isClearChannelActive() || connections.isEncryptedChannelActive()) return;
 
     remove(key);
   }
