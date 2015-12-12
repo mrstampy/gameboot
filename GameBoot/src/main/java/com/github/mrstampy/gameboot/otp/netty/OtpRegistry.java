@@ -91,7 +91,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
 
     connections.setClearChannel(channel);
 
-    channel.closeFuture().addListener(f -> evaluate(key));
+    channel.closeFuture().addListener(f -> evaluate(key, connections));
   }
 
   /**
@@ -116,7 +116,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
 
     connections.setEncryptedChannel(channel);
 
-    channel.closeFuture().addListener(f -> evaluate(key));
+    channel.closeFuture().addListener(f -> evaluate(key, connections));
   }
 
   /**
@@ -321,12 +321,8 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
     return connections;
   }
 
-  private void evaluate(Comparable<?> key) {
-    OtpConnections connections = get(key);
-    if (connections == null) return;
-
+  private void evaluate(Comparable<?> key, OtpConnections connections) {
     if (connections.isClearChannelActive() || connections.isEncryptedChannelActive()) return;
-
     remove(key);
   }
 
