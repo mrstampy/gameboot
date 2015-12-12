@@ -65,7 +65,7 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * The Class OtpHandler.
  */
 @Component
-public class OtpHandler extends AbstractGameBootWebSocketHandler {
+public class OtpWebSocketHandler extends AbstractGameBootWebSocketHandler {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -73,7 +73,7 @@ public class OtpHandler extends AbstractGameBootWebSocketHandler {
   private KeyRegistry keyRegistry;
 
   @Autowired
-  private OtpRegistry otpRegistry;
+  private OtpWebSocketRegistry otpRegistry;
 
   @Autowired
   private OneTimePad pad;

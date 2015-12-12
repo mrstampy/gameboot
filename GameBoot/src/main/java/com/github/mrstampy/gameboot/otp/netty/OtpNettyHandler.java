@@ -77,8 +77,8 @@ import io.netty.handler.ssl.SslHandler;
  * message. <br>
  * <br>
  * 
- * This class registers its channel in the {@link OtpRegistry} as an
- * {@link OtpConnections#getClearChannel()} with the same key as the key
+ * This class registers its channel in the {@link OtpNettyRegistry} as an
+ * {@link OtpNettyConnections#getClearChannel()} with the same key as the key
  * registry: {@link Channel#remoteAddress()#toString()}. The encrypted channel
  * (assumed to be Netty, having a {@link SslHandler} in the pipeline) should
  * have the same remote host and can be added using this clear channel key. <br>
@@ -91,11 +91,11 @@ import io.netty.handler.ssl.SslHandler;
  * @see NettyConnectionRegistry
  * @see KeyRegistry
  * @see OneTimePad
- * @see OtpConnections
+ * @see OtpNettyConnections
  */
 @Component
 @Scope("prototype")
-public class OtpHandler extends ChannelDuplexHandler {
+public class OtpNettyHandler extends ChannelDuplexHandler {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -110,7 +110,7 @@ public class OtpHandler extends ChannelDuplexHandler {
   private KeyRegistry keyRegistry;
 
   @Autowired
-  private OtpRegistry otpRegistry;
+  private OtpNettyRegistry otpRegistry;
 
   @Autowired
   private MetricsHelper helper;

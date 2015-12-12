@@ -58,13 +58,14 @@ import com.github.mrstampy.gameboot.util.GameBootRegistry;
 import io.netty.handler.ssl.SslHandler;
 
 /**
- * The Class OtpRegistry keeps an {@link OtpConnections} pairing to be able to
- * send OTP keys thru the {@link OtpConnections#getEncryptedWebSocketSession()}
- * and OTP-encrypted messages in the
- * {@link OtpConnections#getClearWebSocketSession()}.
+ * The Class OtpRegistry keeps an {@link OtpWebSocketConnections} pairing to be
+ * able to send OTP keys thru the
+ * {@link OtpWebSocketConnections#getEncryptedWebSocketSession()} and
+ * OTP-encrypted messages in the
+ * {@link OtpWebSocketConnections#getClearWebSocketSession()}.
  */
 @Component
-public class OtpRegistry extends GameBootRegistry<OtpConnections> {
+public class OtpWebSocketRegistry extends GameBootRegistry<OtpWebSocketConnections> {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -79,7 +80,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
    *           Signals that an I/O exception has occurred.
    */
   public void setClearWebSocketSession(Comparable<?> key, WebSocketSession session) throws IOException {
-    OtpConnections connections = getContainer(key, session);
+    OtpWebSocketConnections connections = getContainer(key, session);
 
     if (connections.isClearWebSocketSessionActive()) connections.getClearWebSocketSession().close();
 
@@ -103,7 +104,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
    *           Signals that an I/O exception has occurred.
    */
   public void setEncryptedWebSocketSession(Comparable<?> key, WebSocketSession session) throws IOException {
-    OtpConnections connections = getContainer(key, session);
+    OtpWebSocketConnections connections = getContainer(key, session);
 
     if (connections.isEncryptedWebSocketSessionActive()) connections.getEncryptedWebSocketSession().close();
 
@@ -126,7 +127,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public boolean sendNewOtpKey(Comparable<?> key, byte[] otpKey) throws IOException {
     if (otpKey == null || otpKey.length == 0) fail("No OTP key");
 
-    OtpConnections connections = getOrLog(key);
+    OtpWebSocketConnections connections = getOrLog(key);
 
     if (connections == null || !connections.isEncryptedWebSocketSessionActive()) {
       log.warn("No encrypted session, cannot send new OTP key for {}", key);
@@ -180,7 +181,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public boolean isActive(Comparable<?> key) {
     checkKey(key);
 
-    OtpConnections connections = get(key);
+    OtpWebSocketConnections connections = get(key);
 
     return connections == null ? false : connections.isActive();
   }
@@ -195,7 +196,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public boolean isClearWebSocketSessionActive(Comparable<?> key) {
     checkKey(key);
 
-    OtpConnections connections = get(key);
+    OtpWebSocketConnections connections = get(key);
 
     return connections == null ? false : connections.isClearWebSocketSessionActive();
   }
@@ -210,7 +211,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public boolean isEncryptedWebSocketSessionActive(Comparable<?> key) {
     checkKey(key);
 
-    OtpConnections connections = get(key);
+    OtpWebSocketConnections connections = get(key);
 
     return connections == null ? false : connections.isEncryptedWebSocketSessionActive();
   }
@@ -225,7 +226,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public Comparable<?> getKeyByClearWebSocketSession(WebSocketSession clearWebSocketSession) {
     checkSession(clearWebSocketSession);
 
-    Optional<Entry<Comparable<?>, OtpConnections>> e = map.entrySet().stream()
+    Optional<Entry<Comparable<?>, OtpWebSocketConnections>> e = map.entrySet().stream()
         .filter(c -> clearWebSocketSession.equals(c.getValue().getClearWebSocketSession())).findFirst();
 
     return e.isPresent() ? e.get().getKey() : null;
@@ -241,14 +242,14 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public Comparable<?> getKeyByEncryptedWebSocketSession(WebSocketSession encryptedWebSocketSession) {
     checkSession(encryptedWebSocketSession);
 
-    Optional<Entry<Comparable<?>, OtpConnections>> e = map.entrySet().stream()
+    Optional<Entry<Comparable<?>, OtpWebSocketConnections>> e = map.entrySet().stream()
         .filter(c -> encryptedWebSocketSession.equals(c.getValue().getEncryptedWebSocketSession())).findFirst();
 
     return e.isPresent() ? e.get().getKey() : null;
   }
 
   private <T> boolean sendClearImpl(Comparable<?> key, T message) throws IOException {
-    OtpConnections connections = getOrLog(key);
+    OtpWebSocketConnections connections = getOrLog(key);
 
     if (connections == null || !connections.isClearWebSocketSessionActive()) {
       log.warn("No clear session, cannot send message for {}", key);
@@ -273,27 +274,27 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
     return true;
   }
 
-  private OtpConnections getOrLog(Comparable<?> key) {
+  private OtpWebSocketConnections getOrLog(Comparable<?> key) {
     checkKey(key);
-    OtpConnections connections = get(key);
+    OtpWebSocketConnections connections = get(key);
     if (connections == null) log.warn("No OTP connections for {}", key);
 
     return connections;
   }
 
-  private OtpConnections getContainer(Comparable<?> key, WebSocketSession session) {
+  private OtpWebSocketConnections getContainer(Comparable<?> key, WebSocketSession session) {
     checkKey(key);
     checkSession(session);
 
-    OtpConnections connections = getOrInit(key);
+    OtpWebSocketConnections connections = getOrInit(key);
 
     return connections;
   }
 
-  private OtpConnections getOrInit(Comparable<?> key) {
-    OtpConnections connections = get(key);
+  private OtpWebSocketConnections getOrInit(Comparable<?> key) {
+    OtpWebSocketConnections connections = get(key);
     if (connections == null) {
-      connections = new OtpConnections();
+      connections = new OtpWebSocketConnections();
       put(key, connections);
     }
     return connections;

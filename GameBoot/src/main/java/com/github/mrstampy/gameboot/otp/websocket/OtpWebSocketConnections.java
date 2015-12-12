@@ -43,13 +43,11 @@ package com.github.mrstampy.gameboot.otp.websocket;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
-import com.github.mrstampy.gameboot.otp.netty.OtpHandler;
-import com.github.mrstampy.gameboot.otp.netty.OtpRegistry;
 
 /**
  * The Class OtpConnections.
  */
-public class OtpConnections {
+public class OtpWebSocketConnections {
 
   private WebSocketSession encryptedWebSocketSession;
 
@@ -122,14 +120,14 @@ public class OtpConnections {
   }
 
   /**
-   * Creates the otp key used by an {@link OtpHandler} instance to check the
-   * {@link KeyRegistry} for the OTP key and in the
-   * {@link OtpRegistry#setClearWebSocketSession(Comparable, WebSocketSession)}
+   * Creates the otp key used by an {@link OtpWebSocketHandler} instance to
+   * check the {@link KeyRegistry} for the OTP key and in the
+   * {@link OtpWebSocketRegistry#setClearWebSocketSession(Comparable, WebSocketSession)}
    * via {@link #getClearWebSocketSession()#remoteAddress()#toString()} or null
    * if not {@link #isClearWebSocketSessionActive()}.
    *
    * @return the otp key
-   * @see OtpHandler
+   * @see OtpWebSocketHandler
    */
   public String createOtpKey() {
     if (!isClearWebSocketSessionActive()) return null;

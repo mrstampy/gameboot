@@ -62,12 +62,13 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.handler.ssl.SslHandler;
 
 /**
- * The Class OtpRegistry keeps an {@link OtpConnections} pairing to be able to
- * send OTP keys thru the {@link OtpConnections#getEncryptedChannel()} and
- * OTP-encrypted messages in the {@link OtpConnections#getClearChannel()}.
+ * The Class OtpRegistry keeps an {@link OtpNettyConnections} pairing to be able
+ * to send OTP keys thru the {@link OtpNettyConnections#getEncryptedChannel()}
+ * and OTP-encrypted messages in the
+ * {@link OtpNettyConnections#getClearChannel()}.
  */
 @Component
-public class OtpRegistry extends GameBootRegistry<OtpConnections> {
+public class OtpNettyRegistry extends GameBootRegistry<OtpNettyConnections> {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -83,7 +84,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
    *          the channel
    */
   public void setClearChannel(Comparable<?> key, Channel channel) {
-    OtpConnections connections = getContainer(key, channel);
+    OtpNettyConnections connections = getContainer(key, channel);
 
     if (connections.isClearChannelActive()) connections.getClearChannel().close();
 
@@ -108,7 +109,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
    */
   public void setEncryptedChannel(Comparable<?> key, Channel channel) {
     encryptedChannelCheck(channel);
-    OtpConnections connections = getContainer(key, channel);
+    OtpNettyConnections connections = getContainer(key, channel);
 
     if (connections.isEncryptedChannelActive()) connections.getEncryptedChannel().close();
 
@@ -132,7 +133,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public void sendNewOtpKey(Comparable<?> key, byte[] otpKey, ChannelFutureListener... listeners) {
     if (otpKey == null || otpKey.length == 0) fail("No OTP key");
 
-    OtpConnections connections = getOrLog(key);
+    OtpNettyConnections connections = getOrLog(key);
 
     if (connections == null || !connections.isEncryptedChannelActive()) {
       log.warn("No encrypted channel, cannot send new OTP key for {}", key);
@@ -186,7 +187,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public boolean isActive(Comparable<?> key) {
     checkKey(key);
 
-    OtpConnections connections = get(key);
+    OtpNettyConnections connections = get(key);
 
     return connections == null ? false : connections.isActive();
   }
@@ -201,7 +202,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public boolean isClearChannelActive(Comparable<?> key) {
     checkKey(key);
 
-    OtpConnections connections = get(key);
+    OtpNettyConnections connections = get(key);
 
     return connections == null ? false : connections.isClearChannelActive();
   }
@@ -216,7 +217,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public boolean isEncryptedChannelActive(Comparable<?> key) {
     checkKey(key);
 
-    OtpConnections connections = get(key);
+    OtpNettyConnections connections = get(key);
 
     return connections == null ? false : connections.isEncryptedChannelActive();
   }
@@ -231,7 +232,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public Comparable<?> getKeyByClearChannel(Channel clearChannel) {
     checkChannel(clearChannel);
 
-    Optional<Entry<Comparable<?>, OtpConnections>> e = map.entrySet().stream()
+    Optional<Entry<Comparable<?>, OtpNettyConnections>> e = map.entrySet().stream()
         .filter(c -> clearChannel.equals(c.getValue().getClearChannel())).findFirst();
 
     return e.isPresent() ? e.get().getKey() : null;
@@ -247,14 +248,14 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public Comparable<?> getKeyByEncryptedChannel(Channel encryptedChannel) {
     checkChannel(encryptedChannel);
 
-    Optional<Entry<Comparable<?>, OtpConnections>> e = map.entrySet().stream()
+    Optional<Entry<Comparable<?>, OtpNettyConnections>> e = map.entrySet().stream()
         .filter(c -> encryptedChannel.equals(c.getValue().getEncryptedChannel())).findFirst();
 
     return e.isPresent() ? e.get().getKey() : null;
   }
 
   private <T> void sendClearImpl(Comparable<?> key, T message, ChannelFutureListener... listeners) {
-    OtpConnections connections = getOrLog(key);
+    OtpNettyConnections connections = getOrLog(key);
 
     if (connections == null || !connections.isClearChannelActive()) {
       log.warn("No clear channel, cannot send message for {}", key);
@@ -304,32 +305,32 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
     }
   }
 
-  private OtpConnections getOrLog(Comparable<?> key) {
+  private OtpNettyConnections getOrLog(Comparable<?> key) {
     checkKey(key);
-    OtpConnections connections = get(key);
+    OtpNettyConnections connections = get(key);
     if (connections == null) log.warn("No OTP connections for {}", key);
 
     return connections;
   }
 
-  private OtpConnections getContainer(Comparable<?> key, Channel channel) {
+  private OtpNettyConnections getContainer(Comparable<?> key, Channel channel) {
     checkKey(key);
     checkChannel(channel);
 
-    OtpConnections connections = getOrInit(key);
+    OtpNettyConnections connections = getOrInit(key);
 
     return connections;
   }
 
-  private void evaluate(Comparable<?> key, OtpConnections connections) {
+  private void evaluate(Comparable<?> key, OtpNettyConnections connections) {
     if (connections.isClearChannelActive() || connections.isEncryptedChannelActive()) return;
     remove(key);
   }
 
-  private OtpConnections getOrInit(Comparable<?> key) {
-    OtpConnections connections = get(key);
+  private OtpNettyConnections getOrInit(Comparable<?> key) {
+    OtpNettyConnections connections = get(key);
     if (connections == null) {
-      connections = new OtpConnections();
+      connections = new OtpNettyConnections();
       put(key, connections);
     }
     return connections;

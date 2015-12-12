@@ -47,7 +47,7 @@ import io.netty.channel.Channel;
 /**
  * The Class OtpConnections.
  */
-public class OtpConnections {
+public class OtpNettyConnections {
 
   private Channel encryptedChannel;
 
@@ -120,14 +120,14 @@ public class OtpConnections {
   }
 
   /**
-   * Creates the otp key used by an {@link OtpHandler} instance to check the
-   * {@link KeyRegistry} for the OTP key and in the
-   * {@link OtpRegistry#setClearChannel(Comparable, Channel)} via
+   * Creates the otp key used by an {@link OtpNettyHandler} instance to check
+   * the {@link KeyRegistry} for the OTP key and in the
+   * {@link OtpNettyRegistry#setClearChannel(Comparable, Channel)} via
    * {@link #getClearChannel()#remoteAddress()#toString()} or null if not
    * {@link #isClearChannelActive()}.
    *
    * @return the otp key
-   * @see OtpHandler
+   * @see OtpNettyHandler
    */
   public String createOtpKey() {
     if (!isClearChannelActive()) return null;
