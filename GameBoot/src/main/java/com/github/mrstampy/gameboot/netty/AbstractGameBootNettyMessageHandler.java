@@ -41,7 +41,6 @@
 package com.github.mrstampy.gameboot.netty;
 
 import java.lang.invoke.MethodHandles;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -211,13 +210,10 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     if (response == null) return;
 
     ChannelFuture f = ctx.channel().writeAndFlush(response);
-    try {
-      f.await(5, TimeUnit.SECONDS);
 
-      log(f, msg, response, ctx);
-    } catch (InterruptedException e) {
-      log.error("Sending response {} for message {} on {} was interrupted", response, msg, ctx.channel(), e);
-    }
+    String r = response;
+
+    f.addListener(e -> log(e, msg, r, ctx));
   }
 
   private void log(Future<? super Void> f, String msg, String response, ChannelHandlerContext ctx) {
