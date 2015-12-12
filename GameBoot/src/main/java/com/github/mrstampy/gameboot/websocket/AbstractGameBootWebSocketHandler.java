@@ -136,7 +136,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
     if (message.getPayloadLength() <= 0) return;
-    
+
     helper.incr(MESSAGE_COUNTER);
 
     handleTextMessageImpl(session, message.getPayload());
@@ -151,7 +151,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
     if (message.getPayloadLength() <= 0) return;
-    
+
     helper.incr(MESSAGE_COUNTER);
 
     handleBinaryMessageImpl(session, message.getPayload().array());
