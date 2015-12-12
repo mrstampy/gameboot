@@ -40,8 +40,12 @@
  */
 package com.github.mrstampy.gameboot.otp;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootRegistry;
 
 /**
@@ -50,5 +54,21 @@ import com.github.mrstampy.gameboot.util.GameBootRegistry;
  */
 @Component
 public class KeyRegistry extends GameBootRegistry<byte[]> {
+
+  private static final String REGISTRY_SIZE = "OTP Key Registry Size";
+
+  @Autowired
+  private MetricsHelper helper;
+
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    helper.gauge(() -> size(), REGISTRY_SIZE, getClass(), "otp", "key", "registry", "size");
+  }
 
 }

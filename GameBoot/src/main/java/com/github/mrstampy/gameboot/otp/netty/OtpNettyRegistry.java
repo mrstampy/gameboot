@@ -47,11 +47,14 @@ import java.net.SocketAddress;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootRegistry;
 import com.github.mrstampy.gameboot.util.netty.NettyUtils;
 
@@ -72,8 +75,24 @@ public class OtpNettyRegistry extends GameBootRegistry<OtpNettyConnections> {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private static final String REGISTRY_SIZE = "OTP Netty Connections";
+
   @Autowired
   private NettyUtils utils;
+
+  @Autowired
+  private MetricsHelper helper;
+
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    helper.gauge(() -> size(), REGISTRY_SIZE, getClass(), "otp", "netty", "connections");
+  }
 
   /**
    * Sets the clear channel.

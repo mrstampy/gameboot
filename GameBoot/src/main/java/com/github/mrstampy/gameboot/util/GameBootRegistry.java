@@ -110,6 +110,15 @@ public abstract class GameBootRegistry<V> {
   }
 
   /**
+   * Size.
+   *
+   * @return the int
+   */
+  public int size() {
+    return map.size();
+  }
+
+  /**
    * Check key.
    *
    * @param key

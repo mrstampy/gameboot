@@ -47,12 +47,16 @@ import java.lang.invoke.MethodHandles;
 import java.util.Map.Entry;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootRegistry;
 
 import io.netty.handler.ssl.SslHandler;
@@ -68,6 +72,22 @@ import io.netty.handler.ssl.SslHandler;
 public class OtpWebSocketRegistry extends GameBootRegistry<OtpWebSocketConnections> {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private static final String REGISTRY_SIZE = "OTP Web Socket Registry Size";
+
+  @Autowired
+  private MetricsHelper helper;
+
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    helper.gauge(() -> size(), REGISTRY_SIZE, getClass(), "otp", "web", "socket", "connections", "size");
+  }
 
   /**
    * Sets the clear session.
