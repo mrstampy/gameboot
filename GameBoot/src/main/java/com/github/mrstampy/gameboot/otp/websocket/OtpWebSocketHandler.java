@@ -53,7 +53,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
-import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
@@ -157,26 +156,7 @@ public class OtpWebSocketHandler extends AbstractGameBootWebSocketHandler {
   }
 
   private byte[] otp(byte[] key, WebSocketSession session, byte[] message) throws Exception {
-    if (key == null) return message;
-
-    return pad.convert(key, message);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * handleTextMessage(org.springframework.web.socket.WebSocketSession,
-   * org.springframework.web.socket.TextMessage)
-   */
-  @Override
-  protected void handleTextMessage(WebSocketSession session, TextMessage message) {
-    try {
-      session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Text messages not supported"));
-    } catch (IOException e) {
-      // ignore
-    }
+    return key == null ? message : pad.convert(key, message);
   }
 
   /*
@@ -189,6 +169,11 @@ public class OtpWebSocketHandler extends AbstractGameBootWebSocketHandler {
    */
   @Override
   protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
+    try {
+      session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Text messages not supported"));
+    } catch (IOException e) {
+      // ignore
+    }
   }
 
 }
