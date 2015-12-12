@@ -41,6 +41,7 @@
 package com.github.mrstampy.gameboot.usersession;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -123,7 +124,7 @@ public class ActiveSessions {
    * @return the session ids
    */
   public Collection<Long> getSessionIds() {
-    return sessions.values();
+    return Collections.unmodifiableCollection(sessions.values());
   }
 
   /**
