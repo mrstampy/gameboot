@@ -162,6 +162,7 @@ public class OtpHandler extends ChannelDuplexHandler {
     oneTimePad = null;
     keyRegistry = null;
     helper = null;
+    otpRegistry = null;
   }
 
   /*
