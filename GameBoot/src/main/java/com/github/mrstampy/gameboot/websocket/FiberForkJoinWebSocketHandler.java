@@ -99,6 +99,14 @@ public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHand
     }).start();
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * handleBinaryMessageImpl(org.springframework.web.socket.WebSocketSession,
+   * byte[])
+   */
   @SuppressWarnings("serial")
   @Override
   protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {

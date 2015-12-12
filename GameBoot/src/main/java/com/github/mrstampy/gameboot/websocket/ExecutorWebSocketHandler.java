@@ -93,6 +93,14 @@ public class ExecutorWebSocketHandler extends AbstractGameBootWebSocketHandler {
     });
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * handleBinaryMessageImpl(org.springframework.web.socket.WebSocketSession,
+   * byte[])
+   */
   @Override
   protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
     svc.execute(() -> {

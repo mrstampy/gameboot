@@ -50,7 +50,6 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
@@ -93,7 +92,18 @@ public class MDCExecutorWebSocketHandler extends ExecutorWebSocketHandler {
    * handleTextMessageImpl(org.springframework.web.socket.WebSocketSession,
    * org.springframework.web.socket.TextMessage)
    */
-  protected void handleTextMessageImpl(WebSocketSession session, TextMessage message) throws Exception {
+  /**
+   * Handle text message impl.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
+   * @throws Exception
+   *           the exception
+   */
+  @Override
+  protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
     initMDC(session);
 
     svc.execute(new MDCRunnable() {
@@ -101,7 +111,32 @@ public class MDCExecutorWebSocketHandler extends ExecutorWebSocketHandler {
       @Override
       protected void runImpl() {
         try {
-          process(session, message.getPayload());
+          process(session, message);
+        } catch (Exception e) {
+          log.error("Unexpected exception", e);
+        }
+      }
+    });
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * handleBinaryMessageImpl(org.springframework.web.socket.WebSocketSession,
+   * byte[])
+   */
+  @Override
+  protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
+    initMDC(session);
+
+    svc.execute(new MDCRunnable() {
+
+      @Override
+      protected void runImpl() {
+        try {
+          process(session, new String(message));
         } catch (Exception e) {
           log.error("Unexpected exception", e);
         }

@@ -140,12 +140,27 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     handleTextMessageImpl(session, message.getPayload());
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
+   * handleBinaryMessage(org.springframework.web.socket.WebSocketSession,
+   * org.springframework.web.socket.BinaryMessage)
+   */
   protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
     if (message.getPayloadLength() <= 0) return;
 
     handleBinaryMessageImpl(session, message.getPayload().array());
   }
 
+  /**
+   * Handle binary message impl.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
+   */
   protected abstract void handleBinaryMessageImpl(WebSocketSession session, byte[] message);
 
   /**
