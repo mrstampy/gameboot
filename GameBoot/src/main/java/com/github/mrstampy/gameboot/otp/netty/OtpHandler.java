@@ -40,8 +40,13 @@
  */
 package com.github.mrstampy.gameboot.otp.netty;
 
+import java.lang.invoke.MethodHandles;
+import java.net.InetSocketAddress;
+
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -56,6 +61,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
+import io.netty.handler.ssl.SslHandler;
 
 /**
  * The Class OtpHandler is intended to provide a transparent means of using the
@@ -71,6 +77,13 @@ import io.netty.channel.ChannelPromise;
  * key is returned it is used to encrypt/decrypt the message. <br>
  * <br>
  * 
+ * This class registers its channel in the {@link OtpRegistry} as an
+ * {@link OtpConnections#getClearChannel()} with the key
+ * {@link InetSocketAddress#getHostString()}. The encrypted channel (assumed to
+ * be Netty, having a {@link SslHandler} in the pipeline) should have the same
+ * remote host and can be added using this clear channel key. <br>
+ * <br>
+ * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
  * constructing the {@link ChannelPipeline}.
@@ -78,10 +91,13 @@ import io.netty.channel.ChannelPromise;
  * @see NettyConnectionRegistry
  * @see KeyRegistry
  * @see OneTimePad
+ * @see OtpConnections
  */
 @Component
 @Scope("prototype")
 public class OtpHandler extends ChannelDuplexHandler {
+
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String OTP_DECRYPT_COUNTER = "Netty OTP Decrypt Counter";
 
@@ -92,6 +108,9 @@ public class OtpHandler extends ChannelDuplexHandler {
 
   @Autowired
   private KeyRegistry keyRegistry;
+
+  @Autowired
+  private OtpRegistry otpRegistry;
 
   @Autowired
   private MetricsHelper helper;
@@ -111,6 +130,22 @@ public class OtpHandler extends ChannelDuplexHandler {
     if (!helper.containsCounter(OTP_ENCRYPT_COUNTER)) {
       helper.counter(OTP_ENCRYPT_COUNTER, getClass(), "otp", "encrypt", "counter");
     }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * io.netty.channel.ChannelInboundHandlerAdapter#channelInactive(io.netty.
+   * channel.ChannelHandlerContext)
+   */
+  @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    Comparable<?> key = createKey(ctx);
+
+    log.debug("Adding {} keyed by {} as the clear channel to the OtpRegistry", ctx.channel().remoteAddress(), key);
+
+    otpRegistry.setClearChannel(key, ctx.channel());
   }
 
   /*
@@ -172,6 +207,12 @@ public class OtpHandler extends ChannelDuplexHandler {
     byte[] converted = oneTimePad.convert(key, (byte[]) msg);
 
     ctx.write(converted, promise);
+  }
+
+  private Comparable<?> createKey(ChannelHandlerContext ctx) {
+    InetSocketAddress addr = (InetSocketAddress) ctx.channel().remoteAddress();
+
+    return addr.getHostString();
   }
 
   private String getKey(ChannelHandlerContext ctx) {

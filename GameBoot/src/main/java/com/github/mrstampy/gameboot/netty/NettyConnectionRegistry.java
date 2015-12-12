@@ -55,9 +55,11 @@ import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootRegistry;
+import com.github.mrstampy.gameboot.util.netty.NettyUtils;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -81,6 +83,9 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
   @Autowired
   private MetricsHelper helper;
+
+  @Autowired
+  private NettyUtils utils;
 
   private Map<String, ChannelGroup> groups = new ConcurrentHashMap<>();
 
@@ -127,13 +132,15 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
    *          the key
    * @param message
    *          the message
+   * @param listeners
+   *          the listeners
    */
-  public void send(Comparable<?> key, String message) {
+  public void send(Comparable<?> key, String message, ChannelFutureListener... listeners) {
     checkKey(key);
 
     Channel channel = get(key);
 
-    sendMessage(key, message, channel);
+    sendMessage(key, message, channel, listeners);
   }
 
   /**
@@ -234,9 +241,11 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
    *
    * @param message
    *          the message
+   * @param listeners
+   *          the listeners
    */
-  public void sendToAll(String message) {
-    sendToGroup(ALL, message);
+  public void sendToAll(String message, ChannelFutureListener... listeners) {
+    sendToGroup(ALL, message, listeners);
   }
 
   /**
@@ -246,8 +255,10 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
    *          the group key
    * @param message
    *          the message
+   * @param listeners
+   *          the listeners
    */
-  public void sendToGroup(String groupKey, String message) {
+  public void sendToGroup(String groupKey, String message, ChannelFutureListener... listeners) {
     groupCheck(groupKey);
     if (!groups.containsKey(groupKey)) {
       log.warn("No group {} to send message {}", groupKey, message);
@@ -256,18 +267,27 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
     ChannelGroup group = groups.get(groupKey);
 
-    ChannelGroupFuture f = group.writeAndFlush(message);
-    f.addListener(e -> log((ChannelGroupFuture) e, groupKey, message));
+    ChannelFutureListener[] all = utils.addToArray(f -> log((ChannelGroupFuture) f, groupKey, message), listeners);
+    ChannelGroupFuture cf = group.writeAndFlush(message);
+
+    for (ChannelFutureListener cfl : all) {
+      cf.addListener(cfl);
+    }
   }
 
-  private void sendMessage(Comparable<?> key, String message, Channel channel) {
+  private void sendMessage(Comparable<?> key, String message, Channel channel, ChannelFutureListener... listeners) {
     checkMessage(message);
     if (channel == null || !channel.isWritable()) {
       log.warn("Cannot send {} to {}", message, channel);
       return;
     }
+
+    ChannelFutureListener[] all = utils.addToArray(f -> log((ChannelFuture) f, key, message), listeners);
     ChannelFuture f = channel.writeAndFlush(message);
-    f.addListener(e -> log((ChannelFuture) e, key, message));
+
+    for (ChannelFutureListener cfl : all) {
+      f.addListener(cfl);
+    }
   }
 
   private void log(ChannelGroupFuture e, String groupKey, String message) {
@@ -276,9 +296,9 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
   private void log(ChannelFuture f, Object key, String message) {
     if (f.isSuccess()) {
-      log.debug("Successful send of {} to {} on {}", message, key, f.channel());
+      log.debug("Successful send to {} on {}", key, f.channel());
     } else {
-      log.error("Failed sending {} to {} on {}", message, key, f.channel(), f.cause());
+      log.error("Failed sending to {} on {}", key, f.channel(), f.cause());
     }
   }
 
