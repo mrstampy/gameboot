@@ -163,14 +163,7 @@ public class OneTimePad {
     if (mtArray(key)) fail("No key");
   }
 
-  /**
-   * Mt array.
-   *
-   * @param key
-   *          the key
-   * @return true, if successful
-   */
-  protected boolean mtArray(byte[] key) {
+  private boolean mtArray(byte[] key) {
     return key == null || key.length == 0;
   }
 
