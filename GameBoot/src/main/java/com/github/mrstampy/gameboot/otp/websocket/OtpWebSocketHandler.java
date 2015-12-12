@@ -113,6 +113,7 @@ public class OtpWebSocketHandler extends AbstractGameBootWebSocketHandler {
    */
   @Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    super.afterConnectionClosed(session, status);
     otpRegistry.remove(session.getId());
   }
 
