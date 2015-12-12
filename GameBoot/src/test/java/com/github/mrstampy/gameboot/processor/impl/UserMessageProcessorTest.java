@@ -317,29 +317,33 @@ public class UserMessageProcessorTest {
 
     user = dobTest(user, m);
     assertEquals(NEW_EMAIL, user.getEmail());
+    assertEquals(NEW_DOB, user.getDob());
+    assertNotEquals(NEW_FIRST, user.getFirstName());
+    assertNotEquals(NEW_LAST, user.getLastName());
+    assertNotEquals(NEW_STATE, user.getState());
 
     user = firstNameTest(user, m);
     assertEquals(NEW_EMAIL, user.getEmail());
     assertEquals(NEW_DOB, user.getDob());
+    assertEquals(NEW_FIRST, user.getFirstName());
+    assertNotEquals(NEW_LAST, user.getLastName());
+    assertNotEquals(NEW_STATE, user.getState());
 
     user = lastNameTest(user, m);
     assertEquals(NEW_EMAIL, user.getEmail());
     assertEquals(NEW_DOB, user.getDob());
     assertEquals(NEW_FIRST, user.getFirstName());
+    assertEquals(NEW_LAST, user.getLastName());
+    assertNotEquals(NEW_STATE, user.getState());
 
     user = userStateTest(user, m);
     assertEquals(NEW_EMAIL, user.getEmail());
     assertEquals(NEW_DOB, user.getDob());
     assertEquals(NEW_FIRST, user.getFirstName());
     assertEquals(NEW_LAST, user.getLastName());
+    assertEquals(NEW_STATE, user.getState());
 
     passwordTest(user, m);
-
-    assertEquals(NEW_EMAIL, user.getEmail());
-    assertEquals(NEW_DOB, user.getDob());
-    assertEquals(NEW_FIRST, user.getFirstName());
-    assertEquals(NEW_LAST, user.getLastName());
-    assertEquals(NEW_STATE, user.getState());
   }
 
   private void passwordTest(User user, UserMessage m) throws Exception {
