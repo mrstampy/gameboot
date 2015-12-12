@@ -40,6 +40,7 @@
  */
 package com.github.mrstampy.gameboot.websocket;
 
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.util.GameBootRegistry;
@@ -47,6 +48,7 @@ import com.github.mrstampy.gameboot.util.GameBootRegistry;
 /**
  * The Class WebSocketSessionRegistry.
  */
+@Component
 public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession> {
 
 }
