@@ -59,6 +59,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.TestConfiguration;
 import com.github.mrstampy.gameboot.data.repository.UserRepository;
+import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
@@ -148,7 +149,7 @@ public class GameBootMessageControllerTest {
       try {
         controller.process(message);
         fail(failMsg);
-      } catch (GameBootRuntimeException expected) {
+      } catch (GameBootException | GameBootRuntimeException expected) {
       } catch (JsonParseException expected) {
       } catch (Exception unexpected) {
         unexpected.printStackTrace();
