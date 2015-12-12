@@ -89,4 +89,32 @@ public class OtpConnections {
     this.clearChannel = clearChannel;
   }
 
+  /**
+   * Checks if both {@link #isClearChannelActive()} &&
+   * {@link #isEncryptedChannelActive()}.
+   *
+   * @return true, if is active
+   */
+  public boolean isActive() {
+    return isClearChannelActive() && isEncryptedChannelActive();
+  }
+
+  /**
+   * Checks if the clear channel is active.
+   *
+   * @return true, if is clear channel active
+   */
+  public boolean isClearChannelActive() {
+    return clearChannel != null && clearChannel.isActive();
+  }
+
+  /**
+   * Checks if the encrypted channel is active.
+   *
+   * @return true, if is encrypted channel active
+   */
+  public boolean isEncryptedChannelActive() {
+    return encryptedChannel != null && encryptedChannel.isActive();
+  }
+
 }

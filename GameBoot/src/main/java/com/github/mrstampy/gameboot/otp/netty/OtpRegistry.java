@@ -83,13 +83,21 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public void setClearChannel(Comparable<?> key, Channel channel) {
     OtpConnections connections = getContainer(key, channel);
 
+    if (connections.isClearChannelActive()) connections.getClearChannel().close();
+
+    log.debug("Setting clear channel {} for key {}", channel, key);
+
     connections.setClearChannel(channel);
 
     channel.closeFuture().addListener(f -> evaluate(key));
   }
 
   /**
-   * Sets the encrypted channel.
+   * Sets the encrypted channel.<br>
+   * <br>
+   * Attempting to add a channel as encrypted, not containing an instance of
+   * {@link SslHandler} in the pipeline will cause an
+   * {@link IllegalArgumentException} to be thrown.
    *
    * @param key
    *          the key
@@ -99,6 +107,10 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   public void setEncryptedChannel(Comparable<?> key, Channel channel) {
     encryptedChannelCheck(channel);
     OtpConnections connections = getContainer(key, channel);
+
+    if (connections.isEncryptedChannelActive()) connections.getEncryptedChannel().close();
+
+    log.debug("Setting encrypted channel {} for key {}", channel, key);
 
     connections.setEncryptedChannel(channel);
 
@@ -119,17 +131,15 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
     if (otpKey == null || otpKey.length == 0) fail("No OTP key");
 
     OtpConnections connections = getOrLog(key);
-    if (connections == null) return;
 
-    Channel encryptedChannel = connections.getEncryptedChannel();
-    if (!isActive(encryptedChannel)) {
+    if (connections == null || !connections.isEncryptedChannelActive()) {
       log.warn("No encrypted channel, cannot send new OTP key for {}", key);
       return;
     }
 
     ChannelFutureListener[] all = utils.addToArray(f -> evaluateNewOtpKeySend(f), listeners);
 
-    send(otpKey, encryptedChannel, all);
+    send(otpKey, connections.getEncryptedChannel(), all);
   }
 
   /**
@@ -165,7 +175,7 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   }
 
   /**
-   * Checks if is active.
+   * Checks if both the encrypted and clear channels are active.
    *
    * @param key
    *          the key
@@ -176,15 +186,43 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
 
     OtpConnections connections = get(key);
 
-    return connections == null ? false : isActive(connections);
+    return connections == null ? false : connections.isActive();
+  }
+
+  /**
+   * Checks if the clear channel is active.
+   *
+   * @param key
+   *          the key
+   * @return true, if is active
+   */
+  public boolean isClearChannelActive(Comparable<?> key) {
+    checkKey(key);
+
+    OtpConnections connections = get(key);
+
+    return connections == null ? false : connections.isClearChannelActive();
+  }
+
+  /**
+   * Checks if the encrypted channel is active.
+   *
+   * @param key
+   *          the key
+   * @return true, if is active
+   */
+  public boolean isEncryptedChannelActive(Comparable<?> key) {
+    checkKey(key);
+
+    OtpConnections connections = get(key);
+
+    return connections == null ? false : connections.isEncryptedChannelActive();
   }
 
   private <T> void sendClearImpl(Comparable<?> key, T message, ChannelFutureListener... listeners) {
     OtpConnections connections = getOrLog(key);
-    if (connections == null) return;
 
-    Channel clearChannel = connections.getClearChannel();
-    if (!isActive(clearChannel)) {
+    if (connections == null || !connections.isClearChannelActive()) {
       log.warn("No clear channel, cannot send message for {}", key);
       return;
     }
@@ -235,9 +273,8 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
   private OtpConnections getOrLog(Comparable<?> key) {
     checkKey(key);
     OtpConnections connections = get(key);
-    if (connections == null) {
-      log.warn("No OTP connections for {}", key);
-    }
+    if (connections == null) log.warn("No OTP connections for {}", key);
+
     return connections;
   }
 
@@ -254,17 +291,9 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
     OtpConnections connections = get(key);
     if (connections == null) return;
 
-    if (isActive(connections)) return;
+    if (connections.isActive()) return;
 
     remove(key);
-  }
-
-  private boolean isActive(OtpConnections connections) {
-    return isActive(connections.getClearChannel()) && isActive(connections.getEncryptedChannel());
-  }
-
-  private boolean isActive(Channel c) {
-    return c != null && c.isActive();
   }
 
   private OtpConnections getOrInit(Comparable<?> key) {
