@@ -48,7 +48,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
@@ -88,12 +87,26 @@ public class FiberWebSocketHandler extends AbstractGameBootWebSocketHandler {
    */
   @SuppressWarnings("serial")
   @Override
-  protected void handleTextMessageImpl(WebSocketSession session, TextMessage message) throws Exception {
+  protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
     svc.newFiber(new SuspendableCallable<Void>() {
 
       @Override
       public Void run() throws SuspendExecution, InterruptedException {
-        process(session, message.getPayload());
+        process(session, message);
+
+        return null;
+      }
+    }).start();
+  }
+
+  @SuppressWarnings("serial")
+  @Override
+  protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
+    svc.newFiber(new SuspendableCallable<Void>() {
+
+      @Override
+      public Void run() throws SuspendExecution, InterruptedException {
+        process(session, new String(message));
 
         return null;
       }

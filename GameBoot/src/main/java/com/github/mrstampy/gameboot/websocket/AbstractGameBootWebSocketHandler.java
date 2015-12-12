@@ -47,10 +47,11 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
-import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
@@ -67,7 +68,7 @@ import com.github.mrstampy.gameboot.util.GameBootUtils;
 /**
  * The Class AbstractGameBootWebSocketHandler.
  */
-public abstract class AbstractGameBootWebSocketHandler extends TextWebSocketHandler {
+public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocketHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String MESSAGE_COUNTER = "GameBoot Web Socket Message Counter";
@@ -136,8 +137,16 @@ public abstract class AbstractGameBootWebSocketHandler extends TextWebSocketHand
   protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
     if (message.getPayloadLength() <= 0) return;
 
-    handleTextMessageImpl(session, message);
+    handleTextMessageImpl(session, message.getPayload());
   }
+
+  protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
+    if (message.getPayloadLength() <= 0) return;
+
+    handleBinaryMessageImpl(session, message.getPayload().array());
+  }
+
+  protected abstract void handleBinaryMessageImpl(WebSocketSession session, byte[] message);
 
   /**
    * Handle text message impl.
@@ -149,7 +158,7 @@ public abstract class AbstractGameBootWebSocketHandler extends TextWebSocketHand
    * @throws Exception
    *           the exception
    */
-  protected abstract void handleTextMessageImpl(WebSocketSession session, TextMessage message) throws Exception;
+  protected abstract void handleTextMessageImpl(WebSocketSession session, String message) throws Exception;
 
   /**
    * Process.
