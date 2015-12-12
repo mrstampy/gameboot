@@ -92,11 +92,29 @@ public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHand
 
       @Override
       public Void run() throws SuspendExecution, InterruptedException {
-        process(session, message);
+        processForText(session, message);
 
         return null;
       }
     }).start();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * processForText(org.springframework.web.socket.WebSocketSession,
+   * java.lang.String)
+   */
+  public void processForText(WebSocketSession session, String message) throws SuspendExecution, InterruptedException {
+    try {
+      super.processForText(session, message);
+    } catch (SuspendExecution | InterruptedException e) {
+      throw e;
+    } catch (Exception e) {
+      log.error("Unexpected exception", e);
+    }
   }
 
   /*
@@ -114,7 +132,7 @@ public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHand
 
       @Override
       public Void run() throws SuspendExecution, InterruptedException {
-        process(session, new String(message));
+        processForBinary(session, message);
 
         return null;
       }
@@ -126,11 +144,11 @@ public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHand
    * 
    * @see
    * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * process(org.springframework.web.socket.WebSocketSession, java.lang.String)
+   * processForBinary(org.springframework.web.socket.WebSocketSession, byte[])
    */
-  public void process(WebSocketSession session, String message) throws SuspendExecution, InterruptedException {
+  public void processForBinary(WebSocketSession session, byte[] message) throws SuspendExecution, InterruptedException {
     try {
-      super.process(session, message);
+      super.processForBinary(session, message);
     } catch (SuspendExecution | InterruptedException e) {
       throw e;
     } catch (Exception e) {

@@ -86,7 +86,7 @@ public class ExecutorWebSocketHandler extends AbstractGameBootWebSocketHandler {
   protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
     svc.execute(() -> {
       try {
-        process(session, message);
+        processForText(session, message);
       } catch (Exception e) {
         log.error("Unexpected exception", e);
       }
@@ -105,7 +105,7 @@ public class ExecutorWebSocketHandler extends AbstractGameBootWebSocketHandler {
   protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
     svc.execute(() -> {
       try {
-        process(session, new String(message));
+        processForBinary(session, message);
       } catch (Exception e) {
         log.error("Unexpected exception", e);
       }

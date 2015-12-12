@@ -111,7 +111,7 @@ public class MDCExecutorWebSocketHandler extends ExecutorWebSocketHandler {
       @Override
       protected void runImpl() {
         try {
-          process(session, message);
+          processForText(session, message);
         } catch (Exception e) {
           log.error("Unexpected exception", e);
         }
@@ -136,7 +136,7 @@ public class MDCExecutorWebSocketHandler extends ExecutorWebSocketHandler {
       @Override
       protected void runImpl() {
         try {
-          process(session, new String(message));
+          processForBinary(session, message);
         } catch (Exception e) {
           log.error("Unexpected exception", e);
         }

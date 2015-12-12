@@ -168,6 +168,27 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
   protected abstract void handleBinaryMessageImpl(WebSocketSession session, byte[] message);
 
   /**
+   * Process for binary should be invoked from
+   * {@link #handleBinaryMessageImpl(WebSocketSession, BinaryMessage)}.
+   * Responses are automatically sent. Override to intercept the response
+   * message.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
+   * @throws Exception
+   *           the exception
+   */
+  protected void processForBinary(WebSocketSession session, byte[] message) throws Exception {
+    String response = process(session, new String(message));
+    if (response == null) return;
+
+    BinaryMessage m = new BinaryMessage(response.getBytes());
+    session.sendMessage(m);
+  }
+
+  /**
    * Handle text message impl.
    *
    * @param session
@@ -180,6 +201,26 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
   protected abstract void handleTextMessageImpl(WebSocketSession session, String message) throws Exception;
 
   /**
+   * Process for text should be invoked from
+   * {@link #handleTextMessageImpl(WebSocketSession, String)}. Responses are
+   * automatically sent. Override to intercept the response message.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
+   * @throws Exception
+   *           the exception
+   */
+  protected void processForText(WebSocketSession session, String message) throws Exception {
+    String response = process(session, message);
+    if (response == null) return;
+
+    TextMessage m = new TextMessage(response.getBytes());
+    session.sendMessage(m);
+  }
+
+  /**
    * Process.
    *
    * @param <AGBM>
@@ -188,10 +229,12 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *          the session
    * @param msg
    *          the msg
+   * @return the string
    * @throws Exception
    *           the exception
    */
-  protected <AGBM extends AbstractGameBootMessage> void process(WebSocketSession session, String msg) throws Exception {
+  protected <AGBM extends AbstractGameBootMessage> String process(WebSocketSession session, String msg)
+      throws Exception {
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
 
     String response = null;
@@ -200,6 +243,8 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
 
       agbm.setSystemSessionId(session.getId());
       agbm.setTransport(Transport.WEB_SOCKET);
+      agbm.setLocal(session.getLocalAddress());
+      agbm.setRemote(session.getRemoteAddress());
 
       Response r = controller.process(msg, agbm);
       response = converter.toJson(r);
@@ -212,11 +257,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
       response = fail("An unexpected error has occurred");
     }
 
-    if (response == null) return;
-
-    TextMessage r = new TextMessage(response.getBytes());
-
-    session.sendMessage(r);
+    return response;
   }
 
   /**

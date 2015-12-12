@@ -41,6 +41,7 @@
 package com.github.mrstampy.gameboot.netty;
 
 import java.lang.invoke.MethodHandles;
+import java.net.InetSocketAddress;
 
 import javax.annotation.PostConstruct;
 
@@ -209,6 +210,8 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
 
       agbm.setSystemSessionId(ctx.channel().remoteAddress().toString());
       agbm.setTransport(Transport.NETTY);
+      agbm.setLocal((InetSocketAddress) ctx.channel().localAddress());
+      agbm.setRemote((InetSocketAddress) ctx.channel().remoteAddress());
 
       Response r = controller.process(msg, agbm);
       response = converter.toJson(r);

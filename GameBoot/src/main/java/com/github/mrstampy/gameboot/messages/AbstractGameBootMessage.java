@@ -40,6 +40,8 @@
  */
 package com.github.mrstampy.gameboot.messages;
 
+import java.net.InetSocketAddress;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -73,6 +75,10 @@ public abstract class AbstractGameBootMessage {
   }
 
   private Transport transport = Transport.WEB;
+
+  private InetSocketAddress local;
+
+  private InetSocketAddress remote;
 
   /**
    * Instantiates a new abstract game boot message.
@@ -171,6 +177,46 @@ public abstract class AbstractGameBootMessage {
    */
   public void setTransport(Transport transport) {
     this.transport = transport;
+  }
+
+  /**
+   * Gets the local.
+   *
+   * @return the local
+   */
+  @JsonIgnore
+  public InetSocketAddress getLocal() {
+    return local;
+  }
+
+  /**
+   * Sets the local.
+   *
+   * @param local
+   *          the new local
+   */
+  public void setLocal(InetSocketAddress local) {
+    this.local = local;
+  }
+
+  /**
+   * Gets the remote.
+   *
+   * @return the remote
+   */
+  @JsonIgnore
+  public InetSocketAddress getRemote() {
+    return remote;
+  }
+
+  /**
+   * Sets the remote.
+   *
+   * @param remote
+   *          the new remote
+   */
+  public void setRemote(InetSocketAddress remote) {
+    this.remote = remote;
   }
 
 }

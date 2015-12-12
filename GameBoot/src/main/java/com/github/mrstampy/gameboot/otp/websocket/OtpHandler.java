@@ -38,9 +38,11 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.websocket;
+package com.github.mrstampy.gameboot.otp.websocket;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
 
@@ -48,23 +50,37 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-
-import co.paralleluniverse.fibers.FiberExecutorScheduler;
-import co.paralleluniverse.fibers.SuspendExecution;
-import co.paralleluniverse.strands.SuspendableCallable;
+import com.github.mrstampy.gameboot.otp.KeyRegistry;
+import com.github.mrstampy.gameboot.otp.OneTimePad;
+import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
- * The Class FiberWebSocketHandler.
+ * The Class OtpHandler.
  */
-public class FiberWebSocketHandler extends AbstractGameBootWebSocketHandler {
+@Component
+public class OtpHandler extends AbstractGameBootWebSocketHandler {
+
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Autowired
+  private KeyRegistry keyRegistry;
+
+  @Autowired
+  private OtpRegistry otpRegistry;
+
+  @Autowired
+  private OneTimePad pad;
+
+  @Autowired
   @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
-  private FiberExecutorScheduler svc;
+  private ExecutorService svc;
 
   /**
    * Post construct.
@@ -80,41 +96,25 @@ public class FiberWebSocketHandler extends AbstractGameBootWebSocketHandler {
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * handleTextMessageImpl(org.springframework.web.socket.WebSocketSession,
-   * org.springframework.web.socket.TextMessage)
+   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
+   * afterConnectionEstablished(org.springframework.web.socket.WebSocketSession)
    */
-  @SuppressWarnings("serial")
   @Override
-  protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
-    svc.newFiber(new SuspendableCallable<Void>() {
-
-      @Override
-      public Void run() throws SuspendExecution, InterruptedException {
-        processForText(session, message);
-
-        return null;
-      }
-    }).start();
+  public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    super.afterConnectionEstablished(session);
+    if (!otpRegistry.contains(session.getId())) otpRegistry.setClearWebSocketSession(session.getId(), session);
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * processForText(org.springframework.web.socket.WebSocketSession,
-   * java.lang.String)
+   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
+   * afterConnectionClosed(org.springframework.web.socket.WebSocketSession,
+   * org.springframework.web.socket.CloseStatus)
    */
-  public void processForText(WebSocketSession session, String message) throws SuspendExecution, InterruptedException {
-    try {
-      super.processForText(session, message);
-    } catch (SuspendExecution | InterruptedException e) {
-      throw e;
-    } catch (Exception e) {
-      log.error("Unexpected exception", e);
-    }
+  @Override
+  public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    otpRegistry.remove(session.getId());
   }
 
   /*
@@ -125,18 +125,15 @@ public class FiberWebSocketHandler extends AbstractGameBootWebSocketHandler {
    * handleBinaryMessageImpl(org.springframework.web.socket.WebSocketSession,
    * byte[])
    */
-  @SuppressWarnings("serial")
   @Override
   protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
-    svc.newFiber(new SuspendableCallable<Void>() {
-
-      @Override
-      public Void run() throws SuspendExecution, InterruptedException {
+    svc.execute(() -> {
+      try {
         processForBinary(session, message);
-
-        return null;
+      } catch (Exception e) {
+        log.error("Unexpected exception", e);
       }
-    }).start();
+    });
   }
 
   /*
@@ -146,14 +143,52 @@ public class FiberWebSocketHandler extends AbstractGameBootWebSocketHandler {
    * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
    * processForBinary(org.springframework.web.socket.WebSocketSession, byte[])
    */
-  public void processForBinary(WebSocketSession session, byte[] message) throws SuspendExecution, InterruptedException {
+  protected void processForBinary(WebSocketSession session, byte[] message) throws Exception {
+    byte[] key = keyRegistry.get(session.getId());
+    byte[] msg = otp(key, session, message);
+
+    String response = process(session, new String(msg));
+    if (response == null) return;
+
+    byte[] r = otp(key, session, response.getBytes());
+
+    BinaryMessage m = new BinaryMessage(r);
+    session.sendMessage(m);
+  }
+
+  private byte[] otp(byte[] key, WebSocketSession session, byte[] message) throws Exception {
+    if (key == null) return message;
+
+    return pad.convert(key, message);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * handleTextMessage(org.springframework.web.socket.WebSocketSession,
+   * org.springframework.web.socket.TextMessage)
+   */
+  @Override
+  protected void handleTextMessage(WebSocketSession session, TextMessage message) {
     try {
-      super.processForBinary(session, message);
-    } catch (SuspendExecution | InterruptedException e) {
-      throw e;
-    } catch (Exception e) {
-      log.error("Unexpected exception", e);
+      session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Text messages not supported"));
+    } catch (IOException e) {
+      // ignore
     }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * handleTextMessageImpl(org.springframework.web.socket.WebSocketSession,
+   * java.lang.String)
+   */
+  @Override
+  protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
   }
 
 }
