@@ -44,6 +44,8 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.lang.invoke.MethodHandles;
 import java.net.SocketAddress;
+import java.util.Map.Entry;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -217,6 +219,38 @@ public class OtpRegistry extends GameBootRegistry<OtpConnections> {
     OtpConnections connections = get(key);
 
     return connections == null ? false : connections.isEncryptedChannelActive();
+  }
+
+  /**
+   * Gets the key by clear channel, null if not found.
+   *
+   * @param clearChannel
+   *          the clear channel
+   * @return the key by clear channel
+   */
+  public Comparable<?> getKeyByClearChannel(Channel clearChannel) {
+    checkChannel(clearChannel);
+
+    Optional<Entry<Comparable<?>, OtpConnections>> e = map.entrySet().stream()
+        .filter(c -> clearChannel.equals(c.getValue().getClearChannel())).findFirst();
+
+    return e.isPresent() ? e.get().getKey() : null;
+  }
+
+  /**
+   * Gets the key by encrypted channel, null if not found.
+   *
+   * @param encryptedChannel
+   *          the encrypted channel
+   * @return the key by encrypted channel
+   */
+  public Comparable<?> getKeyByEncryptedChannel(Channel encryptedChannel) {
+    checkChannel(encryptedChannel);
+
+    Optional<Entry<Comparable<?>, OtpConnections>> e = map.entrySet().stream()
+        .filter(c -> encryptedChannel.equals(c.getValue().getEncryptedChannel())).findFirst();
+
+    return e.isPresent() ? e.get().getKey() : null;
   }
 
   private <T> void sendClearImpl(Comparable<?> key, T message, ChannelFutureListener... listeners) {
