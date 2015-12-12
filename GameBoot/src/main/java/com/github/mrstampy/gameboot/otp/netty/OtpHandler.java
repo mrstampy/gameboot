@@ -41,7 +41,6 @@
 package com.github.mrstampy.gameboot.otp.netty;
 
 import java.lang.invoke.MethodHandles;
-import java.net.InetSocketAddress;
 
 import javax.annotation.PostConstruct;
 
@@ -73,15 +72,16 @@ import io.netty.handler.ssl.SslHandler;
  * <br>
  * 
  * This class uses the {@link Channel#remoteAddress()#toString()} as a key to
- * look up the OTP key. If none exists the message is passed on as is. If an OTP
- * key is returned it is used to encrypt/decrypt the message. <br>
+ * look up the OTP key in the {@link KeyRegistry}. If none exists the message is
+ * passed on as is. If an OTP key is returned it is used to encrypt/decrypt the
+ * message. <br>
  * <br>
  * 
  * This class registers its channel in the {@link OtpRegistry} as an
- * {@link OtpConnections#getClearChannel()} with the key
- * {@link InetSocketAddress#getHostString()}. The encrypted channel (assumed to
- * be Netty, having a {@link SslHandler} in the pipeline) should have the same
- * remote host and can be added using this clear channel key. <br>
+ * {@link OtpConnections#getClearChannel()} with the same key as the key
+ * registry: {@link Channel#remoteAddress()#toString()}. The encrypted channel
+ * (assumed to be Netty, having a {@link SslHandler} in the pipeline) should
+ * have the same remote host and can be added using this clear channel key. <br>
  * <br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
@@ -141,7 +141,7 @@ public class OtpHandler extends ChannelDuplexHandler {
    */
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    Comparable<?> key = createKey(ctx);
+    Comparable<?> key = getKey(ctx);
 
     log.debug("Adding {} keyed by {} as the clear channel to the OtpRegistry", ctx.channel().remoteAddress(), key);
 
@@ -208,12 +208,6 @@ public class OtpHandler extends ChannelDuplexHandler {
     byte[] converted = oneTimePad.convert(key, (byte[]) msg);
 
     ctx.write(converted, promise);
-  }
-
-  private Comparable<?> createKey(ChannelHandlerContext ctx) {
-    InetSocketAddress addr = (InetSocketAddress) ctx.channel().remoteAddress();
-
-    return addr.getHostString();
   }
 
   private String getKey(ChannelHandlerContext ctx) {

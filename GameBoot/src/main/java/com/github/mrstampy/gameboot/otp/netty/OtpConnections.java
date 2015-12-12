@@ -40,6 +40,8 @@
  */
 package com.github.mrstampy.gameboot.otp.netty;
 
+import com.github.mrstampy.gameboot.otp.KeyRegistry;
+
 import io.netty.channel.Channel;
 
 /**
@@ -115,6 +117,22 @@ public class OtpConnections {
    */
   public boolean isEncryptedChannelActive() {
     return encryptedChannel != null && encryptedChannel.isActive();
+  }
+
+  /**
+   * Creates the otp key used by an {@link OtpHandler} instance to check the
+   * {@link KeyRegistry} for the OTP key and in the
+   * {@link OtpRegistry#setClearChannel(Comparable, Channel)} via
+   * {@link #getClearChannel()#remoteAddress()#toString()} or null if not
+   * {@link #isClearChannelActive()}.
+   *
+   * @return the otp key
+   * @see OtpHandler
+   */
+  public String createOtpKey() {
+    if (!isClearChannelActive()) return null;
+
+    return getClearChannel().remoteAddress().toString();
   }
 
 }
