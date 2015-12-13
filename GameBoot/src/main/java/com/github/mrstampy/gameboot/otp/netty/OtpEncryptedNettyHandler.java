@@ -57,6 +57,7 @@ import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
@@ -199,6 +200,17 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
         sendError(ctx, "An unexpected error has occurred");
       }
     });
+  }
+
+  protected <AGBM extends AbstractGameBootMessage> boolean investigate(ChannelHandlerContext ctx, AGBM agbm) {
+    boolean ok = agbm instanceof OtpMessage;
+
+    if (!ok) {
+      log.error("Unexpected message received, disconnecting: {}", agbm);
+      ctx.close();
+    }
+
+    return ok;
   }
 
   /*

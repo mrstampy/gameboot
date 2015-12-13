@@ -341,7 +341,8 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *          the agbm
    * @return true, if successful
    */
-  protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm) {
+  protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm)
+      throws Exception {
     return true;
   }
 

@@ -49,8 +49,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.exception.GameBootException;
@@ -63,6 +61,7 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
+import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
@@ -111,15 +110,19 @@ import io.netty.channel.ChannelPromise;
  * <br>
  * <br>
  * 
+ * It is intended that full implementations of GameBoot will implement
+ * subclasses of this class to restrict message type processing to a whitelist.
+ * <br>
+ * <br>
+ * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
  * constructing the {@link ChannelPipeline}.
  * 
  * @see KeyRegistry
  * @see OneTimePad
+ * @see OtpConfiguration
  */
-@Component
-@Scope("prototype")
 public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

@@ -58,6 +58,7 @@ import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
@@ -202,6 +203,18 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     session.sendMessage(bm);
 
     log.debug("Successful send of {} to {}", message.getType(), session.getRemoteAddress());
+  }
+
+  protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm)
+      throws Exception {
+    boolean ok = agbm instanceof OtpMessage;
+
+    if (!ok) {
+      log.error("Unexpected message received, disconnecting: {}", agbm);
+      session.close();
+    }
+
+    return ok;
   }
 
   private boolean isSuccessfulAck(OtpMessage message, Response r) {

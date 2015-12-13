@@ -340,7 +340,8 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    *          the agbm
    * @return true, if successful
    */
-  protected <AGBM extends AbstractGameBootMessage> boolean investigate(ChannelHandlerContext ctx, AGBM agbm) {
+  protected <AGBM extends AbstractGameBootMessage> boolean investigate(ChannelHandlerContext ctx, AGBM agbm)
+      throws Exception {
     return true;
   }
 

@@ -64,6 +64,7 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
+import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
@@ -105,8 +106,14 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * 
  * Should any failures occur the old key, should it exist, is considered active.
  * 
+ * It is intended that full implementations of GameBoot will implement
+ * subclasses of this class to restrict message type processing to a whitelist.
+ * <br>
+ * <br>
+ * 
  * @see KeyRegistry
  * @see OneTimePad
+ * @see OtpConfiguration
  */
 @Component
 public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
