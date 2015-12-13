@@ -41,6 +41,8 @@
 package com.github.mrstampy.gameboot.websocket;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -144,7 +146,9 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   @Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-    registry.remove(key);
+    Set<Entry<Comparable<?>, WebSocketSession>> set = registry.getKeysForValue(session);
+
+    set.forEach(e -> registry.remove(e.getKey()));
   }
 
   /*

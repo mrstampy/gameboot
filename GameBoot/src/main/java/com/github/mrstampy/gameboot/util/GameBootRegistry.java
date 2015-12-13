@@ -42,8 +42,12 @@ package com.github.mrstampy.gameboot.util;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Simple registry superclass backed by a {@link ConcurrentHashMap}.
@@ -116,6 +120,22 @@ public abstract class GameBootRegistry<V> {
    */
   public int size() {
     return map.size();
+  }
+
+  /**
+   * Gets the keys for value.
+   *
+   * @param value
+   *          the value
+   * @return the keys for value
+   */
+  public Set<Entry<Comparable<?>, V>> getKeysForValue(V value) {
+    return Collections
+        .unmodifiableSet(map.entrySet().stream().filter(e -> isValue(e, value)).collect(Collectors.toSet()));
+  }
+
+  private boolean isValue(Entry<Comparable<?>, V> e, V value) {
+    return value == e.getValue() || value.equals(e.getValue());
   }
 
   /**
