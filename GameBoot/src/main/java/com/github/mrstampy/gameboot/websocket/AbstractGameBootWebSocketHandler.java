@@ -248,17 +248,9 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     try {
       AGBM agbm = converter.fromJson(msg);
 
-      if (!inspect(session, agbm)) return null;
+      Response r = process(session, msg, controller, agbm);
 
-      if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
-      agbm.setTransport(Transport.WEB_SOCKET);
-      agbm.setLocal(session.getLocalAddress());
-      agbm.setRemote(session.getRemoteAddress());
-
-      Response r = controller.process(msg, agbm);
-      r.setSystemId(agbm.getSystemId());
-
-      response = converter.toJson(r);
+      if (r != null) response = converter.toJson(r);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       response = fail(e.getMessage());
@@ -269,6 +261,37 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     }
 
     return response;
+  }
+
+  /**
+   * Process.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param session
+   *          the session
+   * @param msg
+   *          the msg
+   * @param controller
+   *          the controller
+   * @param agbm
+   *          the agbm
+   * @return the response
+   * @throws Exception
+   *           the exception
+   */
+  protected <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session, String msg,
+      GameBootMessageController controller, AGBM agbm) throws Exception {
+    if (!inspect(session, agbm)) return null;
+
+    if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
+    agbm.setTransport(Transport.WEB_SOCKET);
+    agbm.setLocal(session.getLocalAddress());
+    agbm.setRemote(session.getRemoteAddress());
+
+    Response r = controller.process(msg, agbm);
+    r.setSystemId(agbm.getSystemId());
+    return r;
   }
 
   /**

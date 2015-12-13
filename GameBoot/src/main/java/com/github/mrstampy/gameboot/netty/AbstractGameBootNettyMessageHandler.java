@@ -235,17 +235,8 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     try {
       AGBM agbm = converter.fromJson(msg);
 
-      if (!investigate(ctx, agbm)) return;
-
-      if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
-      agbm.setTransport(Transport.NETTY);
-      agbm.setLocal((InetSocketAddress) ctx.channel().localAddress());
-      agbm.setRemote((InetSocketAddress) ctx.channel().remoteAddress());
-
-      Response r = controller.process(msg, agbm);
-      r.setSystemId(agbm.getSystemId());
-
-      response = converter.toJson(r);
+      Response r = process(ctx, msg, controller, agbm);
+      if (r != null) response = converter.toJson(r);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       response = fail(e.getMessage());
@@ -262,6 +253,42 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     String r = response;
 
     f.addListener(e -> log(e, msg, r, ctx));
+  }
+
+  /**
+   * Process.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param ctx
+   *          the ctx
+   * @param msg
+   *          the msg
+   * @param controller
+   *          the controller
+   * @param agbm
+   *          the agbm
+   * @return the response
+   * @throws Exception
+   *           the exception
+   * @throws JsonProcessingException
+   *           the json processing exception
+   * @throws GameBootException
+   *           the game boot exception
+   */
+  protected <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, String msg,
+      GameBootMessageController controller, AGBM agbm) throws Exception, JsonProcessingException, GameBootException {
+    if (!investigate(ctx, agbm)) return null;
+
+    if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
+    agbm.setTransport(Transport.NETTY);
+    agbm.setLocal((InetSocketAddress) ctx.channel().localAddress());
+    agbm.setRemote((InetSocketAddress) ctx.channel().remoteAddress());
+
+    Response r = controller.process(msg, agbm);
+    r.setSystemId(agbm.getSystemId());
+
+    return r;
   }
 
   /**

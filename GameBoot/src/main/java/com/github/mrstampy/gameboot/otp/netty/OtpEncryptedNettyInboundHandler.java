@@ -62,6 +62,8 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
+import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -81,14 +83,14 @@ public class OtpEncryptedNettyInboundHandler extends AbstractGameBootNettyMessag
   private GameBootMessageConverter converter;
 
   @Autowired
-  private GameBootMessageController controller;
-
-  @Autowired
   @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
   private ExecutorService svc;
 
   @Autowired
   private NettyConnectionRegistry registry;
+
+  @Autowired
+  private GameBootUtils utils;
 
   /**
    * Post construct.
@@ -179,13 +181,26 @@ public class OtpEncryptedNettyInboundHandler extends AbstractGameBootNettyMessag
 
     if (!validateChannel(ctx, message)) return;
 
-    Response r = controller.process(new String(msg), message);
+    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
+
+    Response r = process(ctx, new String(msg), controller, message);
+
     if (r == null) return;
+
+    if (isSuccessfulAck(message, r)) {
+      log.debug("Successful new key ack from {}, disconnecting", ctx.channel());
+      ctx.close();
+      return;
+    }
 
     String type = message.getType();
     ChannelFuture cf = ctx.channel().writeAndFlush(converter.toJsonArray(r));
 
     cf.addListener(f -> log(f, ctx, type));
+  }
+
+  private boolean isSuccessfulAck(OtpMessage message, Response r) {
+    return message instanceof OtpNewKeyAck && r.isSuccess();
   }
 
   private boolean validateChannel(ChannelHandlerContext ctx, OtpMessage message) {

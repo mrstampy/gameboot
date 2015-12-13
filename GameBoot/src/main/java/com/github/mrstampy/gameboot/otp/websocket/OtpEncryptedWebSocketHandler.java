@@ -59,6 +59,8 @@ import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
+import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
 
@@ -80,7 +82,7 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
   private WebSocketSessionRegistry registry;
 
   @Autowired
-  private GameBootMessageController controller;
+  private GameBootUtils utils;
 
   /*
    * (non-Javadoc)
@@ -159,13 +161,25 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
 
     if (!validateChannel(session, message)) return;
 
-    Response r = controller.process(new String(msg), message);
+    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
+
+    Response r = process(session, new String(msg), controller, message);
     if (r == null) return;
+
+    if (isSuccessfulAck(message, r)) {
+      log.debug("Successful new OTP key ack for {}, disconnecting", session.getRemoteAddress());
+      session.close();
+      return;
+    }
 
     BinaryMessage bm = new BinaryMessage(converter.toJsonArray(r));
     session.sendMessage(bm);
 
     log.debug("Successful send of {} to {}", message.getType(), session.getRemoteAddress());
+  }
+
+  private boolean isSuccessfulAck(OtpMessage message, Response r) {
+    return (message instanceof OtpNewKeyAck && r.isSuccess());
   }
 
   private boolean validateChannel(WebSocketSession session, OtpMessage message) throws IOException {

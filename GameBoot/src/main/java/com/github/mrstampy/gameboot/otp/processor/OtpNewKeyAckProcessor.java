@@ -48,6 +48,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
@@ -106,7 +107,7 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
 
     keyRegistry.put(systemId, newKey);
 
-    return null;
+    return new Response(ResponseCode.SUCCESS);
   }
 
 }
