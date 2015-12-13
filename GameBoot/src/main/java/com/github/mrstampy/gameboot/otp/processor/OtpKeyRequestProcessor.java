@@ -114,6 +114,14 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     Long systemId = message.getSystemId();
     if (systemId == null || systemId <= 0) fail("No systemId");
 
+    switch (message.getKeyFunction()) {
+    case DELETE:
+      if (!systemId.equals(message.getProcessorKey())) fail("systemId does not match processor id");
+      break;
+    default:
+      break;
+    }
+
     Integer size = message.getSize();
     if (size != null) {
       if (size <= 0 || size % 2 != 0) fail("Invalid key size, expecting > 0 and multiples of 2");
@@ -139,9 +147,10 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
   }
 
   private Response deleteKey(OtpKeyRequest message) throws Exception {
-    log.debug("Deleting key for {}", message.getSystemId());
+    Long systemId = message.getSystemId();
+    log.debug("Deleting key for {}", systemId);
 
-    registry.remove(message.getSystemId());
+    registry.remove(systemId);
 
     return new Response(ResponseCode.SUCCESS);
   }

@@ -65,6 +65,7 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
@@ -94,6 +95,12 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * server activates the new key for all traffic on the
  * {@link OtpClearWebSocketHandler} channel and disconnects the encrypted
  * connection.<br>
+ * <br>
+ * 
+ * To delete a key a message of type {@link OtpKeyRequest} with a
+ * {@link KeyFunction} of {@link KeyFunction#DELETE} is sent to the server on
+ * the encrypting clear channel. A {@link Response} of
+ * {@link ResponseCode#SUCCESS} will be sent on success, clear text.<br>
  * <br>
  * 
  * Should any failures occur the old key, should it exist, is considered active.
@@ -180,11 +187,28 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
    */
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm) {
     if (agbm instanceof OtpMessage) {
+      if (agbm instanceof OtpKeyRequest) {
+        OtpKeyRequest keyRequest = (OtpKeyRequest) agbm;
+        keyRequest.setProcessorKey(getKey());
+
+        boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
+
+        Long sysId = keyRequest.getSystemId();
+        boolean ok = d && isEncrypting() && getKey().equals(sysId);
+
+        if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, session.getRemoteAddress(), getKey());
+
+        return ok;
+      }
       sendError(session, "OTP messages must be sent on an encrypted connection");
       return false;
     }
 
     return true;
+  }
+
+  private boolean isEncrypting() {
+    return keyRegistry.contains(getKey());
   }
 
   /*

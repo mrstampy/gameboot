@@ -40,6 +40,9 @@
  */
 package com.github.mrstampy.gameboot.otp.messages;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.mrstampy.gameboot.otp.processor.OtpKeyRequestProcessor;
+
 /**
  * The Class OtpKeyRequest.
  */
@@ -62,6 +65,8 @@ public class OtpKeyRequest extends OtpMessage {
   }
 
   private KeyFunction keyFunction;
+
+  private Long processorKey;
 
   /**
    * Instantiates a new otp new key request.
@@ -106,6 +111,27 @@ public class OtpKeyRequest extends OtpMessage {
    */
   public void setKeyFunction(KeyFunction keyFunction) {
     this.keyFunction = keyFunction;
+  }
+
+  /**
+   * Gets the processor key.
+   *
+   * @return the processor key
+   */
+  @JsonIgnore
+  public Long getProcessorKey() {
+    return processorKey;
+  }
+
+  /**
+   * Sets the processor key by the system prior to submission to the
+   * {@link OtpKeyRequestProcessor}. Will fail if not set correctly.
+   *
+   * @param processorKey
+   *          the new processor key
+   */
+  public void setProcessorKey(Long processorKey) {
+    this.processorKey = processorKey;
   }
 
 }

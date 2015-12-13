@@ -64,6 +64,7 @@ import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
@@ -85,9 +86,10 @@ import io.netty.channel.ChannelPromise;
  * containing the {@link Response#getSystemId()} value upon connection. The
  * client then creates a connection to the socket server containing the
  * {@link OtpEncryptedNettyHandler} in the pipeline and sends a message of type
- * {@link OtpKeyRequest} thru it to the server. The
- * {@link OtpKeyRequest#getSystemId()} value will have been set in the client as
- * the value obtained from the clear connection's INFO message.<br>
+ * {@link OtpKeyRequest} with a {@link KeyFunction} of {@link KeyFunction#NEW}
+ * thru it to the server. The {@link OtpKeyRequest#getSystemId()} value will
+ * have been set in the client as the value obtained from the clear connection's
+ * INFO message.<br>
  * <br>
  * 
  * If the key generation is successful a {@link Response} object is returned in
@@ -97,6 +99,12 @@ import io.netty.channel.ChannelPromise;
  * server activates the new key for all traffic on the
  * {@link OtpClearNettyHandler} channel and disconnects the encrypted
  * connection.<br>
+ * <br>
+ * 
+ * To delete a key a message of type {@link OtpKeyRequest} with a
+ * {@link KeyFunction} of {@link KeyFunction#DELETE} is sent to the server on
+ * the encrypting clear channel. A {@link Response} of
+ * {@link ResponseCode#SUCCESS} will be sent on success, clear text.<br>
  * <br>
  * 
  * Should any failures occur the old key, should it exist, is considered active.
@@ -243,11 +251,28 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    */
   protected <AGBM extends AbstractGameBootMessage> boolean investigate(ChannelHandlerContext ctx, AGBM agbm) {
     if (agbm instanceof OtpMessage) {
+      if (agbm instanceof OtpKeyRequest) {
+        OtpKeyRequest keyRequest = (OtpKeyRequest) agbm;
+        keyRequest.setProcessorKey(getKey());
+
+        boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
+
+        Long sysId = keyRequest.getSystemId();
+        boolean ok = d && isEncrypting() && getKey().equals(sysId);
+
+        if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, ctx.channel(), getKey());
+
+        return ok;
+      }
       sendError(ctx, "OTP messages must be sent on an encrypted connection");
       return false;
     }
 
     return true;
+  }
+
+  private boolean isEncrypting() {
+    return keyRegistry.contains(getKey());
   }
 
   /*

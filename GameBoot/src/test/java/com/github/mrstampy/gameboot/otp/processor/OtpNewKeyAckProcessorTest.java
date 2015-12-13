@@ -116,7 +116,7 @@ public class OtpNewKeyAckProcessorTest {
    */
   @Test
   public void testProcessor() throws Exception {
-    failExpected(null, "Null message");
+    failExpected((OtpNewKeyAck) null, "Null message");
 
     OtpNewKeyAck m = new OtpNewKeyAck();
     failExpected(m, "No system id");
@@ -144,6 +144,10 @@ public class OtpNewKeyAckProcessorTest {
     req.setSize(KEY_SIZE);
     req.setKeyFunction(KeyFunction.DELETE);
 
+    failExpected((OtpKeyRequest) null, "Null message");
+    failExpected(req, "systemId vs processor id");
+    req.setProcessorKey(req.getSystemId());
+
     Response r = requestProcessor.process(req);
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
     assertEquals(0, keyRegistry.size()); // wuz 1 from b4
@@ -152,6 +156,22 @@ public class OtpNewKeyAckProcessorTest {
   private void failExpected(OtpNewKeyAck m, String failMsg) {
     try {
       Response r = processor.process(m);
+      switch (r.getResponseCode()) {
+      case FAILURE:
+        break;
+      default:
+        fail(failMsg);
+        break;
+      }
+    } catch (GameBootRuntimeException | GameBootException expected) {
+    } catch (Exception e) {
+      fail(e.getMessage());
+    }
+  }
+
+  private void failExpected(OtpKeyRequest m, String failMsg) {
+    try {
+      Response r = requestProcessor.process(m);
       switch (r.getResponseCode()) {
       case FAILURE:
         break;

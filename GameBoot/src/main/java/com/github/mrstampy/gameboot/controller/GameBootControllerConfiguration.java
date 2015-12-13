@@ -40,6 +40,7 @@
  */
 package com.github.mrstampy.gameboot.controller;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -55,6 +56,7 @@ public class GameBootControllerConfiguration {
    * @return the message class finder
    */
   @Bean
+  @ConditionalOnMissingBean(MessageClassFinder.class)
   public MessageClassFinder finder() {
     return new GameBootMessageClassFinder();
   }
