@@ -73,8 +73,18 @@ import io.netty.util.concurrent.Future;
  * {@link AbstractGameBootMessage} and are processed by the
  * {@link GameBootMessageController}. Channels are added to the
  * {@link NettyConnectionRegistry#ALL} group and registering the channel against
- * the {@link Channel#remoteAddress()#toString()}. <br>
+ * the {@link SystemId#next()} value obtained on connection. (The
+ * {@link AbstractGameBootNettyMessageHandler#channelActive(ChannelHandlerContext)}
+ * and
+ * {@link AbstractGameBootNettyMessageHandler#channelInactive(ChannelHandlerContext)}
+ * must be called by subclasses overriding them.) <br>
  * <br>
+ * 
+ * Subclasses should have an annotated {@link PostConstruct} method which calls
+ * the {@link AbstractGameBootNettyMessageHandler#postConstruct()}.<br>
+ * <br>
+ * 
+ * 
  */
 public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -119,11 +129,14 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see io.netty.channel.ChannelInboundHandlerAdapter#channelActive(io.netty.
-   * channel.ChannelHandlerContext)
+  /**
+   * Subclasses overriding this method should remember to invoke it with a call
+   * to 'super.'.
+   *
+   * @param ctx
+   *          the ctx
+   * @throws Exception
+   *           the exception
    */
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -135,12 +148,14 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     registry.put(key, ctx.channel());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * io.netty.channel.ChannelInboundHandlerAdapter#channelInactive(io.netty.
-   * channel.ChannelHandlerContext)
+  /**
+   * Subclasses overriding this method should remember to invoke it with a call
+   * to 'super.'.
+   *
+   * @param ctx
+   *          the ctx
+   * @throws Exception
+   *           the exception
    */
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -189,7 +204,8 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   }
 
   /**
-   * Channel read impl.
+   * Channel read impl, blank by default. Override to handle (or exclude) byte
+   * array messages.
    *
    * @param ctx
    *          the ctx
@@ -202,7 +218,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   }
 
   /**
-   * Channel read impl, override to process string messages.
+   * Channel read impl, override to handle (or exclude) string messages.
    *
    * @param ctx
    *          the ctx
@@ -216,7 +232,8 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
 
   /**
    * Process, should be invoked from
-   * {@link #channelReadImpl(ChannelHandlerContext, String)}.
+   * {@link #channelReadImpl(ChannelHandlerContext, String)} or
+   * {@link #channelReadImpl(ChannelHandlerContext, byte[])}.
    *
    * @param <AGBM>
    *          the generic type
@@ -256,7 +273,14 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   }
 
   /**
-   * Process.
+   * Process, can be invoked in lieu of
+   * {@link #process(ChannelHandlerContext, String)} should the message have
+   * been {@link GameBootMessageConverter}'ed for inspection in an override of
+   * {@link #channelReadImpl(ChannelHandlerContext, byte[])} or
+   * {@link #channelReadImpl(ChannelHandlerContext, String)}. If invoking this
+   * method directly ensure that the instance of
+   * {@link GameBootMessageController} is obtained via
+   * {@link GameBootUtils#getBean(Class)}.
    *
    * @param <AGBM>
    *          the generic type
@@ -292,7 +316,9 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   }
 
   /**
-   * Investigate.
+   * Investigate the method prior to processing. Overrides which fail inspection
+   * are responsible for sending any failure messages to the client prior to
+   * returning false.
    *
    * @param <AGBM>
    *          the generic type
@@ -359,7 +385,8 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   }
 
   /**
-   * Gets the key.
+   * Gets the key set in {@link #channelActive(ChannelHandlerContext)} from
+   * {@link SystemId#next()}.
    *
    * @return the key
    */
