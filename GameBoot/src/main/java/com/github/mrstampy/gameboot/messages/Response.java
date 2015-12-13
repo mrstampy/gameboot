@@ -41,6 +41,9 @@
 package com.github.mrstampy.gameboot.messages;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.processor.GameBootProcessor;
+import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
  * The response to (intended) all GameBoot messages. {@link #getResponseCode()}
@@ -148,11 +151,26 @@ public class Response extends AbstractGameBootMessage {
     return rc == getResponseCode();
   }
 
+  /**
+   * Gets the mapping keys.
+   *
+   * @return the mapping keys
+   */
   @JsonIgnore
   public Comparable<?>[] getMappingKeys() {
     return mappingKeys;
   }
 
+  /**
+   * Sets the mapping keys. {@link GameBootProcessor} implementations can use
+   * this method to pass any mapping keys (userName, sessionId) to the
+   * infrastructure for ease of lookups.
+   *
+   * @param mappingKeys
+   *          the new mapping keys
+   * @see AbstractGameBootNettyMessageHandler
+   * @see AbstractGameBootWebSocketHandler
+   */
   public void setMappingKeys(Comparable<?>... mappingKeys) {
     this.mappingKeys = mappingKeys;
   }
