@@ -102,12 +102,6 @@ dependencies {
     testCompile('org.springframework.boot:spring-boot-starter-test') 
 }
 
-dependencyManagement {
-	imports { 
-		mavenBom "com.vaadin:vaadin-bom:7.5.5" 
-	}
-}
-
 eclipse {
     classpath {
          containers.remove('org.eclipse.jdt.launching.JRE_CONTAINER')
