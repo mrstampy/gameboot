@@ -90,10 +90,10 @@ public class ExecutorWebSocketHandler extends AbstractGameBootWebSocketHandler {
       try {
         processForText(session, message);
       } catch (GameBootException | GameBootRuntimeException e) {
-        sendFailure(session, e.getMessage());
+        sendError(session, e.getMessage());
       } catch (Exception e) {
         log.error("Unexpected exception", e);
-        sendUnexpectedFailure(session);
+        sendUnexpectedError(session);
       }
     });
   }
@@ -112,10 +112,10 @@ public class ExecutorWebSocketHandler extends AbstractGameBootWebSocketHandler {
       try {
         processForBinary(session, message);
       } catch (GameBootException | GameBootRuntimeException e) {
-        sendFailureBinary(session, e.getMessage());
+        sendErrorBinary(session, e.getMessage());
       } catch (Exception e) {
         log.error("Unexpected exception", e);
-        sendUnexpectedFailureBinary(session);
+        sendUnexpectedErrorBinary(session);
       }
     });
   }

@@ -235,6 +235,8 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     try {
       AGBM agbm = converter.fromJson(msg);
 
+      if (!investigate(ctx, agbm)) return;
+
       if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
       agbm.setTransport(Transport.NETTY);
       agbm.setLocal((InetSocketAddress) ctx.channel().localAddress());
@@ -260,6 +262,21 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     String r = response;
 
     f.addListener(e -> log(e, msg, r, ctx));
+  }
+
+  /**
+   * Investigate.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param ctx
+   *          the ctx
+   * @param agbm
+   *          the agbm
+   * @return true, if successful
+   */
+  protected <AGBM extends AbstractGameBootMessage> boolean investigate(ChannelHandlerContext ctx, AGBM agbm) {
+    return true;
   }
 
   /**

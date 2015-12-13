@@ -115,10 +115,10 @@ public class FiberWebSocketHandler extends AbstractGameBootWebSocketHandler {
     } catch (SuspendExecution | InterruptedException e) {
       throw e;
     } catch (GameBootException | GameBootRuntimeException e) {
-      sendFailure(session, e.getMessage());
+      sendError(session, e.getMessage());
     } catch (Exception e) {
       log.error("Unexpected exception", e);
-      sendUnexpectedFailure(session);
+      sendUnexpectedError(session);
     }
   }
 
@@ -157,10 +157,10 @@ public class FiberWebSocketHandler extends AbstractGameBootWebSocketHandler {
     } catch (SuspendExecution | InterruptedException e) {
       throw e;
     } catch (GameBootException | GameBootRuntimeException e) {
-      sendFailureBinary(session, e.getMessage());
+      sendErrorBinary(session, e.getMessage());
     } catch (Exception e) {
       log.error("Unexpected exception", e);
-      sendUnexpectedFailureBinary(session);
+      sendUnexpectedErrorBinary(session);
     }
   }
 

@@ -55,11 +55,13 @@ import org.springframework.stereotype.Component;
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
+import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -129,7 +131,7 @@ public class OtpNettyHandler extends AbstractGameBootNettyMessageHandler {
   @PostConstruct
   public void postConstruct() throws Exception {
     super.postConstruct();
-    
+
     if (!helper.containsCounter(OTP_DECRYPT_COUNTER)) {
       helper.counter(OTP_DECRYPT_COUNTER, getClass(), "otp", "decrypt", "counter");
     }
@@ -200,6 +202,23 @@ public class OtpNettyHandler extends AbstractGameBootNettyMessageHandler {
         sendError(ctx, "An unexpected error has occurred");
       }
     });
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
+   * investigate(io.netty.channel.ChannelHandlerContext,
+   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+   */
+  protected <AGBM extends AbstractGameBootMessage> boolean investigate(ChannelHandlerContext ctx, AGBM agbm) {
+    if (agbm instanceof OtpMessage) {
+      sendError(ctx, "OTP messages must be sent on an encrypted connection");
+      return false;
+    }
+
+    return true;
   }
 
   /*

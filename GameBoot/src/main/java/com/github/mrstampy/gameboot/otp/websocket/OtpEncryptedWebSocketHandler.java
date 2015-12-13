@@ -54,6 +54,8 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
+import com.github.mrstampy.gameboot.exception.GameBootException;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
@@ -119,8 +121,11 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     svc.execute(() -> {
       try {
         processForBinary(session, message);
+      } catch (GameBootException | GameBootRuntimeException e) {
+        sendErrorBinary(session, e.getMessage());
       } catch (Exception e) {
         log.error("Unexpected exception", e);
+        sendUnexpectedErrorBinary(session);
       }
     });
   }

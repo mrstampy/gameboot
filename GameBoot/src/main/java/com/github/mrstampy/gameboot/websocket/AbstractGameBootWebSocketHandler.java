@@ -248,6 +248,8 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     try {
       AGBM agbm = converter.fromJson(msg);
 
+      if (!inspect(session, agbm)) return null;
+
       if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
       agbm.setTransport(Transport.WEB_SOCKET);
       agbm.setLocal(session.getLocalAddress());
@@ -267,6 +269,21 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     }
 
     return response;
+  }
+
+  /**
+   * Inspect.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param session
+   *          the session
+   * @param agbm
+   *          the agbm
+   * @return true, if successful
+   */
+  protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm) {
+    return true;
   }
 
   /**
@@ -294,8 +311,8 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    * @param session
    *          the session
    */
-  protected void sendUnexpectedFailure(WebSocketSession session) {
-    sendFailure(session, "An unexpected error has occurred");
+  protected void sendUnexpectedError(WebSocketSession session) {
+    sendError(session, "An unexpected error has occurred");
   }
 
   /**
@@ -304,8 +321,8 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    * @param session
    *          the session
    */
-  protected void sendUnexpectedFailureBinary(WebSocketSession session) {
-    sendFailureBinary(session, "An unexpected error has occurred");
+  protected void sendUnexpectedErrorBinary(WebSocketSession session) {
+    sendErrorBinary(session, "An unexpected error has occurred");
   }
 
   /**
@@ -316,7 +333,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    * @param msg
    *          the msg
    */
-  protected void sendFailure(WebSocketSession session, String msg) {
+  protected void sendError(WebSocketSession session, String msg) {
     try {
       TextMessage fail = new TextMessage(fail(msg).getBytes());
       session.sendMessage(fail);
@@ -333,7 +350,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    * @param msg
    *          the msg
    */
-  protected void sendFailureBinary(WebSocketSession session, String msg) {
+  protected void sendErrorBinary(WebSocketSession session, String msg) {
     try {
       BinaryMessage fail = new BinaryMessage(fail(msg).getBytes());
       session.sendMessage(fail);

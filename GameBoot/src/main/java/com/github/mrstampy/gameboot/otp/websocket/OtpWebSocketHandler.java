@@ -56,8 +56,12 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
+import com.github.mrstampy.gameboot.exception.GameBootException;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
+import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
@@ -102,10 +106,30 @@ public class OtpWebSocketHandler extends AbstractGameBootWebSocketHandler {
     svc.execute(() -> {
       try {
         processForBinary(session, message);
+      } catch (GameBootException | GameBootRuntimeException e) {
+        sendErrorBinary(session, e.getMessage());
       } catch (Exception e) {
         log.error("Unexpected exception", e);
+        sendUnexpectedErrorBinary(session);
       }
     });
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * inspect(org.springframework.web.socket.WebSocketSession,
+   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+   */
+  protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm) {
+    if (agbm instanceof OtpMessage) {
+      sendError(session, "OTP messages must be sent on an encrypted connection");
+      return false;
+    }
+
+    return true;
   }
 
   /*
