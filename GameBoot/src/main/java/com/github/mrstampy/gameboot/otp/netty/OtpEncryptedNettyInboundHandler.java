@@ -63,16 +63,47 @@ import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPipeline;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.concurrent.Future;
 
 /**
- * The Class OtpEncryptedNettyInboundHandler.
+ * The Class OtpEncryptedNettyInboundHandler is the last handler added in a
+ * pipeline intended to process {@link OtpMessage}s. The connection must be
+ * encrypted sending byte arrays as messages and must originate from the same
+ * host as the connection containing the {@link OtpClearNettyHandler} in its
+ * {@link ChannelPipeline}. Should these conditions fail the connection will be
+ * terminated.<br>
+ * <br>
+ * 
+ * The client connects to the socket containing this handler in the pipeline and
+ * sends a message of type {@link OtpNewKeyRequest}. The
+ * {@link OtpNewKeyRequest#getSystemId()} value will have been set in the client
+ * as the value obtained from the clear connection containing the
+ * {@link OtpClearNettyHandler} in the pipeline.<br>
+ * <br>
+ * 
+ * If the key generation is successful a {@link Response} object is returned
+ * containing the key as the only element of the {@link Response#getResponse()}
+ * array. The client then sends a message of type {@link OtpNewKeyAck}. When
+ * received the GameBoot server activates the new key for all traffic on the
+ * {@link OtpClearNettyHandler} channel and disconnects this connection.<br>
+ * <br>
+ * 
+ * Should any failures occur the old key, should it exist, is considered active.
+ * <br>
+ * <br>
+ * 
+ * Do not instantiate directly as this is a prototype Spring managed bean. Use
+ * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
+ * constructing the {@link ChannelPipeline}.
+ * 
  */
 @Component
 @Scope("prototype")
@@ -119,7 +150,21 @@ public class OtpEncryptedNettyInboundHandler extends AbstractGameBootNettyMessag
       return;
     }
 
-    super.channelActive(ctx);
+    handler.handshakeFuture().addListener(f -> validate(f, ctx));
+  }
+
+  private void validate(Future<? super Channel> f, ChannelHandlerContext ctx) {
+    if (f.isSuccess()) {
+      log.debug("Handshake successful with {}", ctx.channel());
+      try {
+        super.channelActive(ctx);
+      } catch (Exception e) {
+        log.error("Unexpected exception", e);
+      }
+    } else {
+      log.error("Handshake unsuccessful, disconnecting {}", ctx.channel(), f.cause());
+      ctx.close();
+    }
   }
 
   /*

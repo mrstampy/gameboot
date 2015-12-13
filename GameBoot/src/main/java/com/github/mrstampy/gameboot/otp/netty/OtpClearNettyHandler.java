@@ -56,18 +56,21 @@ import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
+import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
-import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
+import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.ssl.SslHandler;
 
 /**
  * The Class OtpClearNettyHandler is intended to provide a transparent means of
@@ -78,27 +81,34 @@ import io.netty.handler.ssl.SslHandler;
  * byte arrays.<br>
  * <br>
  * 
- * This class uses the {@link Channel#remoteAddress()#toString()} as a key to
- * look up the OTP key in the {@link KeyRegistry}. If none exists the message is
- * passed on as is. If an OTP key is returned it is used to encrypt/decrypt the
- * message. <br>
+ * By default messages are unencrypted. An INFO message is sent to the client
+ * containing the {@link Response#getSystemId()} value upon connection. The
+ * client then creates a connection to the socket server containing the
+ * {@link OtpEncryptedNettyInboundHandler} in the pipeline and sends a message
+ * of type {@link OtpNewKeyRequest} thru it to the server. The
+ * {@link OtpNewKeyRequest#getSystemId()} value will have been set in the client
+ * as the value obtained from the clear connection's INFO message.<br>
  * <br>
  * 
- * This class registers its channel in the {@link OtpNettyRegistry} as an
- * {@link OtpNettyConnections#getClearChannel()} with the same key as the key
- * registry: {@link Channel#remoteAddress()#toString()}. The encrypted channel
- * (assumed to be Netty, having a {@link SslHandler} in the pipeline) should
- * have the same remote host and can be added using this clear channel key. <br>
+ * If the key generation is successful a {@link Response} object is returned in
+ * the encrypted channel containing the new OTP key as the only element of the
+ * {@link Response#getResponse()} array. The client then sends a message of type
+ * {@link OtpNewKeyAck} in the encrypted channel. When received the GameBoot
+ * server activates the new key for all traffic on the
+ * {@link OtpClearNettyHandler} channel and disconnects the encrypted
+ * connection.<br>
+ * <br>
+ * 
+ * Should any failures occur the old key, should it exist, is considered active.
+ * <br>
  * <br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
  * constructing the {@link ChannelPipeline}.
  * 
- * @see NettyConnectionRegistry
  * @see KeyRegistry
  * @see OneTimePad
- * @see OtpNettyConnections
  */
 @Component
 @Scope("prototype")
@@ -122,6 +132,9 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
   private ExecutorService svc;
 
+  @Autowired
+  private GameBootMessageConverter converter;
+
   /**
    * Post construct.
    *
@@ -139,6 +152,22 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     if (!helper.containsCounter(OTP_ENCRYPT_COUNTER)) {
       helper.counter(OTP_ENCRYPT_COUNTER, getClass(), "otp", "encrypt", "counter");
     }
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see io.netty.channel.ChannelInboundHandlerAdapter#channelActive(io.netty.
+   * channel.ChannelHandlerContext)
+   */
+  @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    super.channelActive(ctx);
+
+    Response r = new Response(ResponseCode.INFO);
+    r.setSystemId(getKey());
+
+    ctx.channel().writeAndFlush(converter.toJsonArray(r));
   }
 
   /*

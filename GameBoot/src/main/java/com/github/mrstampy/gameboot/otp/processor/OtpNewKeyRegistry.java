@@ -73,7 +73,7 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
     if (sf != null) sf.cancel(true);
 
     super.put(key, value);
-    
+
     sf = svc.schedule(() -> cleanup(key), 30, TimeUnit.SECONDS);
     futures.put(key, sf);
   }

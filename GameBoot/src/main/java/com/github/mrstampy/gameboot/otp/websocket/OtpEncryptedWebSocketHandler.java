@@ -48,8 +48,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
@@ -60,13 +62,37 @@ import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
 
 /**
- * The Class OtpEncryptedWebSocketHandler.
+ * The Class OtpEncryptedWebSocketHandler is the {@link WebSocketHandler}
+ * intended to process {@link OtpMessage}s. The connection must be encrypted
+ * sending byte arrays as messages and must originate from the same host as the
+ * connection containing the {@link OtpClearWebSocketHandler}. Should these
+ * conditions fail the connection will be terminated.<br>
+ * <br>
+ * 
+ * The client connects to the socket containing this handler and sends a message
+ * of type {@link OtpNewKeyRequest}. The {@link OtpNewKeyRequest#getSystemId()}
+ * value will have been set in the client as the value obtained from the clear
+ * connection containing the {@link OtpClearWebSocketHandler} in the pipeline.
+ * <br>
+ * <br>
+ * 
+ * If the key generation is successful a {@link Response} object is returned
+ * containing the key as the only element of the {@link Response#getResponse()}
+ * array. The client then sends a message of type {@link OtpNewKeyAck}. When
+ * received the GameBoot server activates the new key for all traffic on the
+ * {@link OtpClearWebSocketHandler} channel and disconnects this connection.<br>
+ * <br>
+ * 
+ * Should any failures occur the old key, should it exist, is considered active.
+ * 
  */
+@Component
 public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandler {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

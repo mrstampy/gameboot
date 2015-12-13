@@ -59,13 +59,47 @@ import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
+import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
+import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
- * The Class OtpClearWebSocketHandler.
+ * The Class OtpClearWebSocketHandler is intended to provide a transparent means
+ * of using the {@link OneTimePad} utility to encrypt outgoing and decrypt
+ * incoming messages on unencrypted web socket connections. It is intended that
+ * the message is a byte array at the point in which this class is inserted into
+ * the pipeline. Inbound messages are later converted to strings, all outbound
+ * messages are byte arrays.<br>
+ * <br>
+ * 
+ * By default messages are unencrypted. An INFO message is sent to the client
+ * containing the {@link Response#getSystemId()} value upon connection. The
+ * client then creates a connection to the socket server containing the
+ * {@link OtpEncryptedWebSocketHandler} in the pipeline and sends a message of
+ * type {@link OtpNewKeyRequest} thru it to the server. The
+ * {@link OtpNewKeyRequest#getSystemId()} value will have been set in the client
+ * as the value obtained from the clear connection's INFO message.<br>
+ * <br>
+ * 
+ * If the key generation is successful a {@link Response} object is returned in
+ * the encrypted channel containing the new OTP key as the only element of the
+ * {@link Response#getResponse()} array. The client then sends a message of type
+ * {@link OtpNewKeyAck} in the encrypted channel. When received the GameBoot
+ * server activates the new key for all traffic on the
+ * {@link OtpClearWebSocketHandler} channel and disconnects the encrypted
+ * connection.<br>
+ * <br>
+ * 
+ * Should any failures occur the old key, should it exist, is considered active.
+ * 
+ * @see KeyRegistry
+ * @see OneTimePad
  */
 @Component
 public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
@@ -82,6 +116,9 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
   @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
   private ExecutorService svc;
 
+  @Autowired
+  private GameBootMessageConverter converter;
+
   /**
    * Post construct.
    *
@@ -91,6 +128,24 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
   @PostConstruct
   public void postConstruct() throws Exception {
     super.postConstruct();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
+   * afterConnectionEstablished(org.springframework.web.socket.WebSocketSession)
+   */
+  @Override
+  public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    super.afterConnectionEstablished(session);
+
+    Response r = new Response(ResponseCode.INFO);
+    r.setSystemId(getKey());
+
+    BinaryMessage bm = new BinaryMessage(converter.toJsonArray(r));
+
+    session.sendMessage(bm);
   }
 
   /*
