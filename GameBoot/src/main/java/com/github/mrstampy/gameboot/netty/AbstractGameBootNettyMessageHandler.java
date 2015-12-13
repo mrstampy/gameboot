@@ -62,6 +62,7 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -311,9 +312,19 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     agbm.setRemote((InetSocketAddress) ctx.channel().remoteAddress());
 
     Response r = controller.process(msg, agbm);
+    processMappingKeys(r, ctx.channel());
     r.setSystemId(agbm.getSystemId());
 
     return r;
+  }
+
+  private void processMappingKeys(Response r, Channel session) {
+    Comparable<?>[] keys = r.getMappingKeys();
+    if (keys == null || keys.length == 0) return;
+
+    for (int i = 0; i < keys.length; i++) {
+      registry.put(keys[i], session);
+    }
   }
 
   /**

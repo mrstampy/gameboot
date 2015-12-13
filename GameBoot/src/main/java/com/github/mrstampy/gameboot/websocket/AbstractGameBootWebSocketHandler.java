@@ -310,8 +310,18 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     agbm.setRemote(session.getRemoteAddress());
 
     Response r = controller.process(msg, agbm);
+    processMappingKeys(r, session);
     r.setSystemId(agbm.getSystemId());
     return r;
+  }
+
+  private void processMappingKeys(Response r, WebSocketSession session) {
+    Comparable<?>[] keys = r.getMappingKeys();
+    if (keys == null || keys.length == 0) return;
+
+    for (int i = 0; i < keys.length; i++) {
+      registry.put(keys[i], session);
+    }
   }
 
   /**
