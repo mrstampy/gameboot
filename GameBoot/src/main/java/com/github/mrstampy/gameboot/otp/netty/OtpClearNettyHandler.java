@@ -84,8 +84,8 @@ import io.netty.channel.ChannelPromise;
  * By default messages are unencrypted. An INFO message is sent to the client
  * containing the {@link Response#getSystemId()} value upon connection. The
  * client then creates a connection to the socket server containing the
- * {@link OtpEncryptedNettyHandler} in the pipeline and sends a message
- * of type {@link OtpNewKeyRequest} thru it to the server. The
+ * {@link OtpEncryptedNettyHandler} in the pipeline and sends a message of type
+ * {@link OtpNewKeyRequest} thru it to the server. The
  * {@link OtpNewKeyRequest#getSystemId()} value will have been set in the client
  * as the value obtained from the clear connection's INFO message.<br>
  * <br>
@@ -258,21 +258,23 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    */
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (!(msg instanceof String)) {
-      log.error("Internal error; object is not a string: {}", msg.getClass());
+    if (!(msg instanceof String) && !(msg instanceof byte[])) {
+      log.error("Internal error; object is not a string or byte array: {}", msg.getClass());
       return;
     }
 
     byte[] key = keyRegistry.get(getKey());
 
+    byte[] processed = (msg instanceof byte[]) ? (byte[]) msg : ((String) msg).getBytes();
+
     if (key == null) {
-      ctx.write(((String) msg).getBytes(), promise);
+      ctx.write(processed, promise);
       return;
     }
 
     helper.incr(OTP_ENCRYPT_COUNTER);
 
-    byte[] converted = oneTimePad.convert(key, ((String) msg).getBytes());
+    byte[] converted = oneTimePad.convert(key, processed);
 
     ctx.write(converted, promise);
   }
