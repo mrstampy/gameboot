@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messages;
+package com.github.mrstampy.gameboot.usersession.messages;
 
 import java.util.Date;
 
@@ -48,6 +48,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.github.mrstampy.gameboot.data.entity.User;
 import com.github.mrstampy.gameboot.data.entity.User.UserState;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 
 /**
  * Message class to perform operations on/for a {@link User}.

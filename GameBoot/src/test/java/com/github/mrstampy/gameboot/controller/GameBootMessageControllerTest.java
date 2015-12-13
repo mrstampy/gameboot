@@ -63,8 +63,8 @@ import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.messages.UserMessage;
-import com.github.mrstampy.gameboot.messages.UserMessage.Function;
+import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
+import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
 
 /**
  * The Class GameBootMessageControllerTest.

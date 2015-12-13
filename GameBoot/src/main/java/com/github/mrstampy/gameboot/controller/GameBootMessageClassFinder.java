@@ -45,9 +45,9 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
+import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
 
 /**
  * The default implementation of the {@link MessageClassFinder} interface.

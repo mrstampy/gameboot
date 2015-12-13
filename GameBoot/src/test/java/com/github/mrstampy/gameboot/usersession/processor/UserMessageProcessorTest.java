@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.processor.impl;
+package com.github.mrstampy.gameboot.usersession.processor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
@@ -75,11 +75,11 @@ import com.github.mrstampy.gameboot.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.messages.UserMessage;
-import com.github.mrstampy.gameboot.messages.UserMessage.Function;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.usersession.ActiveSessions;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
+import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
+import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
 
 /**
  * The Class UserMessageProcessorTest.

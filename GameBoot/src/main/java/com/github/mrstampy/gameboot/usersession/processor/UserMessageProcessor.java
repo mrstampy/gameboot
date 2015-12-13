@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.processor.impl;
+package com.github.mrstampy.gameboot.usersession.processor;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
@@ -62,12 +62,12 @@ import com.github.mrstampy.gameboot.data.entity.User.UserState;
 import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.messages.Response;
-import com.github.mrstampy.gameboot.messages.UserMessage;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.AbstractTransactionalGameBootProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 import com.github.mrstampy.gameboot.usersession.UserSessionLookup;
+import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
 
 /**
  * This implementation of a {@link GameBootProcessor} processes
