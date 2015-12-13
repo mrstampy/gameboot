@@ -78,8 +78,17 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
     futures.put(key, sf);
   }
 
+  public byte[] remove(Comparable<?> key) {
+    byte[] b = super.remove(key);
+
+    ScheduledFuture<?> sf = futures.remove(key);
+    if (sf != null) sf.cancel(true);
+
+    return b;
+  }
+
   private void cleanup(Comparable<?> key) {
-    remove(key);
+    super.remove(key);
     futures.remove(key);
   }
 

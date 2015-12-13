@@ -99,7 +99,7 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
   protected Response processImpl(OtpNewKeyAck message) throws Exception {
     Long systemId = message.getSystemId();
 
-    byte[] newKey = newKeyRegistry.get(systemId);
+    byte[] newKey = newKeyRegistry.remove(systemId);
 
     if (newKey == null) fail("New OTP key generation failed");
 
