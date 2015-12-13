@@ -255,7 +255,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm) {
-    boolean ok = false;
+    boolean ok = true;
 
     switch (agbm.getType()) {
     case OtpKeyRequest.TYPE:

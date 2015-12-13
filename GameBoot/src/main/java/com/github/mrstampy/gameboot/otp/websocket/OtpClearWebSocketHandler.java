@@ -195,7 +195,7 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm) {
-    boolean ok = false;
+    boolean ok = true;
 
     switch (agbm.getType()) {
     case OtpKeyRequest.TYPE:
