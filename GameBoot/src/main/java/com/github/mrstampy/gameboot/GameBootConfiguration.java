@@ -40,38 +40,25 @@
  */
 package com.github.mrstampy.gameboot;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.web.servlet.ServletComponentScan;
-import org.springframework.cache.annotation.EnableCaching;
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
-
-import co.paralleluniverse.springframework.boot.security.autoconfigure.web.FiberSecureSpringBootApplication;
 
 /**
- * The Main Class for the GameBoot application.
+ * The Class GameBootConfiguration.
  */
 @Configuration
-@EnableAutoConfiguration
-@ComponentScan(basePackages = "com.github.mrstampy.gameboot")
-@EnableAspectJAutoProxy(proxyTargetClass = true)
-@EnableCaching
-@FiberSecureSpringBootApplication
-@EnableWebMvc
-@ServletComponentScan
-public class GameBoot {
+public class GameBootConfiguration {
 
   /**
-   * The main method.
+   * System id.
    *
-   * @param args
-   *          the arguments
+   * @return the system id
    */
-  public static void main(String[] args) {
-    SpringApplication.run(GameBoot.class, args);
+  @Bean
+  @ConditionalOnMissingBean(SystemId.class)
+  public SystemId systemId() {
+    return new GameBootSystemId();
   }
 
 }
