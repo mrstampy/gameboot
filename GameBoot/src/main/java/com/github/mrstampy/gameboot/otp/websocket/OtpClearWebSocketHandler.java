@@ -114,6 +114,7 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * @see KeyRegistry
  * @see OneTimePad
  * @see OtpConfiguration
+ * @see #inspect(WebSocketSession, AbstractGameBootMessage)
  */
 @Component
 public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {

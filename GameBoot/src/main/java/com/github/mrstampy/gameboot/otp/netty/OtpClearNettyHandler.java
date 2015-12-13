@@ -122,6 +122,7 @@ import io.netty.channel.ChannelPromise;
  * @see KeyRegistry
  * @see OneTimePad
  * @see OtpConfiguration
+ * @see #investigate(ChannelHandlerContext, AbstractGameBootMessage)
  */
 public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
