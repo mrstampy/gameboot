@@ -194,12 +194,6 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     Response r = process(session, new String(msg), controller, message);
     if (r == null) return;
 
-    if (isSuccessfulAck(message, r)) {
-      log.debug("Successful new OTP key ack for {}, disconnecting", session.getRemoteAddress());
-      session.close();
-      return;
-    }
-
     BinaryMessage bm = new BinaryMessage(converter.toJsonArray(r));
     session.sendMessage(bm);
 
@@ -227,10 +221,6 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     }
 
     return ok;
-  }
-
-  private boolean isSuccessfulAck(OtpMessage message, Response r) {
-    return (message instanceof OtpNewKeyAck && r.isSuccess());
   }
 
   private boolean validateChannel(WebSocketSession session, OtpMessage message) throws IOException {

@@ -253,21 +253,11 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
 
     if (r == null) return;
 
-    if (isSuccessfulAck(message, r)) {
-      log.debug("Successful new key ack from {}, disconnecting", ctx.channel());
-      ctx.close();
-      return;
-    }
-
     String type = message.getType();
     ChannelFuture cf = ctx.channel().writeAndFlush(converter.toJsonArray(r));
 
     cf.addListener(f -> log(f, ctx, type));
     cf.addListener(f -> ctx.close());
-  }
-
-  private boolean isSuccessfulAck(OtpMessage message, Response r) {
-    return message instanceof OtpNewKeyAck && r.isSuccess();
   }
 
   private boolean validateChannel(ChannelHandlerContext ctx, OtpMessage message) {
