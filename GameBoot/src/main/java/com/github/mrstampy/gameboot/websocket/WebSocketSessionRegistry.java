@@ -68,7 +68,7 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
    */
   @PostConstruct
   public void postConstruct() throws Exception {
-    helper.gauge(() -> size(), REGISTRY_SIZE, getClass(), "web", "socket", "connections", "size");
+    helper.gauge(() -> size(), REGISTRY_SIZE, getClass(), "web", "socket", "connections");
   }
 
 }
