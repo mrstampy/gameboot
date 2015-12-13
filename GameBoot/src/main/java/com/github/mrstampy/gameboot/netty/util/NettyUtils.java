@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.util.netty;
+package com.github.mrstampy.gameboot.netty.util;
 
 import org.springframework.stereotype.Component;
 

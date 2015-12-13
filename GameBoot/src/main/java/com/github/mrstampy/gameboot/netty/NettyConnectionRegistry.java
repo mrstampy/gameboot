@@ -54,8 +54,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.netty.util.NettyUtils;
 import com.github.mrstampy.gameboot.util.GameBootRegistry;
-import com.github.mrstampy.gameboot.util.netty.NettyUtils;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
