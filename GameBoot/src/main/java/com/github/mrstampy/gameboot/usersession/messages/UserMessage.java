@@ -46,9 +46,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
-import com.github.mrstampy.gameboot.data.entity.User;
-import com.github.mrstampy.gameboot.data.entity.User.UserState;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.usersession.data.entity.User;
+import com.github.mrstampy.gameboot.usersession.data.entity.User.UserState;
 
 /**
  * Message class to perform operations on/for a {@link User}.

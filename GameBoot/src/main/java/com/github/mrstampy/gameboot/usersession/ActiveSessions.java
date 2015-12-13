@@ -48,8 +48,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.data.entity.UserSession;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
 
 /**
  * Maintains a map in memory of usernames vs. active session ids for up-to-date

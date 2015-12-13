@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.entity;
+package com.github.mrstampy.gameboot.usersession.data.entity;
 
 import java.util.Date;
 
@@ -49,6 +49,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+
+import com.github.mrstampy.gameboot.data.entity.AbstractGameBootEntity;
 
 /**
  * The Class UserSession.

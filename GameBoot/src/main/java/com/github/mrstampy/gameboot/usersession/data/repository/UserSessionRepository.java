@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.repository;
+package com.github.mrstampy.gameboot.usersession.data.repository;
 
 import java.util.List;
 
@@ -46,8 +46,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
-import com.github.mrstampy.gameboot.data.entity.User;
-import com.github.mrstampy.gameboot.data.entity.UserSession;
+import com.github.mrstampy.gameboot.usersession.data.entity.User;
+import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
 
 /**
  * The Interface UserSessionRepository.

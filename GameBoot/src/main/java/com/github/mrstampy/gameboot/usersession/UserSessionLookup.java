@@ -53,10 +53,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
-import com.github.mrstampy.gameboot.data.entity.UserSession;
-import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
+import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepository;
 
 /**
  * This class ensures {@link UserSession} lookups use the cacheable

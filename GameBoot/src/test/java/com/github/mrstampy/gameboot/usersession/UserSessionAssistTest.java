@@ -62,12 +62,12 @@ import org.springframework.cache.CacheManager;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.github.mrstampy.gameboot.TestConfiguration;
-import com.github.mrstampy.gameboot.data.entity.User;
-import com.github.mrstampy.gameboot.data.entity.User.UserState;
-import com.github.mrstampy.gameboot.data.entity.UserSession;
-import com.github.mrstampy.gameboot.data.repository.UserRepository;
-import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.usersession.data.entity.User;
+import com.github.mrstampy.gameboot.usersession.data.entity.User.UserState;
+import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
+import com.github.mrstampy.gameboot.usersession.data.repository.UserRepository;
+import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepository;
 
 /**
  * The Class UserSessionAssistTest.

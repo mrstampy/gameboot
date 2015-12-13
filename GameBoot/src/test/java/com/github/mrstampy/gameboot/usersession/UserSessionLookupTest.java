@@ -64,13 +64,13 @@ import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.TestConfiguration;
-import com.github.mrstampy.gameboot.data.entity.User;
-import com.github.mrstampy.gameboot.data.entity.User.UserState;
-import com.github.mrstampy.gameboot.data.entity.UserSession;
-import com.github.mrstampy.gameboot.data.repository.UserRepository;
-import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.usersession.data.entity.User;
+import com.github.mrstampy.gameboot.usersession.data.entity.User.UserState;
+import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
+import com.github.mrstampy.gameboot.usersession.data.repository.UserRepository;
+import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepository;
 
 /**
  * The Class UserSessionLookupTest.

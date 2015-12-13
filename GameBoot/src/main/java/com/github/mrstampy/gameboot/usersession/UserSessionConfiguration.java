@@ -38,46 +38,20 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.repository;
+package com.github.mrstampy.gameboot.usersession;
 
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.data.repository.query.Param;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
-import com.github.mrstampy.gameboot.data.entity.User;
+import com.github.mrstampy.gameboot.usersession.data.entity.User;
+import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
 
 /**
- * The Interface UserRepository.
+ * Configuration for the {@link User} and {@link UserSession} message
+ * processing.
  */
-public interface UserRepository extends CrudRepository<User, Long> {
-
-  /**
-   * Find by user name.
-   *
-   * @param userName
-   *          the user name
-   * @return the user
-   */
-  User findByUserName(String userName);
-
-  /**
-   * Find by user name with friends.
-   *
-   * @param userName
-   *          the user name
-   * @return the user
-   */
-  @Query("SELECT u FROM User u JOIN FETCH u.friends WHERE u.userName = :userName")
-  User findByUserNameWithFriends(@Param("userName") String userName);
-
-  /**
-   * Find by user name with blocked.
-   *
-   * @param userName
-   *          the user name
-   * @return the user
-   */
-  @Query("SELECT u FROM User u JOIN FETCH u.blocked WHERE u.userName = :userName")
-  User findByUserNameWithBlocked(@Param("userName") String userName);
+@Configuration
+@EnableJpaRepositories(basePackages = "com.github.mrstampy.gameboot.usersession.data")
+public class UserSessionConfiguration {
 
 }

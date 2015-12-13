@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.data.entity;
+package com.github.mrstampy.gameboot.usersession.data.entity;
 
 import java.util.Date;
 import java.util.List;
@@ -59,6 +59,7 @@ import org.hibernate.envers.Audited;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonFormat.Shape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.mrstampy.gameboot.data.entity.AbstractGameBootEntity;
 
 /**
  * The Class User.

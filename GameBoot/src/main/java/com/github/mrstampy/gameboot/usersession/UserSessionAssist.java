@@ -57,12 +57,12 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
-import com.github.mrstampy.gameboot.data.entity.User;
-import com.github.mrstampy.gameboot.data.entity.UserSession;
-import com.github.mrstampy.gameboot.data.repository.UserRepository;
-import com.github.mrstampy.gameboot.data.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.usersession.data.entity.User;
+import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
+import com.github.mrstampy.gameboot.usersession.data.repository.UserRepository;
+import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepository;
 
 /**
  * The Class UserSessionAssist provides methods to look up {@link User}s and
