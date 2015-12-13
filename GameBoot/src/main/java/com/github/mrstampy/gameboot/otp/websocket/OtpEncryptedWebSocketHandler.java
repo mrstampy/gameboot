@@ -213,8 +213,11 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     WebSocketSession clearChannel = registry.get(systemId);
 
     if (clearChannel == null || !clearChannel.isOpen()) {
-      log.info("No clear channel for {}, from encrypted channel {}", systemId, session.getRemoteAddress());
-      return true;
+      log.error("No clear channel for {}, from encrypted channel {}, disconnecting",
+          systemId,
+          session.getRemoteAddress());
+      session.close();
+      return false;
     }
 
     String encryptedHost = session.getRemoteAddress().getAddress().getHostAddress();

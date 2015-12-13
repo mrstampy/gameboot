@@ -253,8 +253,9 @@ public class OtpEncryptedNettyInboundHandler extends AbstractGameBootNettyMessag
     Channel clearChannel = registry.get(systemId);
 
     if (clearChannel == null || !clearChannel.isActive()) {
-      log.info("No clear channel for {}, from encrypted channel {}", systemId, ctx.channel());
-      return true;
+      log.error("No clear channel for {}, from encrypted channel {}, disconnecting", systemId, ctx.channel());
+      ctx.close();
+      return false;
     }
 
     String encryptedHost = getRemote(ctx.channel());
