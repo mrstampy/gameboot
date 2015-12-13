@@ -84,6 +84,7 @@ import io.netty.util.concurrent.Future;
  * the {@link AbstractGameBootNettyMessageHandler#postConstruct()}.<br>
  * <br>
  * 
+ * @see GameBootMessageController
  * 
  */
 public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexHandler {
@@ -316,9 +317,9 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   }
 
   /**
-   * Investigate the method prior to processing. Overrides which fail inspection
-   * are responsible for sending any failure messages to the client prior to
-   * returning false.
+   * Investigate the message prior to processing. Overrides which fail
+   * inspection are responsible for sending any failure messages to the client
+   * prior to returning false.
    *
    * @param <AGBM>
    *          the generic type

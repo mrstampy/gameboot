@@ -50,6 +50,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
@@ -67,7 +68,12 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 /**
- * The Class AbstractGameBootWebSocketHandler.
+ * The Class AbstractGameBootWebSocketHandler is the superclass of
+ * {@link WebSocketHandler}s which can handle either text or binary GameBoot web
+ * socket messages. Messages are automatically processed and responses returned
+ * as appropriate.
+ * 
+ * @see GameBootMessageController
  */
 public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocketHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -110,11 +116,14 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
-   * afterConnectionEstablished(org.springframework.web.socket.WebSocketSession)
+  /**
+   * Sets the {@link SystemId#next()} key and adds the WebSocketSession to the
+   * {@link WebSocketSessionRegistry}. Subclasses overriding must invoke super.
+   *
+   * @param session
+   *          the session
+   * @throws Exception
+   *           the exception
    */
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -122,12 +131,16 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     addToRegistry(session);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
-   * afterConnectionClosed(org.springframework.web.socket.WebSocketSession,
-   * org.springframework.web.socket.CloseStatus)
+  /**
+   * Removes this {@link WebSocketSession} from the registry. Subclasses
+   * overriding must invoke super.
+   *
+   * @param session
+   *          the session
+   * @param status
+   *          the status
+   * @throws Exception
+   *           the exception
    */
   @Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
@@ -264,7 +277,14 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
   }
 
   /**
-   * Process.
+   * Process, can be invoked in lieu of
+   * {@link #process(WebSocketSession, String)} should the message have been
+   * {@link GameBootMessageConverter}'ed for inspection in an override of
+   * {@link #handleTextMessageImpl(WebSocketSession, String)} or
+   * {@link #handleBinaryMessageImpl(WebSocketSession, byte[])}. If invoking
+   * this method directly ensure that the instance of
+   * {@link GameBootMessageController} is obtained via
+   * {@link GameBootUtils#getBean(Class)}.
    *
    * @param <AGBM>
    *          the generic type
@@ -295,7 +315,9 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
   }
 
   /**
-   * Inspect.
+   * Investigate the message prior to processing. Overrides which fail
+   * inspection are responsible for sending any failure messages to the client
+   * prior to returning false.
    *
    * @param <AGBM>
    *          the generic type
@@ -320,7 +342,8 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
   }
 
   /**
-   * Gets the key.
+   * Gets the key in {@link #afterConnectionEstablished(WebSocketSession)} from
+   * {@link SystemId#next()}.
    *
    * @return the key
    */
