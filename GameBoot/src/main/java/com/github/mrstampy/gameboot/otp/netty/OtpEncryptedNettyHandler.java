@@ -63,6 +63,7 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
@@ -202,8 +203,16 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
     });
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
+   * inspect(io.netty.channel.ChannelHandlerContext,
+   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+   */
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm) {
-    boolean ok = agbm instanceof OtpMessage;
+    boolean ok = agbm instanceof OtpKeyRequest && KeyFunction.NEW == ((OtpKeyRequest) agbm).getKeyFunction();
 
     if (!ok) {
       log.error("Unexpected message received, disconnecting: {}", agbm);
@@ -254,6 +263,7 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
     ChannelFuture cf = ctx.channel().writeAndFlush(converter.toJsonArray(r));
 
     cf.addListener(f -> log(f, ctx, type));
+    cf.addListener(f -> ctx.close());
   }
 
   private boolean isSuccessfulAck(OtpMessage message, Response r) {

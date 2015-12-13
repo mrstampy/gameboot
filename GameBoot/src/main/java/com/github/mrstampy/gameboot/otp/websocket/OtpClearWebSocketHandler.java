@@ -67,7 +67,6 @@ import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
-import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
@@ -91,11 +90,11 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * 
  * If the key generation is successful a {@link Response} object is returned in
  * the encrypted channel containing the new OTP key as the only element of the
- * {@link Response#getResponse()} array. The client then sends a message of type
- * {@link OtpNewKeyAck} in the encrypted channel. When received the GameBoot
- * server activates the new key for all traffic on the
- * {@link OtpClearWebSocketHandler} channel and disconnects the encrypted
- * connection.<br>
+ * {@link Response#getResponse()} array. When sending is complete the encrypted
+ * channel is disconnected. The client then sends a message of type
+ * {@link OtpNewKeyAck} in the clear channel. When received the GameBoot server
+ * activates the new key for all traffic on the {@link OtpClearWebSocketHandler}
+ * channel and disconnects the encrypted connection.<br>
  * <br>
  * 
  * To delete a key a message of type {@link OtpKeyRequest} with a
@@ -115,6 +114,7 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * @see OneTimePad
  * @see OtpConfiguration
  * @see #inspect(WebSocketSession, AbstractGameBootMessage)
+ * @see #isValidType(WebSocketSession, AbstractGameBootMessage)
  */
 @Component
 public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
@@ -194,25 +194,41 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm) {
-    if (agbm instanceof OtpMessage) {
-      if (agbm instanceof OtpKeyRequest) {
-        OtpKeyRequest keyRequest = (OtpKeyRequest) agbm;
-        keyRequest.setProcessorKey(getKey());
-
-        boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
-
-        Long sysId = keyRequest.getSystemId();
-        boolean ok = d && isEncrypting() && getKey().equals(sysId);
-
-        if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, session.getRemoteAddress(), getKey());
-
-        return ok;
-      }
-      sendError(session, "OTP messages must be sent on an encrypted connection");
-      return false;
+    switch (agbm.getType()) {
+    case OtpKeyRequest.TYPE:
+      return isDeleteRequest(session, (OtpKeyRequest) agbm);
+    default:
+      return isValidType(session, agbm);
     }
+  }
 
+  /**
+   * Checks if is valid type.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param session
+   *          the session
+   * @param agbm
+   *          the agbm
+   * @return true, if is valid type
+   */
+  protected <AGBM extends AbstractGameBootMessage> boolean isValidType(WebSocketSession session, AGBM agbm) {
     return true;
+  }
+
+  private <AGBM extends AbstractGameBootMessage> boolean isDeleteRequest(WebSocketSession session, AGBM agbm) {
+    OtpKeyRequest keyRequest = (OtpKeyRequest) agbm;
+    keyRequest.setProcessorKey(getKey());
+
+    boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
+
+    Long sysId = keyRequest.getSystemId();
+    boolean ok = d && isEncrypting() && getKey().equals(sysId);
+
+    if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, session.getRemoteAddress(), getKey());
+
+    return ok;
   }
 
   private boolean isEncrypting() {

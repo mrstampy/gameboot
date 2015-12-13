@@ -62,6 +62,7 @@ import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
@@ -203,11 +204,22 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     session.sendMessage(bm);
 
     log.debug("Successful send of {} to {}", message.getType(), session.getRemoteAddress());
+
+    Thread.sleep(50);
+    session.close(CloseStatus.NORMAL);
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * inspect(org.springframework.web.socket.WebSocketSession,
+   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+   */
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm)
       throws Exception {
-    boolean ok = agbm instanceof OtpMessage;
+    boolean ok = agbm instanceof OtpKeyRequest && KeyFunction.NEW == ((OtpKeyRequest) agbm).getKeyFunction();
 
     if (!ok) {
       log.error("Unexpected message received, disconnecting: {}", agbm);

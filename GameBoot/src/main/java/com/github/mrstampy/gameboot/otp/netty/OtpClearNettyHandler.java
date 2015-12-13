@@ -64,7 +64,6 @@ import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
-import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
@@ -93,11 +92,11 @@ import io.netty.channel.ChannelPromise;
  * 
  * If the key generation is successful a {@link Response} object is returned in
  * the encrypted channel containing the new OTP key as the only element of the
- * {@link Response#getResponse()} array. The client then sends a message of type
- * {@link OtpNewKeyAck} in the encrypted channel. When received the GameBoot
- * server activates the new key for all traffic on the
- * {@link OtpClearNettyHandler} channel and disconnects the encrypted
- * connection.<br>
+ * {@link Response#getResponse()} array. When sending is complete the encrypted
+ * channel is disconnected. The client then sends a message of type
+ * {@link OtpNewKeyAck} in the clear channel. When received the GameBoot server
+ * activates the new key for all traffic on the {@link OtpClearNettyHandler}
+ * channel.<br>
  * <br>
  * 
  * To delete a key a message of type {@link OtpKeyRequest} with a
@@ -123,6 +122,7 @@ import io.netty.channel.ChannelPromise;
  * @see OneTimePad
  * @see OtpConfiguration
  * @see #inspect(ChannelHandlerContext, AbstractGameBootMessage)
+ * @see #isValidType(ChannelHandlerContext, AbstractGameBootMessage)
  */
 public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -254,25 +254,38 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm) {
-    if (agbm instanceof OtpMessage) {
-      if (agbm instanceof OtpKeyRequest) {
-        OtpKeyRequest keyRequest = (OtpKeyRequest) agbm;
-        keyRequest.setProcessorKey(getKey());
-
-        boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
-
-        Long sysId = keyRequest.getSystemId();
-        boolean ok = d && isEncrypting() && getKey().equals(sysId);
-
-        if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, ctx.channel(), getKey());
-
-        return ok;
-      }
-      sendError(ctx, "OTP messages must be sent on an encrypted connection");
-      return false;
+    switch (agbm.getType()) {
+    case OtpKeyRequest.TYPE:
+      return isDeleteRequest(ctx, (OtpKeyRequest) agbm);
+    default:
+      return isValidType(ctx, agbm);
     }
+  }
 
+  /**
+   * Checks if is valid type.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param ctx
+   *          the ctx
+   * @param agbm
+   *          the agbm
+   * @return true, if is valid type
+   */
+  protected <AGBM extends AbstractGameBootMessage> boolean isValidType(ChannelHandlerContext ctx, AGBM agbm) {
     return true;
+  }
+
+  private boolean isDeleteRequest(ChannelHandlerContext ctx, OtpKeyRequest keyRequest) {
+    boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
+
+    Long sysId = keyRequest.getSystemId();
+    boolean ok = d && isEncrypting() && getKey().equals(sysId);
+
+    if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, ctx.channel(), getKey());
+
+    return ok;
   }
 
   private boolean isEncrypting() {

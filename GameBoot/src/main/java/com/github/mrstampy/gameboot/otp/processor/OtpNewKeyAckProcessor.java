@@ -58,7 +58,9 @@ import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 
 /**
- * The Class OtpNewKeyAckProcessor activates a new OTP key for the client.
+ * The Class OtpNewKeyAckProcessor activates a new OTP key for the client. The
+ * acknowledgement message is in response to a received new key via an encrypted
+ * channel.
  * 
  * @see OtpClearNettyHandler
  * @see OtpEncryptedNettyHandler
@@ -97,6 +99,8 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
   protected void validate(OtpNewKeyAck message) throws Exception {
     Long systemId = message.getSystemId();
     if (systemId == null || systemId <= 0) fail("No systemId");
+
+    if (!systemId.equals(message.getProcessorKey())) fail("systemId does not match processor id");
   }
 
   /*

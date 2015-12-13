@@ -129,6 +129,9 @@ public class OtpNewKeyAckProcessorTest {
     assertEquals(1, newKeyRegistry.size());
     assertEquals(0, keyRegistry.size());
 
+    failExpected(m, "no processor id");
+
+    m.setProcessorKey(m.getSystemId());
     Response r = processor.process(m);
 
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
