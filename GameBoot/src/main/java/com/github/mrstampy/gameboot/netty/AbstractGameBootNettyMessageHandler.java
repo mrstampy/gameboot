@@ -304,7 +304,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    */
   protected <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, String msg,
       GameBootMessageController controller, AGBM agbm) throws Exception, JsonProcessingException, GameBootException {
-    if (!investigate(ctx, agbm)) return null;
+    if (!inspect(ctx, agbm)) return null;
 
     if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
     agbm.setTransport(Transport.NETTY);
@@ -340,7 +340,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    *          the agbm
    * @return true, if successful
    */
-  protected <AGBM extends AbstractGameBootMessage> boolean investigate(ChannelHandlerContext ctx, AGBM agbm)
+  protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm)
       throws Exception {
     return true;
   }

@@ -202,7 +202,7 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
     });
   }
 
-  protected <AGBM extends AbstractGameBootMessage> boolean investigate(ChannelHandlerContext ctx, AGBM agbm) {
+  protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm) {
     boolean ok = agbm instanceof OtpMessage;
 
     if (!ok) {

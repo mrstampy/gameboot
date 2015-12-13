@@ -122,7 +122,7 @@ import io.netty.channel.ChannelPromise;
  * @see KeyRegistry
  * @see OneTimePad
  * @see OtpConfiguration
- * @see #investigate(ChannelHandlerContext, AbstractGameBootMessage)
+ * @see #inspect(ChannelHandlerContext, AbstractGameBootMessage)
  */
 public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -253,7 +253,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    * investigate(io.netty.channel.ChannelHandlerContext,
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
-  protected <AGBM extends AbstractGameBootMessage> boolean investigate(ChannelHandlerContext ctx, AGBM agbm) {
+  protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm) {
     if (agbm instanceof OtpMessage) {
       if (agbm instanceof OtpKeyRequest) {
         OtpKeyRequest keyRequest = (OtpKeyRequest) agbm;
