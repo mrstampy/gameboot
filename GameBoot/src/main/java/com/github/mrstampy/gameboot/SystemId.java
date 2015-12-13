@@ -38,24 +38,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.concurrent;
-
-import java.util.concurrent.atomic.AtomicLong;
+package com.github.mrstampy.gameboot;
 
 /**
- * The Class GameBootSystemId.
+ * The Interface SystemId should be implemented to return a system-unique
+ * identifier with each call to {@link #next()}.
  */
-public class GameBootSystemId implements SystemId {
+public interface SystemId {
 
-  private static final AtomicLong ID = new AtomicLong(1);
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.github.mrstampy.gameboot.concurrent.Bling#next()
+  /**
+   * Next.
+   *
+   * @return the long
    */
-  @Override
-  public Long next() {
-    return ID.getAndIncrement();
-  }
+  Long next();
+
 }

@@ -49,7 +49,7 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.concurrent.SystemId;
+import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;

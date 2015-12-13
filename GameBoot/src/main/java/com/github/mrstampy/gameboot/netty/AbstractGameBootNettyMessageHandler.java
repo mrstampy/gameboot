@@ -50,7 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.mrstampy.gameboot.concurrent.SystemId;
+import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;

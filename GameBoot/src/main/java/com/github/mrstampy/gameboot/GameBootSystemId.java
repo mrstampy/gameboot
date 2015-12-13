@@ -38,18 +38,28 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.concurrent;
+package com.github.mrstampy.gameboot;
+
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.springframework.context.annotation.Configuration;
 
 /**
- * The Interface SystemId.
+ * Default implementation of the {@link SystemId} interface, using a backing
+ * {@link AtomicLong}. GameBoot implementations using persistent storage will
+ * want to add their own implementation in their {@link Configuration}.
  */
-public interface SystemId {
+public class GameBootSystemId implements SystemId {
 
-  /**
-   * Next.
-   *
-   * @return the long
+  private static final AtomicLong ID = new AtomicLong(1);
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.concurrent.Bling#next()
    */
-  Long next();
-
+  @Override
+  public Long next() {
+    return ID.getAndIncrement();
+  }
 }

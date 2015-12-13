@@ -55,7 +55,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.mrstampy.gameboot.concurrent.SystemId;
+import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;

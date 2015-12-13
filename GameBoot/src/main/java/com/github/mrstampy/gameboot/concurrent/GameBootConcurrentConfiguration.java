@@ -48,7 +48,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -204,16 +203,5 @@ public class GameBootConcurrentConfiguration {
     String name = isEmpty(fiberForkJoinName) ? "Fiber Fork Join Scheduler" : fiberForkJoinName;
 
     return new FiberForkJoinScheduler(name, fiberForkJoinPoolSize, null, true);
-  }
-
-  /**
-   * System id.
-   *
-   * @return the system id
-   */
-  @Bean
-  @ConditionalOnMissingBean(SystemId.class)
-  public SystemId systemId() {
-    return new GameBootSystemId();
   }
 }

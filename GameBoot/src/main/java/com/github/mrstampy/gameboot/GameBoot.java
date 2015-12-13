@@ -42,8 +42,10 @@ package com.github.mrstampy.gameboot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.web.servlet.ServletComponentScan;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -63,6 +65,17 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
 @EnableWebMvc
 @ServletComponentScan
 public class GameBoot {
+
+  /**
+   * System id.
+   *
+   * @return the system id
+   */
+  @Bean
+  @ConditionalOnMissingBean(SystemId.class)
+  public SystemId systemId() {
+    return new GameBootSystemId();
+  }
 
   /**
    * The main method.
