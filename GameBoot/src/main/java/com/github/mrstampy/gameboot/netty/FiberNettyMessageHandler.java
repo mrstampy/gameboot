@@ -52,6 +52,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
+import com.github.mrstampy.gameboot.exception.GameBootException;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
@@ -138,6 +140,29 @@ public class FiberNettyMessageHandler extends AbstractGameBootNettyMessageHandle
     fiber.start();
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
+   * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
+   */
+  @Override
+  @SuppressWarnings("serial")
+  protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+    Fiber<Void> fiber = svc.newFiber(new SuspendableCallable<Void>() {
+
+      @Override
+      public Void run() throws SuspendExecution, InterruptedException {
+        process(ctx, new String(msg));
+
+        return null;
+      }
+    });
+
+    fiber.start();
+  }
+
   /**
    * Exposed for instrumentation.
    *
@@ -155,8 +180,11 @@ public class FiberNettyMessageHandler extends AbstractGameBootNettyMessageHandle
       super.process(ctx, msg);
     } catch (SuspendExecution | InterruptedException e) {
       throw e;
+    } catch (GameBootException | GameBootRuntimeException e) {
+      sendError(ctx, e.getMessage());
     } catch (Exception e) {
       log.error("Unexpected exception", e);
+      sendUnexpectedError(ctx);
     }
   }
 

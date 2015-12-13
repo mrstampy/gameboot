@@ -50,7 +50,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.controller.MessageClassFinder;
@@ -84,12 +86,38 @@ public class GameBootMessageConverter {
    * @throws GameBootException
    *           the game boot exception
    */
-  @SuppressWarnings("unchecked")
   public <AGBM extends AbstractGameBootMessage> AGBM fromJson(String message) throws IOException, GameBootException {
     if (isEmpty(message)) fail("No message");
 
     JsonNode node = mapper.readTree(message);
 
+    return fromJson(message.getBytes(), node);
+  }
+
+  /**
+   * From json.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param message
+   *          the message
+   * @return the agbm
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
+   * @throws GameBootException
+   *           the game boot exception
+   */
+  public <AGBM extends AbstractGameBootMessage> AGBM fromJson(byte[] message) throws IOException, GameBootException {
+    if (message == null || message.length == 0) fail("No message");
+
+    JsonNode node = mapper.readTree(message);
+
+    return fromJson(message, node);
+  }
+
+  @SuppressWarnings("unchecked")
+  private <AGBM extends AbstractGameBootMessage> AGBM fromJson(byte[] message, JsonNode node)
+      throws GameBootException, IOException, JsonParseException, JsonMappingException {
     JsonNode typeNode = node.get(TYPE_NODE_NAME);
 
     if (typeNode == null) fail("No type specified");
@@ -126,6 +154,26 @@ public class GameBootMessageConverter {
     if (msg == null) fail("No message");
 
     return mapper.writeValueAsString(msg);
+  }
+
+  /**
+   * To json array.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param msg
+   *          the msg
+   * @return the byte[]
+   * @throws JsonProcessingException
+   *           the json processing exception
+   * @throws GameBootException
+   *           the game boot exception
+   */
+  public <AGBM extends AbstractGameBootMessage> byte[] toJsonArray(AGBM msg)
+      throws JsonProcessingException, GameBootException {
+    if (msg == null) fail("No message");
+
+    return mapper.writeValueAsBytes(msg);
   }
 
   private void fail(String msg) throws GameBootException {

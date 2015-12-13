@@ -54,6 +54,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.mrstampy.gameboot.concurrent.SystemId;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
@@ -87,6 +88,11 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
   @Autowired
   private GameBootMessageConverter converter;
 
+  @Autowired
+  private SystemId generator;
+
+  private Long key;
+
   /**
    * Post construct created message counters if necessary. Subclasses will need
    * to invoke this in an annotated {@link PostConstruct} method.
@@ -112,6 +118,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    this.key = generator.next();
     addToRegistry(session);
   }
 
@@ -124,7 +131,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   @Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-    registry.remove(session.getId());
+    registry.remove(key);
   }
 
   /*
@@ -241,12 +248,14 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     try {
       AGBM agbm = converter.fromJson(msg);
 
-      agbm.setSystemSessionId(session.getId());
+      if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
       agbm.setTransport(Transport.WEB_SOCKET);
       agbm.setLocal(session.getLocalAddress());
       agbm.setRemote(session.getRemoteAddress());
 
       Response r = controller.process(msg, agbm);
+      r.setSystemId(agbm.getSystemId());
+
       response = converter.toJson(r);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
@@ -267,8 +276,70 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *          the session
    */
   protected void addToRegistry(WebSocketSession session) {
-    String id = session.getId();
-    if (!registry.contains(id)) registry.put(id, session);
+    if (!registry.contains(getKey())) registry.put(getKey(), session);
+  }
+
+  /**
+   * Gets the key.
+   *
+   * @return the key
+   */
+  protected Long getKey() {
+    return key;
+  }
+
+  /**
+   * Send unexpected failure.
+   *
+   * @param session
+   *          the session
+   */
+  protected void sendUnexpectedFailure(WebSocketSession session) {
+    sendFailure(session, "An unexpected error has occurred");
+  }
+
+  /**
+   * Send unexpected failure binary.
+   *
+   * @param session
+   *          the session
+   */
+  protected void sendUnexpectedFailureBinary(WebSocketSession session) {
+    sendFailureBinary(session, "An unexpected error has occurred");
+  }
+
+  /**
+   * Send failure.
+   *
+   * @param session
+   *          the session
+   * @param msg
+   *          the msg
+   */
+  protected void sendFailure(WebSocketSession session, String msg) {
+    try {
+      TextMessage fail = new TextMessage(fail(msg).getBytes());
+      session.sendMessage(fail);
+    } catch (Exception e) {
+      log.error("Unexpected exception sending failure {} for {}", msg, getKey(), e);
+    }
+  }
+
+  /**
+   * Send failure binary.
+   *
+   * @param session
+   *          the session
+   * @param msg
+   *          the msg
+   */
+  protected void sendFailureBinary(WebSocketSession session, String msg) {
+    try {
+      BinaryMessage fail = new BinaryMessage(fail(msg).getBytes());
+      session.sendMessage(fail);
+    } catch (Exception e) {
+      log.error("Unexpected exception sending failure {} for {}", msg, getKey(), e);
+    }
   }
 
   /**

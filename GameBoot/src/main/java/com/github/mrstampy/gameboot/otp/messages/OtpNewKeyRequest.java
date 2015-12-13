@@ -38,45 +38,42 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.controller;
-
-import java.lang.invoke.MethodHandles;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.github.mrstampy.gameboot.messages.UserMessage;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
+package com.github.mrstampy.gameboot.otp.messages;
 
 /**
- * The default implementation of the {@link MessageClassFinder} interface.
- * 
- * @see GameBootControllerConfiguration
+ * The Class OtpNewKeyRequest.
  */
-public class GameBootMessageClassFinder implements MessageClassFinder {
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public class OtpNewKeyRequest extends OtpMessage {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.controller.MessageClassFinder#findClass(java.
-   * lang.String)
+  /** The Constant TYPE. */
+  public static final String TYPE = "OtpNewKeyRequest";
+
+  private Integer size;
+
+  /**
+   * Instantiates a new otp new key request.
    */
-  @Override
-  public Class<?> findClass(String type) {
-    switch (type) {
-    case UserMessage.TYPE:
-      return UserMessage.class;
-    case OtpNewKeyRequest.TYPE:
-      return OtpNewKeyRequest.class;
-    case OtpNewKeyAck.TYPE:
-      return OtpNewKeyAck.class;
-    default:
-      log.error("No class defined for type {}", type);
-      return null;
-    }
+  public OtpNewKeyRequest() {
+    super(TYPE);
+  }
+
+  /**
+   * Gets the size.
+   *
+   * @return the size
+   */
+  public Integer getSize() {
+    return size;
+  }
+
+  /**
+   * Sets the size.
+   *
+   * @param size
+   *          the new size
+   */
+  public void setSize(Integer size) {
+    this.size = size;
   }
 
 }

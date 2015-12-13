@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.mrstampy.gameboot.concurrent.SystemId;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
@@ -96,6 +97,11 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   @Autowired
   private GameBootMessageConverter converter;
 
+  @Autowired
+  private SystemId generator;
+
+  private Long key;
+
   /**
    * Post construct created message counters if necessary. Subclasses will need
    * to invoke this in an annotated {@link PostConstruct} method.
@@ -121,7 +127,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    */
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    String key = ctx.channel().remoteAddress().toString();
+    this.key = generator.next();
 
     log.info("Connected to {}, adding to registry with key {}", ctx.channel(), key);
 
@@ -172,7 +178,14 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
 
     log.debug("Received message {} on {}", msg, ctx.channel());
 
-    channelReadImpl(ctx, (String) msg);
+    if (msg instanceof String) {
+      channelReadImpl(ctx, (String) msg);
+    } else if (msg instanceof byte[]) {
+      channelReadImpl(ctx, (byte[]) msg);
+    } else {
+      log.error("Only strings or byte arrays: {} from {}. Disconnecting", msg.getClass(), ctx.channel());
+      ctx.close();
+    }
   }
 
   /**
@@ -185,7 +198,21 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    * @throws Exception
    *           the exception
    */
-  protected abstract void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception;
+  protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+  }
+
+  /**
+   * Channel read impl, override to process string messages.
+   *
+   * @param ctx
+   *          the ctx
+   * @param msg
+   *          the msg
+   * @throws Exception
+   *           the exception
+   */
+  protected void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception {
+  }
 
   /**
    * Process, should be invoked from
@@ -208,12 +235,14 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     try {
       AGBM agbm = converter.fromJson(msg);
 
-      agbm.setSystemSessionId(ctx.channel().remoteAddress().toString());
+      if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
       agbm.setTransport(Transport.NETTY);
       agbm.setLocal((InetSocketAddress) ctx.channel().localAddress());
       agbm.setRemote((InetSocketAddress) ctx.channel().remoteAddress());
 
       Response r = controller.process(msg, agbm);
+      r.setSystemId(agbm.getSystemId());
+
       response = converter.toJson(r);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
@@ -231,6 +260,32 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     String r = response;
 
     f.addListener(e -> log(e, msg, r, ctx));
+  }
+
+  /**
+   * Send unexpected error.
+   *
+   * @param ctx
+   *          the ctx
+   */
+  protected void sendUnexpectedError(ChannelHandlerContext ctx) {
+    sendError(ctx, "An unexpected error has occurred");
+  }
+
+  /**
+   * Send error.
+   *
+   * @param ctx
+   *          the ctx
+   * @param message
+   *          the message
+   */
+  protected void sendError(ChannelHandlerContext ctx, String message) {
+    try {
+      ctx.channel().writeAndFlush(fail(message));
+    } catch (Exception e) {
+      log.error("Unexpected exception", e);
+    }
   }
 
   private void log(Future<? super Void> f, String msg, String response, ChannelHandlerContext ctx) {
@@ -255,8 +310,17 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
       return converter.toJson(new Response(ResponseCode.FAILURE, message));
     } catch (JsonProcessingException e) {
       log.error("Unexpected exception", e);
-      throw new RuntimeException("Unexpected JSON error", e);
+      throw new GameBootException("Unexpected JSON error", e);
     }
+  }
+
+  /**
+   * Gets the key.
+   *
+   * @return the key
+   */
+  protected Long getKey() {
+    return key;
   }
 
 }

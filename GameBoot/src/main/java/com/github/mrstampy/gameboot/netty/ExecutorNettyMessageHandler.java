@@ -53,6 +53,8 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
+import com.github.mrstampy.gameboot.exception.GameBootException;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -118,8 +120,36 @@ public class ExecutorNettyMessageHandler extends AbstractGameBootNettyMessageHan
       public void run() {
         try {
           process(ctx, msg);
+        } catch (GameBootException | GameBootRuntimeException e) {
+          sendError(ctx, e.getMessage());
         } catch (Exception e) {
           log.error("Unexpected exception", e);
+          sendUnexpectedError(ctx);
+        }
+      }
+    });
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
+   * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
+   */
+  @Override
+  protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+    svc.execute(new Runnable() {
+
+      @Override
+      public void run() {
+        try {
+          process(ctx, new String(msg));
+        } catch (GameBootException | GameBootRuntimeException e) {
+          sendError(ctx, e.getMessage());
+        } catch (Exception e) {
+          log.error("Unexpected exception", e);
+          sendUnexpectedError(ctx);
         }
       }
     });

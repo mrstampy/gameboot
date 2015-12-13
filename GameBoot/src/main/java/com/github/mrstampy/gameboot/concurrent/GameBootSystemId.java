@@ -38,45 +38,24 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.controller;
+package com.github.mrstampy.gameboot.concurrent;
 
-import java.lang.invoke.MethodHandles;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.github.mrstampy.gameboot.messages.UserMessage;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * The default implementation of the {@link MessageClassFinder} interface.
- * 
- * @see GameBootControllerConfiguration
+ * The Class GameBootSystemId.
  */
-public class GameBootMessageClassFinder implements MessageClassFinder {
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public class GameBootSystemId implements SystemId {
+
+  private static final AtomicLong ID = new AtomicLong(1);
 
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * com.github.mrstampy.gameboot.controller.MessageClassFinder#findClass(java.
-   * lang.String)
+   * @see com.github.mrstampy.gameboot.concurrent.Bling#next()
    */
   @Override
-  public Class<?> findClass(String type) {
-    switch (type) {
-    case UserMessage.TYPE:
-      return UserMessage.class;
-    case OtpNewKeyRequest.TYPE:
-      return OtpNewKeyRequest.class;
-    case OtpNewKeyAck.TYPE:
-      return OtpNewKeyAck.class;
-    default:
-      log.error("No class defined for type {}", type);
-      return null;
-    }
+  public Long next() {
+    return ID.getAndIncrement();
   }
-
 }

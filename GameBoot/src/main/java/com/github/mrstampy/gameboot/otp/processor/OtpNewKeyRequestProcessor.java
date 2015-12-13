@@ -38,86 +38,84 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.websocket;
+package com.github.mrstampy.gameboot.otp.processor;
 
 import java.lang.invoke.MethodHandles;
-import java.util.concurrent.ExecutorService;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.otp.OneTimePad;
+import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
+import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 
 /**
- * The Class ExecutorWebSocketHandler.
+ * The Class OtpNewKeyRequestProcessor.
  */
-public class ExecutorWebSocketHandler extends AbstractGameBootWebSocketHandler {
+@Component
+public class OtpNewKeyRequestProcessor extends AbstractGameBootProcessor<OtpNewKeyRequest> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Autowired
-  @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
-  private ExecutorService svc;
+  private OtpNewKeyRegistry newKeyRegistry;
 
-  /**
-   * Post construct.
-   *
-   * @throws Exception
-   *           the exception
+  @Autowired
+  private OneTimePad pad;
+
+  @Value("${otp.default.key.size}")
+  private Integer defaultKeySize;
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.processor.GameBootProcessor#getType()
    */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    super.postConstruct();
+  @Override
+  public String getType() {
+    return OtpNewKeyRequest.TYPE;
   }
 
   /*
    * (non-Javadoc)
    * 
    * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * handleTextMessageImpl(org.springframework.web.socket.WebSocketSession,
-   * org.springframework.web.socket.TextMessage)
+   * com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#validate(
+   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   @Override
-  protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
-    svc.execute(() -> {
-      try {
-        processForText(session, message);
-      } catch (GameBootException | GameBootRuntimeException e) {
-        sendFailure(session, e.getMessage());
-      } catch (Exception e) {
-        log.error("Unexpected exception", e);
-        sendUnexpectedFailure(session);
-      }
-    });
+  protected void validate(OtpNewKeyRequest message) throws Exception {
+    Long systemId = message.getSystemId();
+    if (systemId == null || systemId <= 0) fail("No systemId");
+
+    Integer size = message.getSize();
+    if (size != null) {
+      if (size <= 0 || size % 2 != 0) fail("Invalid key size, expecting > 0 and multiples of 2");
+    }
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * handleBinaryMessageImpl(org.springframework.web.socket.WebSocketSession,
-   * byte[])
+   * @see com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#
+   * processImpl(com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   @Override
-  protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
-    svc.execute(() -> {
-      try {
-        processForBinary(session, message);
-      } catch (GameBootException | GameBootRuntimeException e) {
-        sendFailureBinary(session, e.getMessage());
-      } catch (Exception e) {
-        log.error("Unexpected exception", e);
-        sendUnexpectedFailureBinary(session);
-      }
-    });
+  protected Response processImpl(OtpNewKeyRequest message) throws Exception {
+    Integer size = message.getSize() == null ? defaultKeySize : message.getSize();
+    Long systemId = message.getSystemId();
+
+    log.debug("Creating new OTP key of size {} for {}", size, systemId);
+
+    byte[] newKey = pad.generateKey(size);
+
+    newKeyRegistry.put(systemId, newKey);
+
+    return new Response(ResponseCode.SUCCESS, newKey);
   }
 
 }

@@ -51,6 +51,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
+import com.github.mrstampy.gameboot.exception.GameBootException;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 
 import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 import co.paralleluniverse.fibers.SuspendExecution;
@@ -112,8 +114,11 @@ public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHand
       super.processForText(session, message);
     } catch (SuspendExecution | InterruptedException e) {
       throw e;
+    } catch (GameBootException | GameBootRuntimeException e) {
+      sendFailure(session, e.getMessage());
     } catch (Exception e) {
       log.error("Unexpected exception", e);
+      sendUnexpectedFailure(session);
     }
   }
 
@@ -151,8 +156,11 @@ public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHand
       super.processForBinary(session, message);
     } catch (SuspendExecution | InterruptedException e) {
       throw e;
+    } catch (GameBootException | GameBootRuntimeException e) {
+      sendFailureBinary(session, e.getMessage());
     } catch (Exception e) {
       log.error("Unexpected exception", e);
+      sendUnexpectedFailureBinary(session);
     }
   }
 

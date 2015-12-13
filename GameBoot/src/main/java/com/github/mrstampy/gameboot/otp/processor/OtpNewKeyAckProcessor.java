@@ -38,86 +38,75 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.websocket;
+package com.github.mrstampy.gameboot.otp.processor;
 
 import java.lang.invoke.MethodHandles;
-import java.util.concurrent.ExecutorService;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.socket.WebSocketSession;
+import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.otp.KeyRegistry;
+import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 
 /**
- * The Class ExecutorWebSocketHandler.
+ * The Class OtpNewKeyAckProcessor.
  */
-public class ExecutorWebSocketHandler extends AbstractGameBootWebSocketHandler {
+@Component
+public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAck> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Autowired
-  @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
-  private ExecutorService svc;
+  private KeyRegistry keyRegistry;
 
-  /**
-   * Post construct.
-   *
-   * @throws Exception
-   *           the exception
+  @Autowired
+  private OtpNewKeyRegistry newKeyRegistry;
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.processor.GameBootProcessor#getType()
    */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    super.postConstruct();
+  @Override
+  public String getType() {
+    return OtpNewKeyAck.TYPE;
   }
 
   /*
    * (non-Javadoc)
    * 
    * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * handleTextMessageImpl(org.springframework.web.socket.WebSocketSession,
-   * org.springframework.web.socket.TextMessage)
+   * com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#validate(
+   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   @Override
-  protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
-    svc.execute(() -> {
-      try {
-        processForText(session, message);
-      } catch (GameBootException | GameBootRuntimeException e) {
-        sendFailure(session, e.getMessage());
-      } catch (Exception e) {
-        log.error("Unexpected exception", e);
-        sendUnexpectedFailure(session);
-      }
-    });
+  protected void validate(OtpNewKeyAck message) throws Exception {
+    Long systemId = message.getSystemId();
+    if (systemId == null || systemId <= 0) fail("No systemId");
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * handleBinaryMessageImpl(org.springframework.web.socket.WebSocketSession,
-   * byte[])
+   * @see com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#
+   * processImpl(com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   @Override
-  protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
-    svc.execute(() -> {
-      try {
-        processForBinary(session, message);
-      } catch (GameBootException | GameBootRuntimeException e) {
-        sendFailureBinary(session, e.getMessage());
-      } catch (Exception e) {
-        log.error("Unexpected exception", e);
-        sendUnexpectedFailureBinary(session);
-      }
-    });
+  protected Response processImpl(OtpNewKeyAck message) throws Exception {
+    Long systemId = message.getSystemId();
+
+    byte[] newKey = newKeyRegistry.get(systemId);
+
+    if (newKey == null) fail("New OTP key generation failed");
+
+    log.debug("Activating new OTP key for {}", systemId);
+
+    keyRegistry.put(systemId, newKey);
+
+    return null;
   }
 
 }

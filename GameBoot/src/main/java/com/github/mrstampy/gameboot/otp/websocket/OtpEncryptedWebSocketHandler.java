@@ -44,58 +44,75 @@ import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ExecutorService;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-import com.github.mrstampy.gameboot.otp.KeyRegistry;
-import com.github.mrstampy.gameboot.otp.OneTimePad;
+import com.github.mrstampy.gameboot.controller.GameBootMessageController;
+import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
+import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
+import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
 
 /**
- * The Class OtpHandler.
+ * The Class OtpEncryptedWebSocketHandler.
  */
-@Component
-public class OtpWebSocketHandler extends AbstractGameBootWebSocketHandler {
+public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandler {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  @Autowired
-  private KeyRegistry keyRegistry;
-
-  @Autowired
-  private OneTimePad pad;
 
   @Autowired
   @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
   private ExecutorService svc;
 
-  /**
-   * Post construct.
-   *
-   * @throws Exception
-   *           the exception
-   */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    super.postConstruct();
-  }
+  @Autowired
+  private GameBootMessageConverter converter;
+
+  @Autowired
+  private WebSocketSessionRegistry registry;
+
+  @Autowired
+  private GameBootMessageController controller;
 
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * handleBinaryMessageImpl(org.springframework.web.socket.WebSocketSession,
-   * byte[])
+   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
+   * afterConnectionEstablished(org.springframework.web.socket.WebSocketSession)
+   */
+  /**
+   * After connection established.
+   *
+   * @param session
+   *          the session
+   * @throws Exception
+   *           the exception
+   */
+  @Override
+  public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    String s = session.getUri().toString();
+
+    if (!s.startsWith("wss")) {
+      log.error("Not an encrypted web socket {}, disconnecting", session.getRemoteAddress());
+      session.close();
+    }
+
+    super.afterConnectionEstablished(session);
+  }
+
+  /**
+   * Handle binary message impl.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
    */
   @Override
   protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
@@ -115,30 +132,71 @@ public class OtpWebSocketHandler extends AbstractGameBootWebSocketHandler {
    * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
    * processForBinary(org.springframework.web.socket.WebSocketSession, byte[])
    */
-  protected void processForBinary(WebSocketSession session, byte[] message) throws Exception {
-    byte[] key = keyRegistry.get(getKey());
-    byte[] msg = otp(key, session, message);
+  /**
+   * Process for binary.
+   *
+   * @param session
+   *          the session
+   * @param msg
+   *          the msg
+   * @throws Exception
+   *           the exception
+   */
+  protected void processForBinary(WebSocketSession session, byte[] msg) throws Exception {
+    OtpMessage message = null;
+    try {
+      message = converter.fromJson(msg);
+    } catch (Exception e) {
+      log.error("Message received on {} not an OTP message, disconnecting", session.getRemoteAddress());
+      session.close();
+      return;
+    }
 
-    String response = process(session, new String(msg));
-    if (response == null) return;
+    if (!validateChannel(session, message)) return;
 
-    byte[] r = otp(key, session, response.getBytes());
+    Response r = controller.process(new String(msg), message);
+    if (r == null) return;
 
-    BinaryMessage m = new BinaryMessage(r);
-    session.sendMessage(m);
+    BinaryMessage bm = new BinaryMessage(converter.toJsonArray(r));
+    session.sendMessage(bm);
+
+    log.debug("Successful send of {} to {}", message.getType(), session.getRemoteAddress());
   }
 
-  private byte[] otp(byte[] key, WebSocketSession session, byte[] message) throws Exception {
-    return key == null ? message : pad.convert(key, message);
+  private boolean validateChannel(WebSocketSession session, OtpMessage message) throws IOException {
+    Long systemId = message.getSystemId();
+    WebSocketSession clearChannel = registry.get(systemId);
+
+    if (clearChannel == null || !clearChannel.isOpen()) {
+      log.info("No clear channel for {}, from encrypted channel {}", systemId, session.getRemoteAddress());
+      return true;
+    }
+
+    String encryptedHost = session.getRemoteAddress().getAddress().getHostAddress();
+    String clearHost = clearChannel.getRemoteAddress().getAddress().getHostAddress();
+
+    if (encryptedHost.equals(clearHost)) return true;
+
+    log.error("OTP request type {} from {} does not match host {} using system id {}, disconnecting.",
+        message.getType(),
+        session.getRemoteAddress(),
+        clearChannel,
+        systemId);
+
+    session.close();
+
+    return false;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * handleTextMessageImpl(org.springframework.web.socket.WebSocketSession,
-   * java.lang.String)
+  /**
+   * Handle text message impl.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
+   * @throws Exception
+   *           the exception
    */
   @Override
   protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {

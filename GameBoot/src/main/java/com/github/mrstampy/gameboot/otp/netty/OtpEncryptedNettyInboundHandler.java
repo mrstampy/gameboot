@@ -41,6 +41,7 @@
 package com.github.mrstampy.gameboot.otp.netty;
 
 import java.lang.invoke.MethodHandles;
+import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
@@ -53,72 +54,41 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
+import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
-import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
+import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
-import com.github.mrstampy.gameboot.otp.KeyRegistry;
-import com.github.mrstampy.gameboot.otp.OneTimePad;
-import com.github.mrstampy.gameboot.util.GameBootUtils;
+import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.ChannelPromise;
 import io.netty.handler.ssl.SslHandler;
+import io.netty.util.concurrent.Future;
 
 /**
- * The Class OtpHandler is intended to provide a transparent means of using the
- * {@link OneTimePad} utility to encrypt outgoing and decrypt incoming messages
- * on unencrypted Netty connections. It is intended that the message is a byte
- * array at the point in which this class is inserted into the pipeline. Inbound
- * messages are later converted to strings, all outbound messages are byte
- * arrays.<br>
- * <br>
- * 
- * This class uses the {@link Channel#remoteAddress()#toString()} as a key to
- * look up the OTP key in the {@link KeyRegistry}. If none exists the message is
- * passed on as is. If an OTP key is returned it is used to encrypt/decrypt the
- * message. <br>
- * <br>
- * 
- * This class registers its channel in the {@link OtpNettyRegistry} as an
- * {@link OtpNettyConnections#getClearChannel()} with the same key as the key
- * registry: {@link Channel#remoteAddress()#toString()}. The encrypted channel
- * (assumed to be Netty, having a {@link SslHandler} in the pipeline) should
- * have the same remote host and can be added using this clear channel key. <br>
- * <br>
- * 
- * Do not instantiate directly as this is a prototype Spring managed bean. Use
- * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
- * constructing the {@link ChannelPipeline}.
- * 
- * @see NettyConnectionRegistry
- * @see KeyRegistry
- * @see OneTimePad
- * @see OtpNettyConnections
+ * The Class OtpEncryptedNettyInboundHandler.
  */
 @Component
 @Scope("prototype")
-public class OtpNettyHandler extends AbstractGameBootNettyMessageHandler {
+public class OtpEncryptedNettyInboundHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static final String OTP_DECRYPT_COUNTER = "Netty OTP Decrypt Counter";
-
-  private static final String OTP_ENCRYPT_COUNTER = "Netty OTP Encrypt Counter";
+  @Autowired
+  private GameBootMessageConverter converter;
 
   @Autowired
-  private OneTimePad oneTimePad;
-
-  @Autowired
-  private KeyRegistry keyRegistry;
-
-  @Autowired
-  private MetricsHelper helper;
+  private GameBootMessageController controller;
 
   @Autowired
   @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
   private ExecutorService svc;
+
+  @Autowired
+  private NettyConnectionRegistry registry;
 
   /**
    * Post construct.
@@ -128,13 +98,26 @@ public class OtpNettyHandler extends AbstractGameBootNettyMessageHandler {
    */
   @PostConstruct
   public void postConstruct() throws Exception {
-    if (!helper.containsCounter(OTP_DECRYPT_COUNTER)) {
-      helper.counter(OTP_DECRYPT_COUNTER, getClass(), "otp", "decrypt", "counter");
+    super.postConstruct();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see io.netty.channel.ChannelInboundHandlerAdapter#channelActive(io.netty.
+   * channel.ChannelHandlerContext)
+   */
+  @Override
+  public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    SslHandler handler = ctx.pipeline().get(SslHandler.class);
+
+    if (handler == null) {
+      log.error("Unencrypted channels cannot process OTP messages.  Disconnecting {}", ctx.channel());
+      ctx.close();
+      return;
     }
 
-    if (!helper.containsCounter(OTP_ENCRYPT_COUNTER)) {
-      helper.counter(OTP_ENCRYPT_COUNTER, getClass(), "otp", "encrypt", "counter");
-    }
+    super.channelActive(ctx);
   }
 
   /*
@@ -147,37 +130,7 @@ public class OtpNettyHandler extends AbstractGameBootNettyMessageHandler {
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
-    oneTimePad = null;
-    keyRegistry = null;
-    helper = null;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * io.netty.channel.ChannelInboundHandlerAdapter#channelRead(io.netty.channel.
-   * ChannelHandlerContext, java.lang.Object)
-   */
-  @Override
-  public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    if (!(msg instanceof byte[])) {
-      sendError(ctx, "Message must be a byte array");
-      return;
-    }
-
-    byte[] key = keyRegistry.get(getKey());
-
-    if (key == null) {
-      super.channelRead(ctx, msg);
-      return;
-    }
-
-    helper.incr(OTP_DECRYPT_COUNTER);
-
-    byte[] converted = oneTimePad.convert(key, (byte[]) msg);
-
-    super.channelRead(ctx, converted);
+    svc = null;
   }
 
   /*
@@ -187,10 +140,11 @@ public class OtpNettyHandler extends AbstractGameBootNettyMessageHandler {
    * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
    * channelReadImpl(io.netty.channel.ChannelHandlerContext, byte[])
    */
+  @Override
   protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
     svc.execute(() -> {
       try {
-        process(ctx, new String(msg));
+        processOtpMessage(ctx, msg);
       } catch (GameBootException | GameBootRuntimeException e) {
         sendError(ctx, e.getMessage());
       } catch (Exception e) {
@@ -203,28 +157,72 @@ public class OtpNettyHandler extends AbstractGameBootNettyMessageHandler {
   /*
    * (non-Javadoc)
    * 
-   * @see io.netty.channel.ChannelDuplexHandler#write(io.netty.channel.
-   * ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise)
+   * @see
+   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
+   * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
    */
-  @Override
-  public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (!(msg instanceof String)) {
-      log.error("Internal error; object is not a string: {}", msg.getClass());
+  protected void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception {
+    log.error("Received text; binary only.  Closing channel {}", ctx.channel());
+
+    ctx.close();
+  }
+
+  private void processOtpMessage(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+    OtpMessage message = null;
+    try {
+      message = converter.fromJson(msg);
+    } catch (Exception e) {
+      log.error("Message received on {} not an OTP message, disconnecting", ctx.channel());
+      ctx.close();
       return;
     }
 
-    byte[] key = keyRegistry.get(getKey());
+    if (!validateChannel(ctx, message)) return;
 
-    if (key == null) {
-      ctx.write(((String) msg).getBytes(), promise);
-      return;
+    Response r = controller.process(new String(msg), message);
+    if (r == null) return;
+
+    String type = message.getType();
+    ChannelFuture cf = ctx.channel().writeAndFlush(converter.toJsonArray(r));
+
+    cf.addListener(f -> log(f, ctx, type));
+  }
+
+  private boolean validateChannel(ChannelHandlerContext ctx, OtpMessage message) {
+    Long systemId = message.getSystemId();
+    Channel clearChannel = registry.get(systemId);
+
+    if (clearChannel == null || !clearChannel.isActive()) {
+      log.info("No clear channel for {}, from encrypted channel {}", systemId, ctx.channel());
+      return true;
     }
 
-    helper.incr(OTP_ENCRYPT_COUNTER);
+    String encryptedHost = getRemote(ctx.channel());
+    String clearHost = getRemote(clearChannel);
 
-    byte[] converted = oneTimePad.convert(key, ((String) msg).getBytes());
+    if (encryptedHost.equals(clearHost)) return true;
 
-    ctx.write(converted, promise);
+    log.error("OTP request type {} from {} does not match host {} using system id {}, disconnecting.",
+        message.getType(),
+        ctx.channel(),
+        clearChannel,
+        systemId);
+
+    ctx.close();
+
+    return false;
+  }
+
+  private String getRemote(Channel channel) {
+    return ((InetSocketAddress) channel.remoteAddress()).getAddress().getHostAddress();
+  }
+
+  private void log(Future<? super Void> f, ChannelHandlerContext ctx, String type) {
+    if (f.isSuccess()) {
+      log.debug("Successful send of {} to {}", type, ctx.channel().remoteAddress());
+    } else {
+      log.error("Unsuccessful send of {} to {}", type, ctx.channel().remoteAddress(), f.cause());
+    }
   }
 
 }

@@ -38,45 +38,35 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.controller;
+package com.github.mrstampy.gameboot.otp.processor;
 
-import java.lang.invoke.MethodHandles;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.messages.UserMessage;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
+import com.github.mrstampy.gameboot.util.GameBootRegistry;
 
 /**
- * The default implementation of the {@link MessageClassFinder} interface.
- * 
- * @see GameBootControllerConfiguration
+ * The Class OtpNewKeyRegistry.
  */
-public class GameBootMessageClassFinder implements MessageClassFinder {
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+@Component
+public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
+
+  @Autowired
+  private ScheduledExecutorService svc;
 
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * com.github.mrstampy.gameboot.controller.MessageClassFinder#findClass(java.
-   * lang.String)
+   * @see com.github.mrstampy.gameboot.util.GameBootRegistry#put(java.lang.
+   * Comparable, java.lang.Object)
    */
-  @Override
-  public Class<?> findClass(String type) {
-    switch (type) {
-    case UserMessage.TYPE:
-      return UserMessage.class;
-    case OtpNewKeyRequest.TYPE:
-      return OtpNewKeyRequest.class;
-    case OtpNewKeyAck.TYPE:
-      return OtpNewKeyAck.class;
-    default:
-      log.error("No class defined for type {}", type);
-      return null;
-    }
+  public void put(Comparable<?> key, byte[] value) {
+    super.put(key, value);
+
+    svc.schedule(() -> remove(key), 30, TimeUnit.SECONDS);
   }
 
 }

@@ -59,7 +59,7 @@ public abstract class AbstractGameBootMessage {
 
   private String type;
 
-  private String systemSessionId;
+  private Long systemId;
 
   /**
    * The Enum Transport.
@@ -144,9 +144,8 @@ public abstract class AbstractGameBootMessage {
    *
    * @return the system session id
    */
-  @JsonIgnore
-  public String getSystemSessionId() {
-    return systemSessionId;
+  public Long getSystemId() {
+    return systemId;
   }
 
   /**
@@ -155,8 +154,8 @@ public abstract class AbstractGameBootMessage {
    * @param systemSessionId
    *          the new system session id
    */
-  public void setSystemSessionId(String systemSessionId) {
-    this.systemSessionId = systemSessionId;
+  public void setSystemId(Long systemSessionId) {
+    this.systemId = systemSessionId;
   }
 
   /**
