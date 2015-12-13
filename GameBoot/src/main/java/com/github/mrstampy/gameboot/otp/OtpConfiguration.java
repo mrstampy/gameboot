@@ -88,7 +88,7 @@ public class OtpConfiguration {
   /**
    * Returns a strong instance of the secure random seeded with a byte array the
    * size of which is specified by the gameboot property
-   * 'secure.random.seed.size'.
+   * 'otp.secure.random.seed.size'.
    *
    * @return the secure random
    * @throws Exception
