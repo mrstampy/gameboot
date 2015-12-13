@@ -128,6 +128,8 @@ public class OtpNettyHandler extends AbstractGameBootNettyMessageHandler {
    */
   @PostConstruct
   public void postConstruct() throws Exception {
+    super.postConstruct();
+    
     if (!helper.containsCounter(OTP_DECRYPT_COUNTER)) {
       helper.counter(OTP_DECRYPT_COUNTER, getClass(), "otp", "decrypt", "counter");
     }
