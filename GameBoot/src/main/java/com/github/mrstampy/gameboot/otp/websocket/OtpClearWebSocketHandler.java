@@ -65,10 +65,10 @@ import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
- * The Class OtpHandler.
+ * The Class OtpClearWebSocketHandler.
  */
 @Component
-public class OtpWebSocketHandler extends AbstractGameBootWebSocketHandler {
+public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

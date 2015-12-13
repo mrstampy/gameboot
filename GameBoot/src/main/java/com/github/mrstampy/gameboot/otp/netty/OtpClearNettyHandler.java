@@ -70,12 +70,12 @@ import io.netty.channel.ChannelPromise;
 import io.netty.handler.ssl.SslHandler;
 
 /**
- * The Class OtpHandler is intended to provide a transparent means of using the
- * {@link OneTimePad} utility to encrypt outgoing and decrypt incoming messages
- * on unencrypted Netty connections. It is intended that the message is a byte
- * array at the point in which this class is inserted into the pipeline. Inbound
- * messages are later converted to strings, all outbound messages are byte
- * arrays.<br>
+ * The Class OtpClearNettyHandler is intended to provide a transparent means of
+ * using the {@link OneTimePad} utility to encrypt outgoing and decrypt incoming
+ * messages on unencrypted Netty connections. It is intended that the message is
+ * a byte array at the point in which this class is inserted into the pipeline.
+ * Inbound messages are later converted to strings, all outbound messages are
+ * byte arrays.<br>
  * <br>
  * 
  * This class uses the {@link Channel#remoteAddress()#toString()} as a key to
@@ -102,7 +102,7 @@ import io.netty.handler.ssl.SslHandler;
  */
 @Component
 @Scope("prototype")
-public class OtpNettyHandler extends AbstractGameBootNettyMessageHandler {
+public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String OTP_DECRYPT_COUNTER = "Netty OTP Decrypt Counter";
