@@ -40,6 +40,9 @@
  */
 package com.github.mrstampy.gameboot.otp;
 
+import java.security.SecureRandom;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -53,6 +56,11 @@ import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
  */
 @Configuration
 public class OtpConfiguration {
+
+  public static final String OTP_SECURE_RANDOM = "OTP Secure Random";
+
+  @Value("${otp.secure.random.seed.size}")
+  private int seedSize;
 
   /**
    * Clear netty handler.
@@ -75,6 +83,25 @@ public class OtpConfiguration {
   @ConditionalOnMissingBean(OtpClearWebSocketHandler.class)
   public OtpClearWebSocketHandler clearWebSocketHandler() {
     return new OtpClearWebSocketHandler();
+  }
+
+  /**
+   * Returns a strong instance of the secure random seeded with a byte array the
+   * size of which is specified by the gameboot property
+   * 'secure.random.seed.size'.
+   *
+   * @return the secure random
+   * @throws Exception
+   *           the exception
+   */
+  @Bean(name = OTP_SECURE_RANDOM)
+  public SecureRandom secureRandom() throws Exception {
+    SecureRandom random = SecureRandom.getInstanceStrong();
+
+    byte[] seed = new byte[seedSize];
+    random.nextBytes(seed);
+
+    return random;
   }
 
 }

@@ -46,6 +46,7 @@ import java.util.Optional;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
@@ -74,6 +75,7 @@ public class OneTimePad {
   public static final String OTP_CONVERSION = "OTP message conversion timer";
 
   @Autowired
+  @Qualifier(OtpConfiguration.OTP_SECURE_RANDOM)
   private SecureRandom random;
 
   @Autowired
