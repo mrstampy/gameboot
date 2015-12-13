@@ -73,6 +73,8 @@ public class Response extends AbstractGameBootMessage {
 
   private Object[] response;
 
+  private Comparable<?>[] mappingKeys;
+
   /**
    * Instantiates a new response.
    */
@@ -144,6 +146,15 @@ public class Response extends AbstractGameBootMessage {
 
   private boolean isResponseCode(ResponseCode rc) {
     return rc == getResponseCode();
+  }
+
+  @JsonIgnore
+  public Comparable<?>[] getMappingKeys() {
+    return mappingKeys;
+  }
+
+  public void setMappingKeys(Comparable<?>... mappingKeys) {
+    this.mappingKeys = mappingKeys;
   }
 
 }
