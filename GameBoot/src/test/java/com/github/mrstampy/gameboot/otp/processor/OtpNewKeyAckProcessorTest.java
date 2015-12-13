@@ -40,11 +40,14 @@
  */
 package com.github.mrstampy.gameboot.otp.processor;
 
+import static com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRequestProcessorTest.CLEAR_CHANNEL_ID;
+import static com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRequestProcessorTest.KEY_SIZE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,47 +59,35 @@ import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
 
 /**
- * The Class OtpNewKeyRequestProcessorTest.
+ * The Class OtpNewKeyAckProcessorTest.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(TestConfiguration.class)
-public class OtpNewKeyRequestProcessorTest {
-
-  /** The Constant CLEAR_CHANNEL_ID. */
-  static final Long CLEAR_CHANNEL_ID = 1234l;
-
-  /** The Constant KEY_SIZE. */
-  static final Integer KEY_SIZE = 64;
+public class OtpNewKeyAckProcessorTest {
 
   @Autowired
-  private OtpNewKeyRequestProcessor processor;
+  private OtpNewKeyAckProcessor processor;
+
+  @Autowired
+  private OtpNewKeyRequestProcessor requestProcessor;
 
   /**
-   * Test processor.
+   * Before.
    *
    * @throws Exception
    *           the exception
    */
-  @Test
-  public void testProcessor() throws Exception {
-    failExpected(null, "Null message");
+  @Before
+  public void before() throws Exception {
+    OtpNewKeyRequest req = new OtpNewKeyRequest();
+    req.setSystemId(CLEAR_CHANNEL_ID);
+    req.setSize(KEY_SIZE);
 
-    OtpNewKeyRequest r = new OtpNewKeyRequest();
-    failExpected(r, "mt message");
-
-    r.setSystemId(CLEAR_CHANNEL_ID);
-
-    r.setSize(-32);
-    failExpected(r, "negative size");
-
-    r.setSize(7);
-    failExpected(r, "bad size");
-
-    r.setSize(KEY_SIZE);
-    Response rep = processor.process(r);
+    Response rep = requestProcessor.process(req);
 
     assertEquals(ResponseCode.SUCCESS, rep.getResponseCode());
     assertNotNull(rep.getResponse());
@@ -108,7 +99,28 @@ public class OtpNewKeyRequestProcessorTest {
     assertEquals(KEY_SIZE.intValue(), b.length);
   }
 
-  private void failExpected(OtpNewKeyRequest m, String failMsg) {
+  /**
+   * Test processor.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  public void testProcessor() throws Exception {
+    failExpected(null, "Null message");
+
+    OtpNewKeyAck m = new OtpNewKeyAck();
+    failExpected(m, "No system id");
+
+    m.setSystemId(4321l);
+    failExpected(m, "No key to activate");
+
+    m.setSystemId(CLEAR_CHANNEL_ID);
+    Response r = processor.process(m);
+    assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+  }
+
+  private void failExpected(OtpNewKeyAck m, String failMsg) {
     try {
       Response r = processor.process(m);
       switch (r.getResponseCode()) {
