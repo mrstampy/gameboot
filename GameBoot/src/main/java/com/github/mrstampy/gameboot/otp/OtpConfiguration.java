@@ -42,6 +42,7 @@ package com.github.mrstampy.gameboot.otp;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
@@ -50,6 +51,7 @@ import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
 /**
  * The Class OtpConfiguration.
  */
+@Configuration
 public class OtpConfiguration {
 
   /**
