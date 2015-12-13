@@ -69,11 +69,11 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
    * Comparable, java.lang.Object)
    */
   public void put(Comparable<?> key, byte[] value) {
-    super.put(key, value);
-
     ScheduledFuture<?> sf = futures.remove(key);
     if (sf != null) sf.cancel(true);
 
+    super.put(key, value);
+    
     sf = svc.schedule(() -> cleanup(key), 30, TimeUnit.SECONDS);
     futures.put(key, sf);
   }
