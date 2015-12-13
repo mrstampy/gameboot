@@ -84,7 +84,7 @@ import io.netty.channel.ChannelPromise;
  * By default messages are unencrypted. An INFO message is sent to the client
  * containing the {@link Response#getSystemId()} value upon connection. The
  * client then creates a connection to the socket server containing the
- * {@link OtpEncryptedNettyInboundHandler} in the pipeline and sends a message
+ * {@link OtpEncryptedNettyHandler} in the pipeline and sends a message
  * of type {@link OtpNewKeyRequest} thru it to the server. The
  * {@link OtpNewKeyRequest#getSystemId()} value will have been set in the client
  * as the value obtained from the clear connection's INFO message.<br>

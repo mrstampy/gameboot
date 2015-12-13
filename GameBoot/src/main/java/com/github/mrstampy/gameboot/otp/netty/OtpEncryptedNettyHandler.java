@@ -107,7 +107,7 @@ import io.netty.util.concurrent.Future;
  */
 @Component
 @Scope("prototype")
-public class OtpEncryptedNettyInboundHandler extends AbstractGameBootNettyMessageHandler {
+public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Autowired

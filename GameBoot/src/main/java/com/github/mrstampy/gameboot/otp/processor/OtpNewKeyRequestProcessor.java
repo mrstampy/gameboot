@@ -53,7 +53,7 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
-import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyInboundHandler;
+import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
@@ -69,7 +69,7 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
  * the clear channel.
  * 
  * @see OtpClearNettyHandler
- * @see OtpEncryptedNettyInboundHandler
+ * @see OtpEncryptedNettyHandler
  * @see OtpClearWebSocketHandler
  * @see OtpEncryptedWebSocketHandler
  */
