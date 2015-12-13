@@ -64,6 +64,7 @@ import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
+import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
@@ -254,12 +255,19 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm) {
+    boolean ok = false;
+
     switch (agbm.getType()) {
     case OtpKeyRequest.TYPE:
-      return isDeleteRequest(ctx, (OtpKeyRequest) agbm);
+      ok = isDeleteRequest(ctx, (OtpKeyRequest) agbm);
+    case OtpNewKeyAck.TYPE:
+      ((OtpMessage) agbm).setProcessorKey(getKey());
+      break;
     default:
-      return isValidType(ctx, agbm);
+      ok = isValidType(ctx, agbm);
     }
+
+    return ok;
   }
 
   /**

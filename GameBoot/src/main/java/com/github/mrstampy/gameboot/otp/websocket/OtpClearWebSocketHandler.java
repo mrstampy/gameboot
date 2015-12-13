@@ -67,6 +67,7 @@ import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
+import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
@@ -194,12 +195,19 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm) {
+    boolean ok = false;
+
     switch (agbm.getType()) {
     case OtpKeyRequest.TYPE:
-      return isDeleteRequest(session, (OtpKeyRequest) agbm);
+      ok = isDeleteRequest(session, (OtpKeyRequest) agbm);
+    case OtpNewKeyAck.TYPE:
+      ((OtpMessage) agbm).setProcessorKey(getKey());
+      break;
     default:
-      return isValidType(session, agbm);
+      ok = isValidType(session, agbm);
     }
+
+    return ok;
   }
 
   /**
