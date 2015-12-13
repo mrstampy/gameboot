@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.websocket;
+package com.github.mrstampy.gameboot.websocket.examples;
 
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ExecutorService;
@@ -54,9 +54,18 @@ import org.springframework.web.socket.WebSocketSession;
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
  * The Class ExecutorWebSocketHandler.
+ * 
+ * While functional these classes are included as examples. As is they will
+ * process EVERY {@link AbstractGameBootMessage} type. Subclasses of
+ * {@link AbstractGameBootNettyMessageHandler} should implement a message
+ * whitelist with aggressive disconnection policies for violations.<br>
+ * <br>
  */
 public class ExecutorWebSocketHandler extends AbstractGameBootWebSocketHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

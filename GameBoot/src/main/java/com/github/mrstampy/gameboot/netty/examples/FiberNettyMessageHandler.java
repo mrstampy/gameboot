@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.netty;
+package com.github.mrstampy.gameboot.netty.examples;
 
 import java.lang.invoke.MethodHandles;
 
@@ -47,25 +47,25 @@ import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import co.paralleluniverse.fibers.Fiber;
-import co.paralleluniverse.fibers.FiberForkJoinScheduler;
+import co.paralleluniverse.fibers.FiberExecutorScheduler;
 import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.strands.SuspendableCallable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 
 /**
- * This class uses the configured {@link FiberForkJoinScheduler} to execute
+ * This class uses the configured {@link FiberExecutorScheduler} to execute
  * incoming messages. It is intended to be added last to the
  * {@link ChannelPipeline}. <br>
  * <br>
@@ -75,22 +75,27 @@ import io.netty.channel.ChannelPipeline;
  * constructing the {@link ChannelPipeline}.<br>
  * <br>
  * 
+ * While functional these classes are included as examples. As is they will
+ * process EVERY {@link AbstractGameBootMessage} type. Subclasses of
+ * {@link AbstractGameBootNettyMessageHandler} should implement a message
+ * whitelist with aggressive disconnection policies for violations.<br>
+ * <br>
+ * 
  * Note that {@link GameBootProcessor}s which define a {@link Transactional}
  * boundary around the
  * {@link GameBootProcessor#process(com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)}
- * method are not suitable for execution within a {@link FiberForkJoinScheduler}
- * . See the <a href="http://docs.paralleluniverse.co/quasar/">Quasar
- * documentation</a> for more information about Fibers vs. Threads.
+ * method are not suitable for execution within a {@link FiberExecutorScheduler}
+ * (unless instrumentation is turned off). See the
+ * <a href="http://docs.paralleluniverse.co/quasar/">Quasar documentation</a>
+ * for more information about Fibers vs. Threads.
  * 
  * @see GameBootConcurrentConfiguration
  */
-@Component
-@Scope("prototype")
-public class FiberForkJoinNettyMessageHandler extends AbstractGameBootNettyMessageHandler {
+public class FiberNettyMessageHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Autowired
-  private FiberForkJoinScheduler svc;
+  private FiberExecutorScheduler svc;
 
   /**
    * Post construct.

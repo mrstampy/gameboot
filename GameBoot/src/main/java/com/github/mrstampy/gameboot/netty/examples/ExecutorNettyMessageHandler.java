@@ -38,63 +38,63 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.netty;
+package com.github.mrstampy.gameboot.netty.examples;
 
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
-
-import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.concurrent.ExecutorService;
+
+import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
+import com.github.mrstampy.gameboot.exception.GameBootException;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
-import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
- * This handler is intended to be the penultimate handler before an instance of
- * any {@link AbstractGameBootNettyMessageHandler} for
- * {@link AbstractGameBootMessage} subclasses which expose a 'userName' (string)
- * or a 'sessionId' (long). These values are used to add the {@link Channel} to
- * the {@link NettyConnectionRegistry}.<br>
+ * This class uses the configured {@link ExecutorService} to process incoming
+ * messages, preserving the Logback mapped diagnostic context. It is intended to
+ * be added last to the {@link ChannelPipeline}.<br>
+ * <br>
+ * 
+ * While functional these classes are included as examples. As is they will
+ * process EVERY {@link AbstractGameBootMessage} type. Subclasses of
+ * {@link AbstractGameBootNettyMessageHandler} should implement a message
+ * whitelist with aggressive disconnection policies for violations.<br>
  * <br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
  * constructing the {@link ChannelPipeline}.
+ * 
+ * @see GameBootConcurrentConfiguration
  */
-@Component
-@Scope("prototype")
-public class UserSessionInboundHandler extends SimpleChannelInboundHandler<String> {
+public class ExecutorNettyMessageHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  /** The Constant USER_NAME. */
-  public static final String USER_NAME = "userName";
-
-  /** The Constant SESSION_ID. */
-  public static final String SESSION_ID = "sessionId";
-
   @Autowired
-  private NettyConnectionRegistry registry;
+  @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
+  private ExecutorService svc;
 
-  @Autowired
-  private ObjectMapper mapper;
-
-  /** The user name. */
-  protected String userName;
-
-  /** The session id. */
-  protected Long sessionId;
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    super.postConstruct();
+  }
 
   /*
    * (non-Javadoc)
@@ -105,46 +105,58 @@ public class UserSessionInboundHandler extends SimpleChannelInboundHandler<Strin
    */
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    registry = null;
-    mapper = null;
-    userName = null;
-    sessionId = null;
+    super.channelInactive(ctx);
+    svc = null;
   }
 
   /*
    * (non-Javadoc)
    * 
    * @see
-   * io.netty.channel.SimpleChannelInboundHandler#channelRead0(io.netty.channel.
-   * ChannelHandlerContext, java.lang.Object)
+   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
+   * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
    */
   @Override
-  protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-    if (isNotEmpty(userName) && sessionId != null) return;
+  protected void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception {
+    svc.execute(new Runnable() {
 
-    JsonNode node;
-    try {
-      node = mapper.readTree(msg);
-    } catch (IOException e) {
-      log.error("Unexpected exception processing message {} on {}", msg, ctx.channel(), e);
-      return;
-    }
-
-    if (userName == null && hasValue(node, USER_NAME)) {
-      userName = node.get(USER_NAME).asText();
-
-      registry.put(userName, ctx.channel());
-    }
-
-    if (sessionId == null && hasValue(node, SESSION_ID)) {
-      sessionId = node.get(SESSION_ID).asLong();
-
-      registry.put(sessionId, ctx.channel());
-    }
+      @Override
+      public void run() {
+        try {
+          process(ctx, msg);
+        } catch (GameBootException | GameBootRuntimeException e) {
+          sendError(ctx, e.getMessage());
+        } catch (Exception e) {
+          log.error("Unexpected exception", e);
+          sendUnexpectedError(ctx);
+        }
+      }
+    });
   }
 
-  private boolean hasValue(JsonNode node, String key) {
-    return node.has(key) && isNotEmpty(node.get(key).asText());
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
+   * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
+   */
+  @Override
+  protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+    svc.execute(new Runnable() {
+
+      @Override
+      public void run() {
+        try {
+          process(ctx, new String(msg));
+        } catch (GameBootException | GameBootRuntimeException e) {
+          sendError(ctx, e.getMessage());
+        } catch (Exception e) {
+          log.error("Unexpected exception", e);
+          sendUnexpectedError(ctx);
+        }
+      }
+    });
   }
 
 }

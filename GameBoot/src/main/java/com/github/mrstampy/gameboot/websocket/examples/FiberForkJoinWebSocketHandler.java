@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.websocket;
+package com.github.mrstampy.gameboot.websocket.examples;
 
 import java.lang.invoke.MethodHandles;
 
@@ -53,20 +53,29 @@ import org.springframework.web.socket.WebSocketSession;
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
-import co.paralleluniverse.fibers.FiberExecutorScheduler;
+import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 import co.paralleluniverse.fibers.SuspendExecution;
 import co.paralleluniverse.strands.SuspendableCallable;
 
 /**
- * The Class FiberWebSocketHandler.
+ * The Class FiberForkJoinWebSocketHandler.
+ * 
+ * While functional these classes are included as examples. As is they will
+ * process EVERY {@link AbstractGameBootMessage} type. Subclasses of
+ * {@link AbstractGameBootNettyMessageHandler} should implement a message
+ * whitelist with aggressive disconnection policies for violations.<br>
+ * <br>
  */
-public class FiberWebSocketHandler extends AbstractGameBootWebSocketHandler {
+public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Autowired
   @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
-  private FiberExecutorScheduler svc;
+  private FiberForkJoinScheduler svc;
 
   /**
    * Post construct.

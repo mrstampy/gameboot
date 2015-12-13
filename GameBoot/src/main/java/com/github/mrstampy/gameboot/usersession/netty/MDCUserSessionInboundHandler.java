@@ -38,7 +38,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.netty;
+package com.github.mrstampy.gameboot.usersession.netty;
 
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
@@ -46,6 +46,7 @@ import org.slf4j.MDC;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.github.mrstampy.gameboot.netty.examples.MDCExecutorNettyMessageHandler;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.ChannelHandlerContext;

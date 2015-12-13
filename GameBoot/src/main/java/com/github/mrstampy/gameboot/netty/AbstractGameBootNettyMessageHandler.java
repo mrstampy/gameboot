@@ -166,6 +166,9 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     helper = null;
     registry = null;
     utils = null;
+    converter = null;
+    generator = null;
+    key = null;
   }
 
   /*

@@ -38,59 +38,62 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.netty;
+package com.github.mrstampy.gameboot.usersession.netty;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.concurrent.ExecutorService;
-
-import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
 
 /**
- * This class uses the configured {@link ExecutorService} to process incoming
- * messages, preserving the Logback mapped diagnostic context. It is intended to
- * be added last to the {@link ChannelPipeline}.<br>
+ * This handler is intended to be the penultimate handler before an instance of
+ * any {@link AbstractGameBootNettyMessageHandler} for
+ * {@link AbstractGameBootMessage} subclasses which expose a 'userName' (string)
+ * or a 'sessionId' (long). These values are used to add the {@link Channel} to
+ * the {@link NettyConnectionRegistry}.<br>
  * <br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
  * constructing the {@link ChannelPipeline}.
- * 
- * @see GameBootConcurrentConfiguration
  */
 @Component
 @Scope("prototype")
-public class ExecutorNettyMessageHandler extends AbstractGameBootNettyMessageHandler {
+public class UserSessionInboundHandler extends SimpleChannelInboundHandler<String> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  @Autowired
-  @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
-  private ExecutorService svc;
+  /** The Constant USER_NAME. */
+  public static final String USER_NAME = "userName";
 
-  /**
-   * Post construct.
-   *
-   * @throws Exception
-   *           the exception
-   */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    super.postConstruct();
-  }
+  /** The Constant SESSION_ID. */
+  public static final String SESSION_ID = "sessionId";
+
+  @Autowired
+  private ObjectMapper mapper;
+
+  /** The user name. */
+  protected String userName;
+
+  /** The session id. */
+  protected Long sessionId;
 
   /*
    * (non-Javadoc)
@@ -101,58 +104,37 @@ public class ExecutorNettyMessageHandler extends AbstractGameBootNettyMessageHan
    */
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    super.channelInactive(ctx);
-    svc = null;
+    mapper = null;
+    userName = null;
+    sessionId = null;
   }
 
   /*
    * (non-Javadoc)
    * 
    * @see
-   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
-   * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
+   * io.netty.channel.SimpleChannelInboundHandler#channelRead0(io.netty.channel.
+   * ChannelHandlerContext, java.lang.Object)
    */
   @Override
-  protected void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception {
-    svc.execute(new Runnable() {
+  protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+    if (isNotEmpty(userName) && sessionId != null) return;
 
-      @Override
-      public void run() {
-        try {
-          process(ctx, msg);
-        } catch (GameBootException | GameBootRuntimeException e) {
-          sendError(ctx, e.getMessage());
-        } catch (Exception e) {
-          log.error("Unexpected exception", e);
-          sendUnexpectedError(ctx);
-        }
-      }
-    });
+    JsonNode node;
+    try {
+      node = mapper.readTree(msg);
+    } catch (IOException e) {
+      log.error("Unexpected exception processing message {} on {}", msg, ctx.channel(), e);
+      return;
+    }
+
+    if (userName == null && hasValue(node, USER_NAME)) userName = node.get(USER_NAME).asText();
+
+    if (sessionId == null && hasValue(node, SESSION_ID)) sessionId = node.get(SESSION_ID).asLong();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
-   * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
-   */
-  @Override
-  protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-    svc.execute(new Runnable() {
-
-      @Override
-      public void run() {
-        try {
-          process(ctx, new String(msg));
-        } catch (GameBootException | GameBootRuntimeException e) {
-          sendError(ctx, e.getMessage());
-        } catch (Exception e) {
-          log.error("Unexpected exception", e);
-          sendUnexpectedError(ctx);
-        }
-      }
-    });
+  private boolean hasValue(JsonNode node, String key) {
+    return node.has(key) && isNotEmpty(node.get(key).asText());
   }
 
 }

@@ -38,54 +38,63 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.netty;
+package com.github.mrstampy.gameboot.netty.examples;
 
 import java.lang.invoke.MethodHandles;
-import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
-import com.github.mrstampy.gameboot.util.concurrent.MDCRunnable;
 
+import co.paralleluniverse.fibers.Fiber;
+import co.paralleluniverse.fibers.FiberForkJoinScheduler;
+import co.paralleluniverse.fibers.SuspendExecution;
+import co.paralleluniverse.strands.SuspendableCallable;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
 
 /**
- * The Class MDCExecutorNettyMessageHandler initializes the Logback {@link MDC}
- * context with the {@link #LOCAL_ADDRESS} (local) and the
- * {@link #REMOTE_ADDRESS} (remote). <br>
+ * This class uses the configured {@link FiberForkJoinScheduler} to execute
+ * incoming messages. It is intended to be added last to the
+ * {@link ChannelPipeline}. <br>
  * <br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use
  * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
- * constructing the {@link ChannelPipeline}.
+ * constructing the {@link ChannelPipeline}.<br>
+ * <br>
+ * 
+ * While functional these classes are included as examples. As is they will
+ * process EVERY {@link AbstractGameBootMessage} type. Subclasses of
+ * {@link AbstractGameBootNettyMessageHandler} should implement a message
+ * whitelist with aggressive disconnection policies for violations.<br>
+ * <br>
+ * 
+ * Note that {@link GameBootProcessor}s which define a {@link Transactional}
+ * boundary around the
+ * {@link GameBootProcessor#process(com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)}
+ * method are not suitable for execution within a {@link FiberForkJoinScheduler}
+ * . See the <a href="http://docs.paralleluniverse.co/quasar/">Quasar
+ * documentation</a> for more information about Fibers vs. Threads.
+ * 
+ * @see GameBootConcurrentConfiguration
  */
-@Component
-@Scope("prototype")
-public class MDCExecutorNettyMessageHandler extends AbstractGameBootNettyMessageHandler {
+public class FiberForkJoinNettyMessageHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  /** Logback {@link MDC} key for local address (local). */
-  public static final String LOCAL_ADDRESS = "local";
-
-  /** Logback {@link MDC} key for remote address (remote). */
-  public static final String REMOTE_ADDRESS = "remote";
-
   @Autowired
-  @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
-  private ExecutorService svc;
+  private FiberForkJoinScheduler svc;
 
   /**
    * Post construct.
@@ -119,23 +128,19 @@ public class MDCExecutorNettyMessageHandler extends AbstractGameBootNettyMessage
    * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
    */
   @Override
+  @SuppressWarnings("serial")
   protected void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception {
-    initMDC(ctx);
-
-    svc.execute(new MDCRunnable() {
+    Fiber<Void> fiber = svc.newFiber(new SuspendableCallable<Void>() {
 
       @Override
-      protected void runImpl() {
-        try {
-          process(ctx, msg);
-        } catch (GameBootException | GameBootRuntimeException e) {
-          sendError(ctx, e.getMessage());
-        } catch (Exception e) {
-          log.error("Unexpected exception", e);
-          sendUnexpectedError(ctx);
-        }
+      public Void run() throws SuspendExecution, InterruptedException {
+        process(ctx, msg);
+
+        return null;
       }
     });
+
+    fiber.start();
   }
 
   /*
@@ -146,28 +151,44 @@ public class MDCExecutorNettyMessageHandler extends AbstractGameBootNettyMessage
    * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
    */
   @Override
+  @SuppressWarnings("serial")
   protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-    initMDC(ctx);
-
-    svc.execute(new MDCRunnable() {
+    Fiber<Void> fiber = svc.newFiber(new SuspendableCallable<Void>() {
 
       @Override
-      protected void runImpl() {
-        try {
-          process(ctx, new String(msg));
-        } catch (GameBootException | GameBootRuntimeException e) {
-          sendError(ctx, e.getMessage());
-        } catch (Exception e) {
-          log.error("Unexpected exception", e);
-          sendUnexpectedError(ctx);
-        }
+      public Void run() throws SuspendExecution, InterruptedException {
+        process(ctx, new String(msg));
+
+        return null;
       }
     });
+
+    fiber.start();
   }
 
-  private void initMDC(ChannelHandlerContext ctx) {
-    MDC.put(REMOTE_ADDRESS, ctx.channel().remoteAddress().toString());
-    MDC.put(LOCAL_ADDRESS, ctx.channel().localAddress().toString());
+  /**
+   * Exposed for instrumentation.
+   *
+   * @param ctx
+   *          the ctx
+   * @param msg
+   *          the msg
+   * @throws SuspendExecution
+   *           the suspend execution
+   * @throws InterruptedException
+   *           the interrupted exception
+   */
+  public void process(ChannelHandlerContext ctx, String msg) throws SuspendExecution, InterruptedException {
+    try {
+      super.process(ctx, msg);
+    } catch (SuspendExecution | InterruptedException e) {
+      throw e;
+    } catch (GameBootException | GameBootRuntimeException e) {
+      sendError(ctx, e.getMessage());
+    } catch (Exception e) {
+      log.error("Unexpected exception", e);
+      sendUnexpectedError(ctx);
+    }
   }
 
 }

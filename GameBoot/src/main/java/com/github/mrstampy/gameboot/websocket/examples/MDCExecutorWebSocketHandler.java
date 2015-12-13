@@ -38,35 +38,49 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.websocket;
+package com.github.mrstampy.gameboot.websocket.examples;
 
 import java.lang.invoke.MethodHandles;
+import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
-
-import co.paralleluniverse.fibers.FiberForkJoinScheduler;
-import co.paralleluniverse.fibers.SuspendExecution;
-import co.paralleluniverse.strands.SuspendableCallable;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.util.concurrent.MDCRunnable;
 
 /**
- * The Class FiberForkJoinWebSocketHandler.
+ * The Class MDCExecutorWebSocketHandler.
+ * 
+ * While functional these classes are included as examples. As is they will
+ * process EVERY {@link AbstractGameBootMessage} type. Subclasses of
+ * {@link AbstractGameBootNettyMessageHandler} should implement a message
+ * whitelist with aggressive disconnection policies for violations.<br>
+ * <br>
  */
-public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHandler {
+public class MDCExecutorWebSocketHandler extends ExecutorWebSocketHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  /** Logback {@link MDC} key for local address (local). */
+  public static final String LOCAL_ADDRESS = "local";
+
+  /** Logback {@link MDC} key for remote address (remote). */
+  public static final String REMOTE_ADDRESS = "remote";
+
+  /** The Constant WEB_SESSION_ID. */
+  public static final String WEB_SESSION_ID = "webSessionId";
 
   @Autowired
   @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
-  private FiberForkJoinScheduler svc;
+  private ExecutorService svc;
 
   /**
    * Post construct.
@@ -82,44 +96,35 @@ public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHand
   /*
    * (non-Javadoc)
    * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * @see com.github.mrstampy.gameboot.websocket.ExecutorWebSocketHandler#
    * handleTextMessageImpl(org.springframework.web.socket.WebSocketSession,
    * org.springframework.web.socket.TextMessage)
    */
-  @SuppressWarnings("serial")
+  /**
+   * Handle text message impl.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
+   * @throws Exception
+   *           the exception
+   */
   @Override
   protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
-    svc.newFiber(new SuspendableCallable<Void>() {
+    initMDC(session);
+
+    svc.execute(new MDCRunnable() {
 
       @Override
-      public Void run() throws SuspendExecution, InterruptedException {
-        processForText(session, message);
-
-        return null;
+      protected void runImpl() {
+        try {
+          processForText(session, message);
+        } catch (Exception e) {
+          log.error("Unexpected exception", e);
+        }
       }
-    }).start();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * processForText(org.springframework.web.socket.WebSocketSession,
-   * java.lang.String)
-   */
-  public void processForText(WebSocketSession session, String message) throws SuspendExecution, InterruptedException {
-    try {
-      super.processForText(session, message);
-    } catch (SuspendExecution | InterruptedException e) {
-      throw e;
-    } catch (GameBootException | GameBootRuntimeException e) {
-      sendError(session, e.getMessage());
-    } catch (Exception e) {
-      log.error("Unexpected exception", e);
-      sendUnexpectedError(session);
-    }
+    });
   }
 
   /*
@@ -130,38 +135,27 @@ public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHand
    * handleBinaryMessageImpl(org.springframework.web.socket.WebSocketSession,
    * byte[])
    */
-  @SuppressWarnings("serial")
   @Override
   protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
-    svc.newFiber(new SuspendableCallable<Void>() {
+    initMDC(session);
+
+    svc.execute(new MDCRunnable() {
 
       @Override
-      public Void run() throws SuspendExecution, InterruptedException {
-        processForBinary(session, message);
-
-        return null;
+      protected void runImpl() {
+        try {
+          processForBinary(session, message);
+        } catch (Exception e) {
+          log.error("Unexpected exception", e);
+        }
       }
-    }).start();
+    });
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * processForBinary(org.springframework.web.socket.WebSocketSession, byte[])
-   */
-  public void processForBinary(WebSocketSession session, byte[] message) throws SuspendExecution, InterruptedException {
-    try {
-      super.processForBinary(session, message);
-    } catch (SuspendExecution | InterruptedException e) {
-      throw e;
-    } catch (GameBootException | GameBootRuntimeException e) {
-      sendErrorBinary(session, e.getMessage());
-    } catch (Exception e) {
-      log.error("Unexpected exception", e);
-      sendUnexpectedErrorBinary(session);
-    }
+  private void initMDC(WebSocketSession session) {
+    MDC.put(REMOTE_ADDRESS, session.getRemoteAddress().toString());
+    MDC.put(LOCAL_ADDRESS, session.getLocalAddress().toString());
+    MDC.put(WEB_SESSION_ID, session.getId());
   }
 
 }
