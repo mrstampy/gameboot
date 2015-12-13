@@ -318,12 +318,12 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     return r;
   }
 
-  private void processMappingKeys(Response r, Channel session) {
+  private void processMappingKeys(Response r, Channel channel) {
     Comparable<?>[] keys = r.getMappingKeys();
     if (keys == null || keys.length == 0) return;
 
     for (int i = 0; i < keys.length; i++) {
-      registry.put(keys[i], session);
+      registry.put(keys[i], channel);
     }
   }
 
