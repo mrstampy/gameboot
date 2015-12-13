@@ -87,7 +87,6 @@ dependencies {
     compile('co.paralleluniverse:quasar-core:0.7.3:jdk8')
     compile('io.netty:netty-all:4.0.33.Final')
     
-    compile('com.vaadin:vaadin-spring-boot-starter:1.0.0')
     compile('org.hibernate:hibernate-envers:4.3.11.Final')
     
     compile('org.apache.commons:commons-lang3:3.4')
