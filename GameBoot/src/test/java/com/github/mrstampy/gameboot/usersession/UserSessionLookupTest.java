@@ -58,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.codahale.metrics.Timer;
@@ -77,6 +78,7 @@ import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepos
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(TestConfiguration.class)
+@ActiveProfiles(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserSessionLookupTest {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

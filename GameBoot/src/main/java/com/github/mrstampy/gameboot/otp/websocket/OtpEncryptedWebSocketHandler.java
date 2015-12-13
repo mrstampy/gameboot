@@ -48,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
@@ -61,6 +62,7 @@ import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
@@ -95,6 +97,7 @@ import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
  * 
  */
 @Component
+@Profile(OtpConfiguration.OTP_PROFILE)
 public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandler {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

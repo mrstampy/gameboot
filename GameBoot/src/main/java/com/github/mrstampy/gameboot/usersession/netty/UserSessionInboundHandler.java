@@ -48,6 +48,7 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -56,6 +57,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
+import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.Channel;
@@ -77,6 +79,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 @Component
 @Scope("prototype")
+@Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserSessionInboundHandler extends SimpleChannelInboundHandler<String> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

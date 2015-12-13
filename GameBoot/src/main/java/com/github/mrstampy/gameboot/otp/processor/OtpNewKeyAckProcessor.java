@@ -45,11 +45,13 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
+import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
@@ -69,6 +71,7 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
  * @see OtpKeyRequestProcessor
  */
 @Component
+@Profile(OtpConfiguration.OTP_PROFILE)
 public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAck> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

@@ -43,6 +43,7 @@ package com.github.mrstampy.gameboot.otp;
 import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
@@ -53,6 +54,7 @@ import com.github.mrstampy.gameboot.util.GameBootRegistry;
  * {@link Comparable} object.
  */
 @Component
+@Profile(OtpConfiguration.OTP_PROFILE)
 public class KeyRegistry extends GameBootRegistry<byte[]> {
 
   private static final String REGISTRY_SIZE = "OTP Key Registry Size";

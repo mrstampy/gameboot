@@ -53,6 +53,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
@@ -62,6 +63,7 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.AbstractTransactionalGameBootProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
+import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.usersession.UserSessionLookup;
 import com.github.mrstampy.gameboot.usersession.data.entity.User;
 import com.github.mrstampy.gameboot.usersession.data.entity.User.UserState;
@@ -74,6 +76,7 @@ import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
  * {@link UserMessage}s for user creation, update, delete, login and logout.
  */
 @Component
+@Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor<UserMessage> {
   private static final String USER_UPDATE_COUNTER = "UserUpdateCounter";
 

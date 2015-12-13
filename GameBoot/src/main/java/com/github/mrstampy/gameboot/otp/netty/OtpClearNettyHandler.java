@@ -49,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.exception.GameBootException;
@@ -125,6 +126,7 @@ import io.netty.channel.ChannelPromise;
  * @see #inspect(ChannelHandlerContext, AbstractGameBootMessage)
  * @see #isValidType(ChannelHandlerContext, AbstractGameBootMessage)
  */
+@Profile(OtpConfiguration.OTP_PROFILE)
 public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

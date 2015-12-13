@@ -42,8 +42,10 @@ package com.github.mrstampy.gameboot.otp.properties;
 
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.PropertySource;
 
+import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.properties.condition.ExternalClassPathCondition;
 
 /**
@@ -54,6 +56,7 @@ import com.github.mrstampy.gameboot.otp.properties.condition.ExternalClassPathCo
 @Configuration
 @Conditional(ExternalClassPathCondition.class)
 @PropertySource(ExternalClassPathCondition.OTP_PROPERTIES)
+@Profile(OtpConfiguration.OTP_PROFILE)
 public class ExternalClassPathOtpPropertiesConfiguration {
 
 }

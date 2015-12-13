@@ -43,10 +43,12 @@ package com.github.mrstampy.gameboot.usersession.netty;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import org.slf4j.MDC;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.netty.examples.MDCExecutorNettyMessageHandler;
+import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -67,6 +69,7 @@ import io.netty.channel.ChannelPipeline;
  */
 @Component
 @Scope("prototype")
+@Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class MDCUserSessionInboundHandler extends UserSessionInboundHandler {
 
   /** The Constant USER_NAME. */

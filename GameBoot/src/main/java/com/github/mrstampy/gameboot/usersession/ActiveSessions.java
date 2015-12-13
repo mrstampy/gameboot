@@ -46,6 +46,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
@@ -57,6 +58,7 @@ import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
  * {@link UserSessionAssist}.
  */
 @Component
+@Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class ActiveSessions {
 
   private static final String ACTIVE_SESSIONS = "ActiveSessions";

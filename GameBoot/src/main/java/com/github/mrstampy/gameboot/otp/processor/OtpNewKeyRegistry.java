@@ -47,10 +47,12 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
+import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
@@ -70,6 +72,7 @@ import com.github.mrstampy.gameboot.util.GameBootRegistry;
  * @see KeyRegistry
  */
 @Component
+@Profile(OtpConfiguration.OTP_PROFILE)
 public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
 
   @Autowired

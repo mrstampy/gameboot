@@ -50,6 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
@@ -118,6 +119,7 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * @see #isValidType(WebSocketSession, AbstractGameBootMessage)
  */
 @Component
+@Profile(OtpConfiguration.OTP_PROFILE)
 public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

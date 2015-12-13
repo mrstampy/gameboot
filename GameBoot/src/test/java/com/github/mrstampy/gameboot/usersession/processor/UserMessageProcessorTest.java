@@ -61,6 +61,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.codahale.metrics.Counter;
@@ -73,6 +74,7 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.usersession.ActiveSessions;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
+import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.usersession.data.entity.User;
 import com.github.mrstampy.gameboot.usersession.data.entity.User.UserState;
 import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
@@ -86,6 +88,7 @@ import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(TestConfiguration.class)
+@ActiveProfiles(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserMessageProcessorTest {
   private static final UserState NEW_STATE = UserState.INACTIVE;
 

@@ -52,6 +52,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.github.mrstampy.gameboot.TestConfiguration;
@@ -60,6 +61,7 @@ import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
+import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
@@ -69,6 +71,7 @@ import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(TestConfiguration.class)
+@ActiveProfiles(OtpConfiguration.OTP_PROFILE)
 public class OtpNewKeyAckProcessorTest {
 
   @Autowired

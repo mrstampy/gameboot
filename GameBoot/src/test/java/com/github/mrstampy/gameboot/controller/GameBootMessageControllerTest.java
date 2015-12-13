@@ -53,6 +53,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -62,6 +63,7 @@ import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.usersession.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
@@ -71,6 +73,7 @@ import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(TestConfiguration.class)
+@ActiveProfiles(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class GameBootMessageControllerTest {
 
   @Autowired

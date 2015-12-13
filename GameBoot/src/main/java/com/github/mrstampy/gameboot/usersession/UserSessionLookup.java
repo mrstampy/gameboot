@@ -50,6 +50,7 @@ import javax.annotation.PostConstruct;
 
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
@@ -64,6 +65,7 @@ import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepos
  * shows 3 - 7X faster lookups vs. database access, for a single session.
  */
 @Component
+@Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserSessionLookup {
 
   private static final String CACHED_SESSION_TIMER = "CachedSessionTimer";

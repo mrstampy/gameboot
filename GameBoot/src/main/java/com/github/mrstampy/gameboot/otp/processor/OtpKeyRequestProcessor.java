@@ -46,12 +46,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
+import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
@@ -75,6 +77,7 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
  * @see OtpEncryptedWebSocketHandler
  */
 @Component
+@Profile(OtpConfiguration.OTP_PROFILE)
 public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequest> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

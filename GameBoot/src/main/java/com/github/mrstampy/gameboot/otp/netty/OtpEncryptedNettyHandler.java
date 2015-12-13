@@ -50,6 +50,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
@@ -62,6 +63,7 @@ import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
+import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
@@ -109,6 +111,7 @@ import io.netty.util.concurrent.Future;
  */
 @Component
 @Scope("prototype")
+@Profile(OtpConfiguration.OTP_PROFILE)
 public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

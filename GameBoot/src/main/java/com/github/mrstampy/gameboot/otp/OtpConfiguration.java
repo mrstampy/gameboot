@@ -46,6 +46,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
@@ -55,9 +56,12 @@ import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
  * The Class OtpConfiguration.
  */
 @Configuration
+@Profile(OtpConfiguration.OTP_PROFILE)
 public class OtpConfiguration {
 
   public static final String OTP_SECURE_RANDOM = "OTP Secure Random";
+
+  public static final String OTP_PROFILE = "otp";
 
   @Value("${otp.secure.random.seed.size}")
   private int seedSize;

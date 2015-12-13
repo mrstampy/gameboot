@@ -38,25 +38,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.otp.properties;
+package com.github.mrstampy.gameboot.processor;
 
-import org.springframework.context.annotation.Conditional;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.otp.OtpConfiguration;
-import com.github.mrstampy.gameboot.otp.properties.condition.ClassPathCondition;
+import com.github.mrstampy.gameboot.messages.Response;
 
 /**
- * The Class ClassPathDatabasePropertiesConfiguration is the fallback for the
- * otp.properties file, selecting it from the root of the classpath (the
- * GameBoot.jar file is the fallback's fallback).
+ * The Class NullGameBootProcessor is an empty processor to prevent GameBoot
+ * from breaking on startup should no {@link GameBootProcessor}s exist.
  */
-@Configuration
-@Conditional(ClassPathCondition.class)
-@PropertySource(ClassPathCondition.OTP_PROPERTIES)
-@Profile(OtpConfiguration.OTP_PROFILE)
-public class ClassPathOtpPropertiesConfiguration {
+@Component
+public class NullGameBootProcessor implements GameBootProcessor<NullMessage> {
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.processor.GameBootProcessor#process(com.github
+   * .mrstampy.gameboot.messages.AbstractGameBootMessage)
+   */
+  @Override
+  public Response process(NullMessage message) throws Exception {
+    return null;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.processor.GameBootProcessor#getType()
+   */
+  @Override
+  public String getType() {
+    return NullMessage.TYPE;
+  }
 
 }
