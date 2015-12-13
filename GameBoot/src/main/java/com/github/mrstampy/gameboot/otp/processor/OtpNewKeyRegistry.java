@@ -40,7 +40,10 @@
  */
 package com.github.mrstampy.gameboot.otp.processor;
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +60,8 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
   @Autowired
   private ScheduledExecutorService svc;
 
+  private Map<Comparable<?>, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
+
   /*
    * (non-Javadoc)
    * 
@@ -66,7 +71,16 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
   public void put(Comparable<?> key, byte[] value) {
     super.put(key, value);
 
-    svc.schedule(() -> remove(key), 30, TimeUnit.SECONDS);
+    ScheduledFuture<?> sf = futures.remove(key);
+    if (sf != null) sf.cancel(true);
+
+    sf = svc.schedule(() -> cleanup(key), 30, TimeUnit.SECONDS);
+    futures.put(key, sf);
+  }
+
+  private void cleanup(Comparable<?> key) {
+    remove(key);
+    futures.remove(key);
   }
 
 }
