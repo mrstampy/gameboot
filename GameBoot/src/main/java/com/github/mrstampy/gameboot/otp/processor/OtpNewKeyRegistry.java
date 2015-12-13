@@ -49,10 +49,25 @@ import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.github.mrstampy.gameboot.concurrent.SystemId;
+import com.github.mrstampy.gameboot.otp.KeyRegistry;
+import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
+import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyInboundHandler;
+import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
+import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.util.GameBootRegistry;
 
 /**
- * The Class OtpNewKeyRegistry.
+ * The Class OtpNewKeyRegistry acts as a temporary in-memory storage of newly
+ * generated OTP keys intended for clear channel encryption.
+ * 
+ * @see OtpClearNettyHandler
+ * @see OtpEncryptedNettyInboundHandler
+ * @see OtpClearWebSocketHandler
+ * @see OtpEncryptedWebSocketHandler
+ * @see OtpNewKeyAckProcessor
+ * @see OtpNewKeyRequestProcessor
+ * @see KeyRegistry
  */
 @Component
 public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
@@ -62,12 +77,16 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
 
   private Map<Comparable<?>, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.github.mrstampy.gameboot.util.GameBootRegistry#put(java.lang.
-   * Comparable, java.lang.Object)
+  /**
+   * Puts the newly generated key paired against the {@link SystemId#next()} id
+   * value of the clear connection.
+   *
+   * @param key
+   *          the key
+   * @param value
+   *          the value
    */
+  @Override
   public void put(Comparable<?> key, byte[] value) {
     ScheduledFuture<?> sf = futures.remove(key);
     if (sf != null) sf.cancel(true);
@@ -78,6 +97,14 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
     futures.put(key, sf);
   }
 
+  /**
+   * Removes the newly generated key for activation.
+   *
+   * @param key
+   *          the key
+   * @return the byte[]
+   */
+  @Override
   public byte[] remove(Comparable<?> key) {
     byte[] b = super.remove(key);
 

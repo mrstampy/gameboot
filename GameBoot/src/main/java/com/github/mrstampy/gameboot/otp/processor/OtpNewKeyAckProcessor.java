@@ -51,10 +51,20 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
+import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyInboundHandler;
+import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
+import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 
 /**
- * The Class OtpNewKeyAckProcessor.
+ * The Class OtpNewKeyAckProcessor activates a new OTP key for the client.
+ * 
+ * @see OtpClearNettyHandler
+ * @see OtpEncryptedNettyInboundHandler
+ * @see OtpClearWebSocketHandler
+ * @see OtpEncryptedWebSocketHandler
+ * @see OtpNewKeyRequestProcessor
  */
 @Component
 public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAck> {

@@ -52,10 +52,26 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
+import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
+import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyInboundHandler;
+import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
+import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 
 /**
- * The Class OtpNewKeyRequestProcessor.
+ * The Class OtpNewKeyRequestProcessor generates a key from a request sent on an
+ * encrypted channel for encrypting data sent on a related clear channel. If the
+ * {@link OtpNewKeyRequest#getSize()} has not been set a default size specified
+ * by the GameBoot property 'otp.default.key.size' will be used. If set the
+ * value must be > 0 and must be a multiple of 2. Key sizes must be >= all
+ * message sizes sent in the unencrypted channel. The
+ * {@link OtpNewKeyRequest#getSystemId()} value will be the value obtained from
+ * the clear channel.
+ * 
+ * @see OtpClearNettyHandler
+ * @see OtpEncryptedNettyInboundHandler
+ * @see OtpClearWebSocketHandler
+ * @see OtpEncryptedWebSocketHandler
  */
 @Component
 public class OtpNewKeyRequestProcessor extends AbstractGameBootProcessor<OtpNewKeyRequest> {
