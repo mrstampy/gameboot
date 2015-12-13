@@ -66,7 +66,7 @@ import com.github.mrstampy.gameboot.util.GameBootRegistry;
  * @see OtpClearWebSocketHandler
  * @see OtpEncryptedWebSocketHandler
  * @see OtpNewKeyAckProcessor
- * @see OtpNewKeyRequestProcessor
+ * @see OtpKeyRequestProcessor
  * @see KeyRegistry
  */
 @Component

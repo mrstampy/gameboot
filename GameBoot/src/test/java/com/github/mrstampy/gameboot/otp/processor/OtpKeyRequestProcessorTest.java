@@ -56,14 +56,15 @@ import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 
 /**
  * The Class OtpNewKeyRequestProcessorTest.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(TestConfiguration.class)
-public class OtpNewKeyRequestProcessorTest {
+public class OtpKeyRequestProcessorTest {
 
   /** The Constant CLEAR_CHANNEL_ID. */
   static final Long CLEAR_CHANNEL_ID = 1234l;
@@ -72,7 +73,7 @@ public class OtpNewKeyRequestProcessorTest {
   static final Integer KEY_SIZE = 64;
 
   @Autowired
-  private OtpNewKeyRequestProcessor processor;
+  private OtpKeyRequestProcessor processor;
 
   /**
    * Test processor.
@@ -81,13 +82,14 @@ public class OtpNewKeyRequestProcessorTest {
    *           the exception
    */
   @Test
-  public void testProcessor() throws Exception {
+  public void testNewKey() throws Exception {
     failExpected(null, "Null message");
 
-    OtpNewKeyRequest r = new OtpNewKeyRequest();
+    OtpKeyRequest r = new OtpKeyRequest();
     failExpected(r, "mt message");
 
     r.setSystemId(CLEAR_CHANNEL_ID);
+    r.setKeyFunction(KeyFunction.NEW);
 
     r.setSize(-32);
     failExpected(r, "negative size");
@@ -96,6 +98,10 @@ public class OtpNewKeyRequestProcessorTest {
     failExpected(r, "bad size");
 
     r.setSize(KEY_SIZE);
+    r.setKeyFunction(null);
+    failExpected(r, "No key function");
+
+    r.setKeyFunction(KeyFunction.NEW);
     Response rep = processor.process(r);
 
     assertEquals(ResponseCode.SUCCESS, rep.getResponseCode());
@@ -108,7 +114,7 @@ public class OtpNewKeyRequestProcessorTest {
     assertEquals(KEY_SIZE.intValue(), b.length);
   }
 
-  private void failExpected(OtpNewKeyRequest m, String failMsg) {
+  private void failExpected(OtpKeyRequest m, String failMsg) {
     try {
       Response r = processor.process(m);
       switch (r.getResponseCode()) {

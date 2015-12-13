@@ -45,8 +45,8 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
 
 /**
@@ -69,8 +69,8 @@ public class GameBootMessageClassFinder implements MessageClassFinder {
     switch (type) {
     case UserMessage.TYPE:
       return UserMessage.class;
-    case OtpNewKeyRequest.TYPE:
-      return OtpNewKeyRequest.class;
+    case OtpKeyRequest.TYPE:
+      return OtpKeyRequest.class;
     case OtpNewKeyAck.TYPE:
       return OtpNewKeyAck.class;
     default:

@@ -60,9 +60,9 @@ import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
@@ -76,8 +76,8 @@ import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
  * <br>
  * 
  * The client connects to the socket containing this handler and sends a message
- * of type {@link OtpNewKeyRequest}. The {@link OtpNewKeyRequest#getSystemId()}
- * value will have been set in the client as the value obtained from the clear
+ * of type {@link OtpKeyRequest}. The {@link OtpKeyRequest#getSystemId()} value
+ * will have been set in the client as the value obtained from the clear
  * connection containing the {@link OtpClearWebSocketHandler} in the pipeline.
  * <br>
  * <br>

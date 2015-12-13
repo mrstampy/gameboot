@@ -41,19 +41,32 @@
 package com.github.mrstampy.gameboot.otp.messages;
 
 /**
- * The Class OtpNewKeyRequest.
+ * The Class OtpKeyRequest.
  */
-public class OtpNewKeyRequest extends OtpMessage {
+public class OtpKeyRequest extends OtpMessage {
 
   /** The Constant TYPE. */
-  public static final String TYPE = "OtpNewKeyRequest";
+  public static final String TYPE = "OtpKeyRequest";
 
   private Integer size;
 
   /**
+   * The Enum KeyFunction.
+   */
+  public enum KeyFunction {
+
+    /** The new. */
+    NEW,
+    /** The delete. */
+    DELETE;
+  }
+
+  private KeyFunction keyFunction;
+
+  /**
    * Instantiates a new otp new key request.
    */
-  public OtpNewKeyRequest() {
+  public OtpKeyRequest() {
     super(TYPE);
   }
 
@@ -74,6 +87,25 @@ public class OtpNewKeyRequest extends OtpMessage {
    */
   public void setSize(Integer size) {
     this.size = size;
+  }
+
+  /**
+   * Gets the key function.
+   *
+   * @return the key function
+   */
+  public KeyFunction getKeyFunction() {
+    return keyFunction;
+  }
+
+  /**
+   * Sets the key function.
+   *
+   * @param keyFunction
+   *          the new key function
+   */
+  public void setKeyFunction(KeyFunction keyFunction) {
+    this.keyFunction = keyFunction;
   }
 
 }

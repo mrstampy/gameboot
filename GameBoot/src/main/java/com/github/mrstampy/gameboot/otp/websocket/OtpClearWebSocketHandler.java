@@ -64,9 +64,9 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
@@ -82,9 +82,9 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * containing the {@link Response#getSystemId()} value upon connection. The
  * client then creates a connection to the socket server containing the
  * {@link OtpEncryptedWebSocketHandler} in the pipeline and sends a message of
- * type {@link OtpNewKeyRequest} thru it to the server. The
- * {@link OtpNewKeyRequest#getSystemId()} value will have been set in the client
- * as the value obtained from the clear connection's INFO message.<br>
+ * type {@link OtpKeyRequest} thru it to the server. The
+ * {@link OtpKeyRequest#getSystemId()} value will have been set in the client as
+ * the value obtained from the clear connection's INFO message.<br>
  * <br>
  * 
  * If the key generation is successful a {@link Response} object is returned in

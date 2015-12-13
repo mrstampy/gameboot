@@ -50,8 +50,9 @@ import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
@@ -61,12 +62,12 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 /**
  * The Class OtpNewKeyRequestProcessor generates a key from a request sent on an
  * encrypted channel for encrypting data sent on a related clear channel. If the
- * {@link OtpNewKeyRequest#getSize()} has not been set a default size specified
- * by the GameBoot property 'otp.default.key.size' will be used. If set the
- * value must be > 0 and must be a multiple of 2. Key sizes must be >= all
- * message sizes sent in the unencrypted channel. The
- * {@link OtpNewKeyRequest#getSystemId()} value will be the value obtained from
- * the clear channel.
+ * {@link OtpKeyRequest#getSize()} has not been set a default size specified by
+ * the GameBoot property 'otp.default.key.size' will be used. If set the value
+ * must be > 0 and must be a multiple of 2. Key sizes must be >= all message
+ * sizes sent in the unencrypted channel. The
+ * {@link OtpKeyRequest#getSystemId()} value will be the value obtained from the
+ * clear channel.
  * 
  * @see OtpClearNettyHandler
  * @see OtpEncryptedNettyHandler
@@ -74,11 +75,14 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
  * @see OtpEncryptedWebSocketHandler
  */
 @Component
-public class OtpNewKeyRequestProcessor extends AbstractGameBootProcessor<OtpNewKeyRequest> {
+public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequest> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Autowired
   private OtpNewKeyRegistry newKeyRegistry;
+
+  @Autowired
+  private KeyRegistry registry;
 
   @Autowired
   private OneTimePad pad;
@@ -93,7 +97,7 @@ public class OtpNewKeyRequestProcessor extends AbstractGameBootProcessor<OtpNewK
    */
   @Override
   public String getType() {
-    return OtpNewKeyRequest.TYPE;
+    return OtpKeyRequest.TYPE;
   }
 
   /*
@@ -104,7 +108,9 @@ public class OtpNewKeyRequestProcessor extends AbstractGameBootProcessor<OtpNewK
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   @Override
-  protected void validate(OtpNewKeyRequest message) throws Exception {
+  protected void validate(OtpKeyRequest message) throws Exception {
+    if (message.getKeyFunction() == null) fail("keyFunction one of NEW, DELETE");
+
     Long systemId = message.getSystemId();
     if (systemId == null || systemId <= 0) fail("No systemId");
 
@@ -121,7 +127,26 @@ public class OtpNewKeyRequestProcessor extends AbstractGameBootProcessor<OtpNewK
    * processImpl(com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
   @Override
-  protected Response processImpl(OtpNewKeyRequest message) throws Exception {
+  protected Response processImpl(OtpKeyRequest message) throws Exception {
+    switch (message.getKeyFunction()) {
+    case DELETE:
+      return deleteKey(message);
+    case NEW:
+      return newKey(message);
+    default:
+      return failure("Implementation error: " + message.getKeyFunction());
+    }
+  }
+
+  private Response deleteKey(OtpKeyRequest message) throws Exception {
+    log.debug("Deleting key for {}", message.getSystemId());
+
+    registry.remove(message.getSystemId());
+
+    return new Response(ResponseCode.SUCCESS);
+  }
+
+  private Response newKey(OtpKeyRequest message) throws Exception {
     Integer size = message.getSize() == null ? defaultKeySize : message.getSize();
     Long systemId = message.getSystemId();
 

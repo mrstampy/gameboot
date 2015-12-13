@@ -61,9 +61,9 @@ import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.Channel;
@@ -83,9 +83,9 @@ import io.netty.util.concurrent.Future;
  * <br>
  * 
  * The client connects to the socket containing this handler in the pipeline and
- * sends a message of type {@link OtpNewKeyRequest}. The
- * {@link OtpNewKeyRequest#getSystemId()} value will have been set in the client
- * as the value obtained from the clear connection containing the
+ * sends a message of type {@link OtpKeyRequest}. The
+ * {@link OtpKeyRequest#getSystemId()} value will have been set in the client as
+ * the value obtained from the clear connection containing the
  * {@link OtpClearNettyHandler} in the pipeline.<br>
  * <br>
  * 

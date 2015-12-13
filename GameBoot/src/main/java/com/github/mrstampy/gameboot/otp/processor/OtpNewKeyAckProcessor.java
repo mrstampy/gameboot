@@ -64,7 +64,7 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
  * @see OtpEncryptedNettyHandler
  * @see OtpClearWebSocketHandler
  * @see OtpEncryptedWebSocketHandler
- * @see OtpNewKeyRequestProcessor
+ * @see OtpKeyRequestProcessor
  */
 @Component
 public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAck> {

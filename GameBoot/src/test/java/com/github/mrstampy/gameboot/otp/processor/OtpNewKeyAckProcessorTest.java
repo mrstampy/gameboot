@@ -40,8 +40,8 @@
  */
 package com.github.mrstampy.gameboot.otp.processor;
 
-import static com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRequestProcessorTest.CLEAR_CHANNEL_ID;
-import static com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRequestProcessorTest.KEY_SIZE;
+import static com.github.mrstampy.gameboot.otp.processor.OtpKeyRequestProcessorTest.CLEAR_CHANNEL_ID;
+import static com.github.mrstampy.gameboot.otp.processor.OtpKeyRequestProcessorTest.KEY_SIZE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -59,8 +59,10 @@ import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.otp.KeyRegistry;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
+import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyRequest;
 
 /**
  * The Class OtpNewKeyAckProcessorTest.
@@ -73,7 +75,13 @@ public class OtpNewKeyAckProcessorTest {
   private OtpNewKeyAckProcessor processor;
 
   @Autowired
-  private OtpNewKeyRequestProcessor requestProcessor;
+  private OtpKeyRequestProcessor requestProcessor;
+
+  @Autowired
+  private OtpNewKeyRegistry newKeyRegistry;
+
+  @Autowired
+  private KeyRegistry keyRegistry;
 
   /**
    * Before.
@@ -83,9 +91,10 @@ public class OtpNewKeyAckProcessorTest {
    */
   @Before
   public void before() throws Exception {
-    OtpNewKeyRequest req = new OtpNewKeyRequest();
+    OtpKeyRequest req = new OtpKeyRequest();
     req.setSystemId(CLEAR_CHANNEL_ID);
     req.setSize(KEY_SIZE);
+    req.setKeyFunction(KeyFunction.NEW);
 
     Response rep = requestProcessor.process(req);
 
@@ -116,8 +125,28 @@ public class OtpNewKeyAckProcessorTest {
     failExpected(m, "No key to activate");
 
     m.setSystemId(CLEAR_CHANNEL_ID);
+
+    assertEquals(1, newKeyRegistry.size());
+    assertEquals(0, keyRegistry.size());
+
     Response r = processor.process(m);
+
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+    assertEquals(0, newKeyRegistry.size());
+    assertEquals(1, keyRegistry.size());
+
+    testDelete();
+  }
+
+  private void testDelete() throws Exception {
+    OtpKeyRequest req = new OtpKeyRequest();
+    req.setSystemId(CLEAR_CHANNEL_ID);
+    req.setSize(KEY_SIZE);
+    req.setKeyFunction(KeyFunction.DELETE);
+
+    Response r = requestProcessor.process(req);
+    assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+    assertEquals(0, keyRegistry.size()); // wuz 1 from b4
   }
 
   private void failExpected(OtpNewKeyAck m, String failMsg) {
