@@ -57,7 +57,6 @@ import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
@@ -159,6 +158,16 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    * handleTextMessage(org.springframework.web.socket.WebSocketSession,
    * org.springframework.web.socket.TextMessage)
    */
+  /**
+   * Handle text message.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
+   * @throws Exception
+   *           the exception
+   */
   protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
     if (message.getPayloadLength() <= 0) return;
 
@@ -173,6 +182,16 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
    * handleBinaryMessage(org.springframework.web.socket.WebSocketSession,
    * org.springframework.web.socket.BinaryMessage)
+   */
+  /**
+   * Handle binary message.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
+   * @throws Exception
+   *           the exception
    */
   protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
     if (message.getPayloadLength() <= 0) return;
@@ -262,13 +281,14 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
       throws Exception {
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
 
-    String response = null;
+    Response response = null;
+    AGBM agbm = null;
     try {
-      AGBM agbm = converter.fromJson(msg);
+      agbm = converter.fromJson(msg);
+      
+      if (!inspect(session, agbm)) return null;
 
-      Response r = process(session, msg, controller, agbm);
-
-      if (r != null) response = converter.toJson(r);
+      response = process(session, msg, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       response = fail(e.getMessage());
@@ -278,7 +298,9 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
       response = fail("An unexpected error has occurred");
     }
 
-    return response;
+    postProcess(session, agbm, response);
+
+    return response == null ? null : converter.toJson(response);
   }
 
   /**
@@ -307,8 +329,6 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   protected <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session, String msg,
       GameBootMessageController controller, AGBM agbm) throws Exception {
-    if (!inspect(session, agbm)) return null;
-
     if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
     agbm.setTransport(Transport.WEB_SOCKET);
     agbm.setLocal(session.getLocalAddress());
@@ -347,6 +367,23 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm)
       throws Exception {
     return true;
+  }
+
+  /**
+   * Post process the request and response. Empty implementation; override as
+   * appropriate.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param session
+   *          the session
+   * @param agbm
+   *          the agbm
+   * @param response
+   *          the response
+   */
+  protected <AGBM extends AbstractGameBootMessage> void postProcess(WebSocketSession session, AGBM agbm,
+      Response response) {
   }
 
   /**
@@ -399,7 +436,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   protected void sendError(WebSocketSession session, String msg) {
     try {
-      TextMessage fail = new TextMessage(fail(msg).getBytes());
+      TextMessage fail = new TextMessage(converter.toJsonArray(fail(msg)));
       session.sendMessage(fail);
     } catch (Exception e) {
       log.error("Unexpected exception sending failure {} for {}", msg, getKey(), e);
@@ -416,7 +453,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   protected void sendErrorBinary(WebSocketSession session, String msg) {
     try {
-      BinaryMessage fail = new BinaryMessage(fail(msg).getBytes());
+      BinaryMessage fail = new BinaryMessage(converter.toJsonArray(fail(msg)));
       session.sendMessage(fail);
     } catch (Exception e) {
       log.error("Unexpected exception sending failure {} for {}", msg, getKey(), e);
@@ -429,15 +466,8 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    * @param message
    *          the message
    * @return the string
-   * @throws GameBootException
-   *           the game boot exception
    */
-  protected String fail(String message) throws GameBootException {
-    try {
-      return converter.toJson(new Response(ResponseCode.FAILURE, message));
-    } catch (JsonProcessingException e) {
-      log.error("Unexpected exception", e);
-      throw new RuntimeException("Unexpected JSON error", e);
-    }
+  protected Response fail(String message) {
+    return new Response(ResponseCode.FAILURE, message);
   }
 }

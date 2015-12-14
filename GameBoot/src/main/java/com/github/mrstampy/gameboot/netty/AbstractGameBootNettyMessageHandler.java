@@ -254,12 +254,14 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
       throws Exception {
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
 
-    String response = null;
+    Response response = null;
+    AGBM agbm = null;
     try {
-      AGBM agbm = converter.fromJson(msg);
+      agbm = converter.fromJson(msg);
 
-      Response r = process(ctx, msg, controller, agbm);
-      if (r != null) response = converter.toJson(r);
+      if (!inspect(ctx, agbm)) return;
+
+      response = process(ctx, msg, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       response = fail(e.getMessage());
@@ -269,11 +271,13 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
       response = fail("An unexpected error has occurred");
     }
 
+    postProcess(ctx, agbm, response);
+
     if (response == null) return;
 
-    ChannelFuture f = ctx.channel().writeAndFlush(response);
+    String r = converter.toJson(response);
 
-    String r = response;
+    ChannelFuture f = ctx.channel().writeAndFlush(r);
 
     f.addListener(e -> log(e, msg, r, ctx));
   }
@@ -308,8 +312,6 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    */
   protected <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, String msg,
       GameBootMessageController controller, AGBM agbm) throws Exception, JsonProcessingException, GameBootException {
-    if (!inspect(ctx, agbm)) return null;
-
     if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
     agbm.setTransport(Transport.NETTY);
     agbm.setLocal((InetSocketAddress) ctx.channel().localAddress());
@@ -352,6 +354,20 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   }
 
   /**
+   * Post process the request and response. Empty implementation; override as
+   * appropriate.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param agbm
+   *          the agbm
+   * @param r
+   *          the r
+   */
+  protected <AGBM extends AbstractGameBootMessage> void postProcess(ChannelHandlerContext ctx, AGBM agbm, Response r) {
+  }
+
+  /**
    * Send unexpected error.
    *
    * @param ctx
@@ -391,16 +407,9 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    * @param message
    *          the message
    * @return the string
-   * @throws GameBootException
-   *           the game boot exception
    */
-  protected String fail(String message) throws GameBootException {
-    try {
-      return converter.toJson(new Response(ResponseCode.FAILURE, message));
-    } catch (JsonProcessingException e) {
-      log.error("Unexpected exception", e);
-      throw new GameBootException("Unexpected JSON error", e);
-    }
+  protected Response fail(String message) {
+    return new Response(ResponseCode.FAILURE, message);
   }
 
   /**
