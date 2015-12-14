@@ -147,6 +147,7 @@ public class UserMessageProcessorTest {
     failExpected(null, "Null message");
 
     UserMessage m = new UserMessage();
+    m.setId(1);
 
     failExpected(m, "Empty message");
 
@@ -160,6 +161,7 @@ public class UserMessageProcessorTest {
 
     Response r = processor.process(m);
 
+    assertEquals(m.getId(), r.getId());
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
     assertNotNull(r.getResponse());
     assertEquals(1, r.getResponse().length);
@@ -198,6 +200,7 @@ public class UserMessageProcessorTest {
   @Transactional
   public void testLogin() throws Exception {
     UserMessage m = new UserMessage();
+    m.setId(1);
 
     m.setFunction(Function.LOGIN);
     m.setUserName(TEST_USER);
@@ -214,6 +217,7 @@ public class UserMessageProcessorTest {
 
     Response r = processor.process(m);
 
+    assertEquals(m.getId(), r.getId());
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
 
     assertNotNull(r.getResponse());
@@ -242,6 +246,7 @@ public class UserMessageProcessorTest {
   @Transactional
   public void testLogout() throws Exception {
     UserMessage m = new UserMessage();
+    m.setId(1);
 
     m.setFunction(Function.LOGOUT);
     m.setUserName(TEST_USER);
@@ -252,6 +257,7 @@ public class UserMessageProcessorTest {
 
     Response r = processor.process(m);
 
+    assertEquals(m.getId(), r.getId());
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
 
     assertNotNull(r.getResponse());
@@ -270,12 +276,14 @@ public class UserMessageProcessorTest {
   @Transactional
   public void testDelete() throws Exception {
     UserMessage m = new UserMessage();
+    m.setId(1);
 
     m.setFunction(Function.DELETE);
     m.setUserName(TEST_USER);
 
     Response r = processor.process(m);
 
+    assertEquals(m.getId(), r.getId());
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
 
     assertNotNull(r.getResponse());
@@ -315,6 +323,7 @@ public class UserMessageProcessorTest {
     User user = userRepo.findOne(userId);
 
     UserMessage m = new UserMessage();
+    m.setId(1);
 
     m.setFunction(Function.UPDATE);
     m.setUserName(TEST_USER);
@@ -458,6 +467,7 @@ public class UserMessageProcessorTest {
       Response r = processor.process(m);
       switch (r.getResponseCode()) {
       case FAILURE:
+        assertEquals(m.getId(), r.getId());
         break;
       default:
         fail(failMsg);
