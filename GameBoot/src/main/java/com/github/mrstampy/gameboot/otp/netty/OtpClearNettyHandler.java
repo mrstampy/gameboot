@@ -196,9 +196,12 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
+
     oneTimePad = null;
     keyRegistry = null;
     helper = null;
+    converter = null;
+    svc = null;
   }
 
   /*

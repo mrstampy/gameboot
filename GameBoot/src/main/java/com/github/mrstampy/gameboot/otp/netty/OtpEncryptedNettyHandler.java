@@ -183,7 +183,11 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
+
     svc = null;
+    converter = null;
+    registry = null;
+    utils = null;
   }
 
   /*
