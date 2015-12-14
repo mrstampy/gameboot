@@ -203,8 +203,8 @@ public class UserSessionAssist {
    * @throws GameBootRuntimeException
    *           the game boot runtime exception
    */
-  public UserSession expected(long id) throws GameBootRuntimeException {
-    if (id <= 0) throw new GameBootRuntimeException("Id must be > 0: " + id);
+  public UserSession expected(Long id) throws GameBootRuntimeException {
+    if (id == null || id <= 0) throw new GameBootRuntimeException("Id must be > 0: " + id);
 
     check(!activeSessions.hasSession(id), "No session for id " + id);
 
@@ -220,7 +220,7 @@ public class UserSessionAssist {
    * @see ActiveSessions
    */
   public boolean hasSession(String userName) {
-    return activeSessions.hasSession(userName);
+    return isEmpty(userName) ? false : activeSessions.hasSession(userName);
   }
 
   /**
@@ -231,8 +231,8 @@ public class UserSessionAssist {
    * @return true, if successful
    * @see ActiveSessions
    */
-  public boolean hasSession(long id) {
-    return activeSessions.hasSession(id);
+  public boolean hasSession(Long id) {
+    return id == null ? false : activeSessions.hasSession(id);
   }
 
   /**

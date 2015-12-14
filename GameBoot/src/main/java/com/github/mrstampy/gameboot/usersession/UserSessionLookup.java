@@ -170,7 +170,7 @@ public class UserSessionLookup {
    * @return true, if successful
    */
   public boolean hasSession(String userName) {
-    return activeSessions.hasSession(userName);
+    return isEmpty(userName) ? false : activeSessions.hasSession(userName);
   }
 
   /**
@@ -180,8 +180,8 @@ public class UserSessionLookup {
    *          the id
    * @return true, if successful
    */
-  public boolean hasSession(long id) {
-    return activeSessions.hasSession(id);
+  public boolean hasSession(Long id) {
+    return id == null ? false : activeSessions.hasSession(id);
   }
 
   /**

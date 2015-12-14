@@ -41,6 +41,8 @@
  */
 package com.github.mrstampy.gameboot.usersession;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -97,7 +99,7 @@ public class ActiveSessions {
    * @return true, if successful
    */
   public boolean hasSession(String userName) {
-    return sessions.containsKey(userName);
+    return isEmpty(userName) ? false : sessions.containsKey(userName);
   }
 
   /**
@@ -107,8 +109,8 @@ public class ActiveSessions {
    *          the id
    * @return true, if successful
    */
-  public boolean hasSession(long id) {
-    return sessions.containsValue(id);
+  public boolean hasSession(Long id) {
+    return id == null ? false : sessions.containsValue(id);
   }
 
   /**

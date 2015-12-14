@@ -166,8 +166,8 @@ public class UserSessionAssistTest {
     gameBootExpected(() -> assist.create(null), "Null user");
     gameBootExpected(() -> assist.expected((String) null), "Null user name");
     gameBootExpected(() -> assist.expected(" "), "Blank user name");
-    gameBootExpected(() -> assist.expected(0), "Zero id");
-    gameBootExpected(() -> assist.expected(-1), "Negative id");
+    gameBootExpected(() -> assist.expected(0l), "Zero id");
+    gameBootExpected(() -> assist.expected(-1l), "Negative id");
 
     assertFalse(assist.hasSession(Long.MAX_VALUE));
     assertFalse(assist.hasSession(NON_EXISTENT));
