@@ -41,6 +41,7 @@
  */
 package com.github.mrstampy.gameboot.usersession;
 
+import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
@@ -54,6 +55,7 @@ import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
  */
 @Configuration
 @EnableJpaRepositories(basePackages = "com.github.mrstampy.gameboot.usersession.data")
+@EnableCaching
 @Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserSessionConfiguration {
 

@@ -43,12 +43,9 @@ package com.github.mrstampy.gameboot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.web.servlet.ServletComponentScan;
-import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import co.paralleluniverse.springframework.boot.security.autoconfigure.web.FiberSecureSpringBootApplication;
 
@@ -59,10 +56,7 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
 @EnableAutoConfiguration
 @ComponentScan(basePackages = "com.github.mrstampy.gameboot")
 @EnableAspectJAutoProxy(proxyTargetClass = true)
-@EnableCaching
 @FiberSecureSpringBootApplication
-@EnableWebMvc
-@ServletComponentScan
 public class GameBoot {
 
   /**
