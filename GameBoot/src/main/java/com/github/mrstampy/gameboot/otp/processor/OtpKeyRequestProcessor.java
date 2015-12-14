@@ -148,13 +148,6 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     }
   }
 
-  private boolean isPowerOf2(Integer i) {
-    if (i == null) return false;
-    if (i < 0) return false;
-
-    return (i & -i) == i;
-  }
-
   /**
    * Process impl.
    *
@@ -174,6 +167,13 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     default:
       return failure("Implementation error: " + message.getKeyFunction());
     }
+  }
+
+  private boolean isPowerOf2(Integer i) {
+    if (i == null) return false;
+    if (i < 0) return false;
+
+    return (i & -i) == i;
   }
 
   private Response deleteKey(OtpKeyRequest message) throws Exception {
