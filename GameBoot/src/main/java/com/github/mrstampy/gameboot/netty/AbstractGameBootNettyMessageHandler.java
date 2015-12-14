@@ -134,12 +134,16 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
 
   /**
    * Subclasses overriding this method should remember to invoke it with a call
-   * to 'super.'.
+   * to 'super.'. Implementation generates a {@link SystemId} and puts the
+   * channel in both the {@link NettyConnectionRegistry#ALL} group and against
+   * the system id.
    *
    * @param ctx
    *          the ctx
    * @throws Exception
    *           the exception
+   * 
+   * @see #getKey()
    */
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
