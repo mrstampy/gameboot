@@ -43,6 +43,9 @@ package com.github.mrstampy.gameboot.otp;
 
 import java.security.SecureRandom;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
@@ -52,6 +55,7 @@ import org.springframework.context.annotation.Scope;
 
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
+import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 /**
  * The Class OtpConfiguration.
@@ -64,8 +68,18 @@ public class OtpConfiguration {
 
   public static final String OTP_PROFILE = "otp";
 
+  @Autowired
+  private GameBootUtils utils;
+
   @Value("${otp.secure.random.seed.size}")
   private int seedSize;
+
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    if (!utils.isPowerOf2(seedSize)) {
+      throw new IllegalArgumentException("otp.secure.random.seed.size must be a power of 2: " + seedSize);
+    }
+  }
 
   /**
    * Clear netty handler.
