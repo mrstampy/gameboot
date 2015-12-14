@@ -19,7 +19,8 @@
  *                                   \   \_-~\
  *                                    `_-~_.-'
  *                                     \-~
- *
+ * 
+ *                       http://mrstampy.github.io/gameboot/
  *
  * Copyright (C) 2015 Burton Alexander
  * 
