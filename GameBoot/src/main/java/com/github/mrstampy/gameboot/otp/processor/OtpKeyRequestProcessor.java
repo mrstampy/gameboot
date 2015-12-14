@@ -63,6 +63,7 @@ import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
+import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 /**
  * The Class OtpNewKeyRequestProcessor generates a key from a request sent on an
@@ -93,6 +94,9 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
   @Autowired
   private OneTimePad pad;
 
+  @Autowired
+  private GameBootUtils utils;
+
   @Value("${otp.default.key.size}")
   private Integer defaultKeySize;
 
@@ -104,7 +108,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
    */
   @PostConstruct
   public void postConstruct() throws Exception {
-    if (!isPowerOf2(defaultKeySize)) {
+    if (!utils.isPowerOf2(defaultKeySize)) {
       throw new IllegalArgumentException("otp.default.key.size must be a power of 2: " + defaultKeySize);
     }
   }
@@ -143,7 +147,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     }
 
     Integer size = message.getKeySize();
-    if (size != null && !isPowerOf2(size)) fail("Invalid key size, expecting powers of 2");
+    if (size != null && !utils.isPowerOf2(size)) fail("Invalid key size, expecting powers of 2");
   }
 
   /**
@@ -165,10 +169,6 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     default:
       return failure("Implementation error: " + message.getKeyFunction());
     }
-  }
-
-  private boolean isPowerOf2(Integer i) {
-    return (i == null || i < 0) ? false : (i & -i) == i;
   }
 
   private Response deleteKey(OtpKeyRequest message) throws Exception {

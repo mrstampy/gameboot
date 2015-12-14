@@ -70,6 +70,17 @@ public class GameBootUtils implements ApplicationContextAware {
     return ctx.getBean(clz);
   }
 
+  /**
+   * Checks if is power of 2.
+   *
+   * @param i
+   *          the i
+   * @return true, if is power of 2
+   */
+  public boolean isPowerOf2(Integer i) {
+    return (i == null || i < 0) ? false : (i & -i) == i;
+  }
+
   /*
    * (non-Javadoc)
    * 
