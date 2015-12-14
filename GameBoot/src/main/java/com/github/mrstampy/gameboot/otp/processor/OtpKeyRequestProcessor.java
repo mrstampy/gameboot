@@ -170,10 +170,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
   }
 
   private boolean isPowerOf2(Integer i) {
-    if (i == null) return false;
-    if (i < 0) return false;
-
-    return (i & -i) == i;
+    return (i == null || i < 0) ? false : (i & -i) == i;
   }
 
   private Response deleteKey(OtpKeyRequest message) throws Exception {
