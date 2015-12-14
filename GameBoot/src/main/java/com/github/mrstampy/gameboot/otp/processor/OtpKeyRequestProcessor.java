@@ -143,9 +143,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     }
 
     Integer size = message.getKeySize();
-    if (size != null) {
-      if (!isPowerOf2(size)) fail("Invalid key size, expecting powers of 2");
-    }
+    if (size != null && !isPowerOf2(size)) fail("Invalid key size, expecting powers of 2");
   }
 
   /**
