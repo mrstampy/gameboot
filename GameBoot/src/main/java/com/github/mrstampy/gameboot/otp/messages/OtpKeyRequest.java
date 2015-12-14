@@ -49,7 +49,7 @@ public class OtpKeyRequest extends OtpMessage {
   /** The Constant TYPE. */
   public static final String TYPE = "OtpKeyRequest";
 
-  private Integer size;
+  private Integer keySize;
 
   /**
    * The Enum KeyFunction.
@@ -76,8 +76,8 @@ public class OtpKeyRequest extends OtpMessage {
    *
    * @return the size
    */
-  public Integer getSize() {
-    return size;
+  public Integer getKeySize() {
+    return keySize;
   }
 
   /**
@@ -86,8 +86,8 @@ public class OtpKeyRequest extends OtpMessage {
    * @param size
    *          the new size
    */
-  public void setSize(Integer size) {
-    this.size = size;
+  public void setKeySize(Integer size) {
+    this.keySize = size;
   }
 
   /**

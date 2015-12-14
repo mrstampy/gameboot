@@ -97,7 +97,7 @@ public class OtpNewKeyAckProcessorTest {
   public void before() throws Exception {
     OtpKeyRequest req = new OtpKeyRequest();
     req.setSystemId(CLEAR_CHANNEL_ID);
-    req.setSize(KEY_SIZE);
+    req.setKeySize(KEY_SIZE);
     req.setKeyFunction(KeyFunction.NEW);
 
     Response rep = requestProcessor.process(req);
@@ -148,7 +148,7 @@ public class OtpNewKeyAckProcessorTest {
   private void testDelete() throws Exception {
     OtpKeyRequest req = new OtpKeyRequest();
     req.setSystemId(CLEAR_CHANNEL_ID);
-    req.setSize(KEY_SIZE);
+    req.setKeySize(KEY_SIZE);
     req.setKeyFunction(KeyFunction.DELETE);
 
     failExpected((OtpKeyRequest) null, "Null message");

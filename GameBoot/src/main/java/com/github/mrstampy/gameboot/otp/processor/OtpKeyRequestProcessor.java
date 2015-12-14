@@ -43,6 +43,8 @@ package com.github.mrstampy.gameboot.otp.processor;
 
 import java.lang.invoke.MethodHandles;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,9 +67,9 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 /**
  * The Class OtpNewKeyRequestProcessor generates a key from a request sent on an
  * encrypted channel for encrypting data sent on a related clear channel. If the
- * {@link OtpKeyRequest#getSize()} has not been set a default size specified by
- * the GameBoot property 'otp.default.key.size' will be used. If set the value
- * must be > 0 and must be a multiple of 2. Key sizes must be >= all message
+ * {@link OtpKeyRequest#getKeySize()} has not been set a default size specified
+ * by the GameBoot property 'otp.default.key.size' will be used. If set the
+ * value must be > 0 and must be a power of 2. Key sizes must be >= all message
  * sizes sent in the unencrypted channel. The
  * {@link OtpKeyRequest#getSystemId()} value will be the value obtained from the
  * clear channel.
@@ -94,22 +96,36 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
   @Value("${otp.default.key.size}")
   private Integer defaultKeySize;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.github.mrstampy.gameboot.processor.GameBootProcessor#getType()
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    if (!isPowerOf2(defaultKeySize)) {
+      throw new IllegalArgumentException("otp.default.key.size must be a power of 2: " + defaultKeySize);
+    }
+  }
+
+  /**
+   * Gets the type.
+   *
+   * @return the type
    */
   @Override
   public String getType() {
     return OtpKeyRequest.TYPE;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#validate(
-   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+  /**
+   * Validate.
+   *
+   * @param message
+   *          the message
+   * @throws Exception
+   *           the exception
    */
   @Override
   protected void validate(OtpKeyRequest message) throws Exception {
@@ -126,17 +142,27 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
       break;
     }
 
-    Integer size = message.getSize();
+    Integer size = message.getKeySize();
     if (size != null) {
-      if (size <= 0 || size % 2 != 0) fail("Invalid key size, expecting > 0 and multiples of 2");
+      if (!isPowerOf2(size)) fail("Invalid key size, expecting powers of 2");
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#
-   * processImpl(com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+  private boolean isPowerOf2(Integer i) {
+    if (i == null) return false;
+    if (i < 0) return false;
+
+    return (i & -i) == i;
+  }
+
+  /**
+   * Process impl.
+   *
+   * @param message
+   *          the message
+   * @return the response
+   * @throws Exception
+   *           the exception
    */
   @Override
   protected Response processImpl(OtpKeyRequest message) throws Exception {
@@ -160,7 +186,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
   }
 
   private Response newKey(OtpKeyRequest message) throws Exception {
-    Integer size = message.getSize() == null ? defaultKeySize : message.getSize();
+    Integer size = message.getKeySize() == null ? defaultKeySize : message.getKeySize();
     Long systemId = message.getSystemId();
 
     log.debug("Creating new OTP key of size {} for {}", size, systemId);

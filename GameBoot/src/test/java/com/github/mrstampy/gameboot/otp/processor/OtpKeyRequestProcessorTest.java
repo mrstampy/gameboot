@@ -95,17 +95,21 @@ public class OtpKeyRequestProcessorTest {
     r.setSystemId(CLEAR_CHANNEL_ID);
     r.setKeyFunction(KeyFunction.NEW);
 
-    r.setSize(-32);
+    r.setKeySize(-32);
     failExpected(r, "negative size");
 
-    r.setSize(7);
+    r.setKeySize(7);
     failExpected(r, "bad size");
 
-    r.setSize(KEY_SIZE);
+    r.setKeySize(62);
+    failExpected(r, "Powers of 2");
+
+    r.setKeySize(KEY_SIZE);
     r.setKeyFunction(null);
     failExpected(r, "No key function");
 
     r.setKeyFunction(KeyFunction.NEW);
+
     Response rep = processor.process(r);
 
     assertEquals(ResponseCode.SUCCESS, rep.getResponseCode());

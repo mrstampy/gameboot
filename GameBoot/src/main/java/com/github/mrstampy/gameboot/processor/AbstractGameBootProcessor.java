@@ -86,9 +86,12 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
     } catch (GameBootRuntimeException | GameBootException e) {
       return gameBootErrorResponse(message, e);
     } catch (Exception e) {
-      log.error("Error in processing {}", message, e);
+      log.error("Error in processing {}", message.getType(), e);
 
-      return new Response(ResponseCode.FAILURE, "An unexpected error has occurred");
+      Response r = failure("An unexpected error has occurred");
+      r.setId(message.getId());
+
+      return r;
     }
   }
 
@@ -102,9 +105,12 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    * @return the response
    */
   protected Response gameBootErrorResponse(M message, Exception e) {
-    log.error("Error in processing {} : {}", message, e.getMessage());
+    log.error("Error in processing {} : {}", message.getType(), e.getMessage());
 
-    return new Response(ResponseCode.FAILURE, e.getMessage());
+    Response r = new Response(ResponseCode.FAILURE, e.getMessage());
+    r.setId(message.getId());
+
+    return r;
   }
 
   /**
