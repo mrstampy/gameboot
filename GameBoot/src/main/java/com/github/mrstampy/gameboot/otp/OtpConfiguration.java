@@ -64,8 +64,10 @@ import com.github.mrstampy.gameboot.util.GameBootUtils;
 @Profile(OtpConfiguration.OTP_PROFILE)
 public class OtpConfiguration {
 
+  /** The Constant OTP_SECURE_RANDOM. */
   public static final String OTP_SECURE_RANDOM = "OTP Secure Random";
 
+  /** The Constant OTP_PROFILE. */
   public static final String OTP_PROFILE = "otp";
 
   @Autowired
@@ -74,6 +76,12 @@ public class OtpConfiguration {
   @Value("${otp.secure.random.seed.size}")
   private int seedSize;
 
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
   @PostConstruct
   public void postConstruct() throws Exception {
     if (!utils.isPowerOf2(seedSize)) {
