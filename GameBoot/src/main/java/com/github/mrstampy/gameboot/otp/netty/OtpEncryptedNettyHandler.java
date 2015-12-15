@@ -42,7 +42,6 @@
 package com.github.mrstampy.gameboot.otp.netty;
 
 import java.lang.invoke.MethodHandles;
-import java.net.InetSocketAddress;
 import java.util.concurrent.ExecutorService;
 
 import javax.annotation.PostConstruct;
@@ -81,10 +80,8 @@ import io.netty.util.concurrent.Future;
 /**
  * The Class OtpEncryptedNettyInboundHandler is the last handler added in a
  * pipeline intended to process {@link OtpMessage}s. The connection must be
- * encrypted sending byte arrays as messages and must originate from the same
- * host as the connection containing the {@link OtpClearNettyHandler} in its
- * {@link ChannelPipeline}. Should these conditions fail the connection will be
- * terminated.<br>
+ * encrypted sending byte arrays as messages. Should these conditions fail the
+ * connection will be terminated.<br>
  * <br>
  * 
  * The client connects to the socket containing this handler in the pipeline and
@@ -268,7 +265,17 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
     cf.addListener(f -> ctx.close());
   }
 
-  private boolean validateChannel(ChannelHandlerContext ctx, OtpMessage message) {
+  /**
+   * Validates that the clear channel exists. Override to provide additional
+   * validation.
+   *
+   * @param ctx
+   *          the ctx
+   * @param message
+   *          the message
+   * @return true, if successful
+   */
+  protected boolean validateChannel(ChannelHandlerContext ctx, OtpMessage message) {
     Long systemId = message.getSystemId();
     Channel clearChannel = registry.get(systemId);
 
@@ -278,24 +285,7 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
       return false;
     }
 
-    String encryptedHost = getRemote(ctx.channel());
-    String clearHost = getRemote(clearChannel);
-
-    if (encryptedHost.equals(clearHost)) return true;
-
-    log.error("OTP request type {} from {} does not match host {} using system id {}, disconnecting.",
-        message.getType(),
-        ctx.channel(),
-        clearChannel,
-        systemId);
-
-    ctx.close();
-
-    return false;
-  }
-
-  private String getRemote(Channel channel) {
-    return ((InetSocketAddress) channel.remoteAddress()).getAddress().getHostAddress();
+    return true;
   }
 
   private void log(Future<? super Void> f, ChannelHandlerContext ctx, String type) {

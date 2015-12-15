@@ -151,13 +151,6 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     set.forEach(e -> registry.remove(e.getKey()));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
-   * handleTextMessage(org.springframework.web.socket.WebSocketSession,
-   * org.springframework.web.socket.TextMessage)
-   */
   /**
    * Handle text message.
    *
@@ -176,13 +169,6 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     handleTextMessageImpl(session, message.getPayload());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
-   * handleBinaryMessage(org.springframework.web.socket.WebSocketSession,
-   * org.springframework.web.socket.BinaryMessage)
-   */
   /**
    * Handle binary message.
    *
@@ -285,7 +271,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     AGBM agbm = null;
     try {
       agbm = converter.fromJson(msg);
-      
+
       if (!inspect(session, agbm)) return null;
 
       response = process(session, msg, controller, agbm);

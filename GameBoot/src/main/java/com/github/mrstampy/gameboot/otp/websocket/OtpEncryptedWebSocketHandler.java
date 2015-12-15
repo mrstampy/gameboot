@@ -75,9 +75,8 @@ import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
 /**
  * The Class OtpEncryptedWebSocketHandler is the {@link WebSocketHandler}
  * intended to process {@link OtpMessage}s. The connection must be encrypted
- * sending byte arrays as messages and must originate from the same host as the
- * connection containing the {@link OtpClearWebSocketHandler}. Should these
- * conditions fail the connection will be terminated.<br>
+ * sending byte arrays as messages. Should these conditions fail the connection
+ * will be terminated.<br>
  * <br>
  * 
  * The client connects to the socket containing this handler and sends a message
@@ -116,12 +115,6 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
   @Autowired
   private GameBootUtils utils;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
-   * afterConnectionEstablished(org.springframework.web.socket.WebSocketSession)
-   */
   /**
    * After connection established.
    *
@@ -164,13 +157,6 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     });
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * processForBinary(org.springframework.web.socket.WebSocketSession, byte[])
-   */
   /**
    * Process for binary.
    *
@@ -227,7 +213,19 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     return ok;
   }
 
-  private boolean validateChannel(WebSocketSession session, OtpMessage message) throws IOException {
+  /**
+   * Validates that the clear channel exists. Override to provide additional
+   * validation.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
+   * @return true, if successful
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
+   */
+  protected boolean validateChannel(WebSocketSession session, OtpMessage message) throws IOException {
     Long systemId = message.getSystemId();
     WebSocketSession clearChannel = registry.get(systemId);
 
@@ -239,20 +237,7 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
       return false;
     }
 
-    String encryptedHost = session.getRemoteAddress().getAddress().getHostAddress();
-    String clearHost = clearChannel.getRemoteAddress().getAddress().getHostAddress();
-
-    if (encryptedHost.equals(clearHost)) return true;
-
-    log.error("OTP request type {} from {} does not match host {} using system id {}, disconnecting.",
-        message.getType(),
-        session.getRemoteAddress(),
-        clearChannel,
-        systemId);
-
-    session.close();
-
-    return false;
+    return true;
   }
 
   /**
