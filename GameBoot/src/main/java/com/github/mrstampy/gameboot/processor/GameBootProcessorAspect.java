@@ -111,6 +111,8 @@ public class GameBootProcessorAspect {
 
     try {
       Response r = (Response) pjp.proceed();
+      
+      if(r == null) return null;
 
       switch (r.getResponseCode()) {
       case FAILURE:
