@@ -79,6 +79,12 @@ public class GameBootConcurrentConfiguration {
   /** The Constant GAME_BOOT_SCHEDULED_EXECUTOR. */
   public static final String GAME_BOOT_SCHEDULED_EXECUTOR = "GameBoot Scheduled Executor";
 
+  /** The Constant GAME_BOOT_TASK_SCHEDULER. */
+  public static final String GAME_BOOT_TASK_SCHEDULER = "GameBoot Task Scheduler";
+
+  /** The Constant GAME_BOOT_TASK_EXECUTOR. */
+  public static final String GAME_BOOT_TASK_EXECUTOR = "GameBoot Task Executor";
+
   @Value("${task.scheduler.name}")
   private String taskSchedulerName;
 
@@ -140,8 +146,7 @@ public class GameBootConcurrentConfiguration {
    *
    * @return the task scheduler
    */
-  @Bean
-  @Primary
+  @Bean(name = GAME_BOOT_TASK_SCHEDULER)
   public TaskScheduler taskScheduler() {
     String name = isEmpty(taskSchedulerName) ? "GameBoot Task Scheduler" : taskSchedulerName;
 
@@ -157,8 +162,7 @@ public class GameBootConcurrentConfiguration {
    *
    * @return the task executor
    */
-  @Bean
-  @Primary
+  @Bean(name = GAME_BOOT_TASK_EXECUTOR)
   public TaskExecutor taskExecutor() {
     String name = isEmpty(taskExecutorName) ? "GameBoot Task Executor" : taskExecutorName;
 
