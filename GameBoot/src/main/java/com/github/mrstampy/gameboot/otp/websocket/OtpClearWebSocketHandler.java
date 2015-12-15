@@ -71,6 +71,7 @@ import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRegistry;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
@@ -95,9 +96,10 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * the encrypted channel containing the new OTP key as the only element of the
  * {@link Response#getResponse()} array. When sending is complete the encrypted
  * channel is disconnected. The client then sends a message of type
- * {@link OtpNewKeyAck} in the clear channel. When received the GameBoot server
- * activates the new key for all traffic on the {@link OtpClearWebSocketHandler}
- * channel and disconnects the encrypted connection.<br>
+ * {@link OtpNewKeyAck} encrypted with the new key in the clear channel. When
+ * received the GameBoot server activates the new key for all traffic on the
+ * {@link OtpClearWebSocketHandler} channel and disconnects the encrypted
+ * connection.<br>
  * <br>
  * 
  * To delete a key a message of type {@link OtpKeyRequest} with a
@@ -138,6 +140,9 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
   @Autowired
   private GameBootMessageConverter converter;
 
+  @Autowired
+  private OtpNewKeyRegistry newKeyRegistry;
+
   /**
    * Post construct.
    *
@@ -160,7 +165,7 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
     super.afterConnectionEstablished(session);
 
     Response r = new Response(ResponseCode.INFO);
-    r.setSystemId(getKey());
+    r.setSystemId(getSystemId());
 
     BinaryMessage bm = new BinaryMessage(converter.toJsonArray(r));
 
@@ -204,7 +209,7 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
     case OtpKeyRequest.TYPE:
       ok = isDeleteRequest(session, (OtpKeyRequest) agbm);
     case OtpNewKeyAck.TYPE:
-      ((OtpMessage) agbm).setProcessorKey(getKey());
+      ((OtpMessage) agbm).setProcessorKey(getSystemId());
       break;
     default:
       ok = isValidType(session, agbm);
@@ -230,20 +235,19 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
 
   private <AGBM extends AbstractGameBootMessage> boolean isDeleteRequest(WebSocketSession session, AGBM agbm) {
     OtpKeyRequest keyRequest = (OtpKeyRequest) agbm;
-    keyRequest.setProcessorKey(getKey());
 
     boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
 
     Long sysId = keyRequest.getSystemId();
-    boolean ok = d && isEncrypting() && getKey().equals(sysId);
+    boolean ok = d && isEncrypting() && getSystemId().equals(sysId);
 
-    if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, session.getRemoteAddress(), getKey());
+    if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, session.getRemoteAddress(), getSystemId());
 
     return ok;
   }
 
   private boolean isEncrypting() {
-    return keyRegistry.contains(getKey());
+    return keyRegistry.contains(getSystemId());
   }
 
   /*
@@ -254,7 +258,7 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
    * processForBinary(org.springframework.web.socket.WebSocketSession, byte[])
    */
   protected void processForBinary(WebSocketSession session, byte[] message) throws Exception {
-    byte[] key = keyRegistry.get(getKey());
+    byte[] key = keyRegistry.get(getSystemId());
     byte[] msg = otp(key, session, message);
 
     String response = process(session, new String(msg));
@@ -267,7 +271,27 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
   }
 
   private byte[] otp(byte[] key, WebSocketSession session, byte[] message) throws Exception {
-    return key == null ? message : pad.convert(key, message);
+    byte[] b = evaluateForNewKeyAck(session, message);
+    return key == null ? b : pad.convert(key, b);
+  }
+
+  @SuppressWarnings("unused")
+  private byte[] evaluateForNewKeyAck(WebSocketSession session, byte[] msg) {
+    Long systemId = getSystemId();
+    if (!newKeyRegistry.contains(systemId)) return msg;
+
+    byte[] newKey = newKeyRegistry.get(systemId);
+
+    try {
+      byte[] converted = pad.convert(newKey, msg);
+      OtpNewKeyAck ack = converter.fromJson(converted);
+      return converted;
+    } catch (Exception e) {
+      String s = keyRegistry.contains(systemId) ? "old key" : "unencrypted";
+      log.warn("Awaiting new key ack, assuming {} for {}, system id {}.", s, session, systemId);
+    }
+
+    return msg;
   }
 
   /*

@@ -68,6 +68,7 @@ import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRegistry;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -97,9 +98,9 @@ import io.netty.channel.ChannelPromise;
  * the encrypted channel containing the new OTP key as the only element of the
  * {@link Response#getResponse()} array. When sending is complete the encrypted
  * channel is disconnected. The client then sends a message of type
- * {@link OtpNewKeyAck} in the clear channel. When received the GameBoot server
- * activates the new key for all traffic on the {@link OtpClearNettyHandler}
- * channel.<br>
+ * {@link OtpNewKeyAck} encrypted using the new key in the clear channel. When
+ * received the GameBoot server activates the new key for all traffic on the
+ * {@link OtpClearNettyHandler} channel.<br>
  * <br>
  * 
  * To delete a key a message of type {@link OtpKeyRequest} with a
@@ -142,6 +143,9 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   private KeyRegistry keyRegistry;
 
   @Autowired
+  private OtpNewKeyRegistry newKeyRegistry;
+
+  @Autowired
   private MetricsHelper helper;
 
   @Autowired
@@ -181,7 +185,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     super.channelActive(ctx);
 
     Response r = new Response(ResponseCode.INFO);
-    r.setSystemId(getKey());
+    r.setSystemId(getSystemId());
 
     ctx.channel().writeAndFlush(converter.toJsonArray(r));
   }
@@ -202,6 +206,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     helper = null;
     converter = null;
     svc = null;
+    newKeyRegistry = null;
   }
 
   /*
@@ -218,16 +223,19 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
       return;
     }
 
-    byte[] key = keyRegistry.get(getKey());
+    byte[] mb = (byte[]) msg;
+
+    byte[] key = keyRegistry.get(getSystemId());
 
     if (key == null) {
-      super.channelRead(ctx, msg);
+      super.channelRead(ctx, evaluateForNewKeyAck(ctx, mb));
       return;
     }
 
     helper.incr(OTP_DECRYPT_COUNTER);
 
-    byte[] converted = oneTimePad.convert(key, (byte[]) msg);
+    byte[] b = evaluateForNewKeyAck(ctx, mb);
+    byte[] converted = b == mb ? oneTimePad.convert(key, mb) : b;
 
     super.channelRead(ctx, converted);
   }
@@ -252,6 +260,25 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     });
   }
 
+  @SuppressWarnings("unused")
+  private byte[] evaluateForNewKeyAck(ChannelHandlerContext ctx, byte[] msg) {
+    Long systemId = getSystemId();
+    if (!newKeyRegistry.contains(systemId)) return msg;
+
+    byte[] newKey = newKeyRegistry.get(systemId);
+
+    try {
+      byte[] converted = oneTimePad.convert(newKey, msg);
+      OtpNewKeyAck ack = converter.fromJson(converted);
+      return converted;
+    } catch (Exception e) {
+      String s = keyRegistry.contains(systemId) ? "old key" : "unencrypted";
+      log.warn("Awaiting new key ack, assuming {} for {}, system id {}.", s, ctx.channel(), systemId);
+    }
+
+    return msg;
+  }
+
   /*
    * (non-Javadoc)
    * 
@@ -267,7 +294,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     case OtpKeyRequest.TYPE:
       ok = isDeleteRequest(ctx, (OtpKeyRequest) agbm);
     case OtpNewKeyAck.TYPE:
-      ((OtpMessage) agbm).setProcessorKey(getKey());
+      ((OtpMessage) agbm).setProcessorKey(getSystemId());
       break;
     default:
       ok = isValidType(ctx, agbm);
@@ -295,15 +322,15 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
 
     Long sysId = keyRequest.getSystemId();
-    boolean ok = d && isEncrypting() && getKey().equals(sysId);
+    boolean ok = d && isEncrypting() && getSystemId().equals(sysId);
 
-    if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, ctx.channel(), getKey());
+    if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, ctx.channel(), getSystemId());
 
     return ok;
   }
 
   private boolean isEncrypting() {
-    return keyRegistry.contains(getKey());
+    return keyRegistry.contains(getSystemId());
   }
 
   /*
@@ -319,7 +346,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
       return;
     }
 
-    byte[] key = keyRegistry.get(getKey());
+    byte[] key = keyRegistry.get(getSystemId());
 
     byte[] processed = (msg instanceof byte[]) ? (byte[]) msg : ((String) msg).getBytes();
 

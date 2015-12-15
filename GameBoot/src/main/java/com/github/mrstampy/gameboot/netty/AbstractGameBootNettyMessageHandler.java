@@ -113,7 +113,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   @Autowired
   private SystemId generator;
 
-  private Long key;
+  private Long systemId;
 
   /**
    * Post construct created message counters if necessary. Subclasses will need
@@ -143,16 +143,16 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    * @throws Exception
    *           the exception
    * 
-   * @see #getKey()
+   * @see #getSystemId()
    */
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    this.key = generator.next();
+    this.systemId = generator.next();
 
-    log.info("Connected to {}, adding to registry with key {}", ctx.channel(), key);
+    log.info("Connected to {}, adding to registry with key {}", ctx.channel(), systemId);
 
     registry.putInGroup(NettyConnectionRegistry.ALL, ctx.channel());
-    registry.put(key, ctx.channel());
+    registry.put(systemId, ctx.channel());
   }
 
   /**
@@ -173,7 +173,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     utils = null;
     converter = null;
     generator = null;
-    key = null;
+    systemId = null;
   }
 
   /*
@@ -316,7 +316,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    */
   protected <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, String msg,
       GameBootMessageController controller, AGBM agbm) throws Exception, JsonProcessingException, GameBootException {
-    if (agbm.getSystemId() == null) agbm.setSystemId(getKey());
+    if (agbm.getSystemId() == null) agbm.setSystemId(getSystemId());
     agbm.setTransport(Transport.NETTY);
     agbm.setLocal((InetSocketAddress) ctx.channel().localAddress());
     agbm.setRemote((InetSocketAddress) ctx.channel().remoteAddress());
@@ -422,8 +422,8 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    *
    * @return the key
    */
-  protected Long getKey() {
-    return key;
+  protected Long getSystemId() {
+    return systemId;
   }
 
 }
