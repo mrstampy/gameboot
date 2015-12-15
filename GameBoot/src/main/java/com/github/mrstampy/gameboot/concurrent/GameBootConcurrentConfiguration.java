@@ -115,6 +115,12 @@ public class GameBootConcurrentConfiguration {
   @Value("${scheduler.pool.size}")
   private int schedulerPoolSize;
 
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
   @PostConstruct
   public void postConstruct() throws Exception {
     checkSize(taskSchedulerPoolSize, "task.scheduler.pool.size");
