@@ -71,7 +71,7 @@ public interface UserSessionRepository extends CrudRepository<UserSession, Long>
    *          the user name
    * @return the user session
    */
-  @Query("SELECT us FROM UserSession us JOIN FETCH us.user WHERE us.ended is null AND us.user.userName = :userName")
+  @Query("SELECT us FROM UserSession us JOIN FETCH us.user WHERE us.user.userName = :userName AND us.ended is null")
   UserSession findOpenSession(@Param("userName") String userName);
 
   /**
@@ -81,7 +81,7 @@ public interface UserSessionRepository extends CrudRepository<UserSession, Long>
    *          the id
    * @return the user session
    */
-  @Query("SELECT us FROM UserSession us JOIN FETCH us.user WHERE us.ended is null AND us.id = :id")
+  @Query("SELECT us FROM UserSession us JOIN FETCH us.user WHERE us.id = :id AND us.ended is null")
   UserSession findOpenSession(@Param("id") Long id);
 
   /**

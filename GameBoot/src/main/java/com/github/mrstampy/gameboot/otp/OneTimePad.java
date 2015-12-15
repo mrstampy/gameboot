@@ -63,7 +63,7 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
  * text (http, ws etc), negating the overhead of secure connections.<br>
  * <br>
  * 
- * Key length must be >= message length.
+ * Key length must be greater or equal to the message length and a power of 2.
  * 
  * @see KeyRegistry
  */

@@ -42,7 +42,6 @@
 package com.github.mrstampy.gameboot.security;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 
 /**
@@ -50,7 +49,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
  */
 @Configuration
 @EnableWebSecurity
-@PropertySource("/security.properties")
 public class SecurityConfiguration {
 
 }

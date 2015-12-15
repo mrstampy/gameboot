@@ -52,6 +52,7 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.SystemId;
@@ -77,20 +78,27 @@ import com.github.mrstampy.gameboot.util.GameBootRegistry;
  */
 @Component
 @Profile(OtpConfiguration.OTP_PROFILE)
+@Order(Integer.MAX_VALUE)
 public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
 
   @Autowired
   private ScheduledExecutorService svc;
 
-  @Value("otp.new.key.expiry.seconds")
+  @Value("${otp.new.key.expiry.seconds}")
   private int newKeyExpiry;
 
+  private Map<Comparable<?>, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
+
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
   @PostConstruct
   public void postConstruct() throws Exception {
     if (newKeyExpiry <= 0) throw new IllegalStateException("otp.new.key.expiry.seconds must be > 0");
   }
-
-  private Map<Comparable<?>, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
 
   /**
    * Puts the newly generated key paired against the {@link SystemId#next()} id

@@ -199,9 +199,8 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
 
   /**
    * Process for binary should be invoked from
-   * {@link #handleBinaryMessageImpl(WebSocketSession, BinaryMessage)}.
-   * Responses are automatically sent. Override to intercept the response
-   * message.
+   * {@link #handleBinaryMessageImpl(WebSocketSession, byte[])}. Responses are
+   * automatically sent. Override to intercept the response message.
    *
    * @param session
    *          the session

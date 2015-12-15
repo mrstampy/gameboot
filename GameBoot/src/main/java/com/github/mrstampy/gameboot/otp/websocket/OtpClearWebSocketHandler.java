@@ -78,9 +78,9 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * The Class OtpClearWebSocketHandler is intended to provide a transparent means
  * of using the {@link OneTimePad} utility to encrypt outgoing and decrypt
  * incoming messages on unencrypted web socket connections. It is intended that
- * the message is a byte array at the point in which this class is inserted into
- * the pipeline. Inbound messages are later converted to strings, all outbound
- * messages are byte arrays.<br>
+ * this is a last-in-pipeline handler andthe message is a byte array. Inbound
+ * messages are later converted to strings, all outbound messages are byte
+ * arrays.<br>
  * <br>
  * 
  * By default messages are unencrypted. An INFO message is sent to the client

@@ -67,7 +67,7 @@ import co.paralleluniverse.fibers.FiberExecutorScheduler;
 import co.paralleluniverse.fibers.FiberForkJoinScheduler;
 
 /**
- * Concurrent configuration for GameBoot.
+ * Concurrent configuration for GameBoot set in gameboot.properties.
  */
 @Configuration
 @EnableScheduling
@@ -205,7 +205,6 @@ public class GameBootConcurrentConfiguration {
    * Fiber executor scheduler.
    *
    * @return the fiber executor scheduler
-   * @see FiberCreator
    */
   @Bean
   @Primary
@@ -223,7 +222,6 @@ public class GameBootConcurrentConfiguration {
    * Fiber fork join scheduler.
    *
    * @return the fiber fork join scheduler
-   * @see FiberCreator
    */
   @Bean
   @Primary

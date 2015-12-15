@@ -61,7 +61,7 @@ import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;;
 
 /**
- * The default implementation of {@link MetricRegistry}.
+ * The default implementation of {@link MetricsHelper}.
  * 
  * @see GameBootMetricsConfiguration
  */

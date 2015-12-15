@@ -42,7 +42,6 @@
 package com.github.mrstampy.gameboot.data;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
@@ -57,7 +56,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableJpaAuditing
 @EnableTransactionManagement
-@PropertySource("/database.properties")
 public class GameBootDataConfiguration {
 
 }

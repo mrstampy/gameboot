@@ -63,7 +63,7 @@ import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepos
 /**
  * This class ensures {@link UserSession} lookups use the cacheable
  * {@link UserSessionAssist#activeSessions()} method. UserSessionLookupTest
- * shows 3 - 7X faster lookups vs. database access, for a single session.
+ * shows 3 - 7X faster lookups vs. database cache, for a single session.
  */
 @Component
 @Profile(UserSessionConfiguration.USER_SESSION_PROFILE)

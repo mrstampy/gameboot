@@ -78,10 +78,9 @@ import io.netty.channel.ChannelPromise;
 /**
  * The Class OtpClearNettyHandler is intended to provide a transparent means of
  * using the {@link OneTimePad} utility to encrypt outgoing and decrypt incoming
- * messages on unencrypted Netty connections. It is intended that the message is
- * a byte array at the point in which this class is inserted into the pipeline.
- * Inbound messages are later converted to strings, all outbound messages are
- * byte arrays.<br>
+ * messages on unencrypted Netty connections. It is intended that this is a
+ * last-in-pipeline handler and the message is a byte array. Inbound messages
+ * are later converted to strings, all outbound messages are byte arrays.<br>
  * <br>
  * 
  * By default messages are unencrypted. An INFO message is sent to the client

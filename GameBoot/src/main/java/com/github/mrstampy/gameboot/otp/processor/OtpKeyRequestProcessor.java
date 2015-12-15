@@ -70,10 +70,10 @@ import com.github.mrstampy.gameboot.util.GameBootUtils;
  * encrypted channel for encrypting data sent on a related clear channel. If the
  * {@link OtpKeyRequest#getKeySize()} has not been set a default size specified
  * by the GameBoot property 'otp.default.key.size' will be used. If set the
- * value must be > 0 and must be a power of 2. Key sizes must be >= all message
- * sizes sent in the unencrypted channel. The
- * {@link OtpKeyRequest#getSystemId()} value will be the value obtained from the
- * clear channel.
+ * value must be greater than 0 and must be a power of 2. Keys size must also be
+ * a power of 2 and sizes must be greater than or equal to all message sizes
+ * sent in the unencrypted channel. The {@link OtpKeyRequest#getSystemId()}
+ * value will be the value obtained from the clear channel.
  * 
  * @see OtpClearNettyHandler
  * @see OtpEncryptedNettyHandler
