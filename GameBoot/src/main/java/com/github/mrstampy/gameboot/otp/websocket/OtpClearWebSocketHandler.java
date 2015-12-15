@@ -272,7 +272,8 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
 
   private byte[] otp(byte[] key, WebSocketSession session, byte[] message) throws Exception {
     byte[] b = evaluateForNewKeyAck(session, message);
-    return key == null ? b : pad.convert(key, b);
+
+    return (b == message) ? (key == null ? b : pad.convert(key, b)) : b;
   }
 
   @SuppressWarnings("unused")
