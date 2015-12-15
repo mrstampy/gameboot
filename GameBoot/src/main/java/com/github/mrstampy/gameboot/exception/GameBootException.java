@@ -48,11 +48,17 @@ public class GameBootException extends Exception {
 
   private static final long serialVersionUID = -3167138308922775541L;
 
+  private Object[] payload;
+
   /**
    * Instantiates a new game boot exception.
+   *
+   * @param payload
+   *          the payload
    */
-  public GameBootException() {
+  public GameBootException(Object... payload) {
     super();
+    setPayload(payload);
   }
 
   /**
@@ -60,9 +66,12 @@ public class GameBootException extends Exception {
    *
    * @param message
    *          the message
+   * @param payload
+   *          the payload
    */
-  public GameBootException(String message) {
+  public GameBootException(String message, Object... payload) {
     super(message);
+    setPayload(payload);
   }
 
   /**
@@ -70,9 +79,12 @@ public class GameBootException extends Exception {
    *
    * @param cause
    *          the cause
+   * @param payload
+   *          the payload
    */
-  public GameBootException(Throwable cause) {
+  public GameBootException(Throwable cause, Object... payload) {
     super(cause);
+    setPayload(payload);
   }
 
   /**
@@ -82,9 +94,12 @@ public class GameBootException extends Exception {
    *          the message
    * @param cause
    *          the cause
+   * @param payload
+   *          the payload
    */
-  public GameBootException(String message, Throwable cause) {
+  public GameBootException(String message, Throwable cause, Object... payload) {
     super(message, cause);
+    setPayload(payload);
   }
 
   /**
@@ -98,9 +113,41 @@ public class GameBootException extends Exception {
    *          the enable suppression
    * @param writableStackTrace
    *          the writable stack trace
+   * @param payload
+   *          the payload
    */
-  public GameBootException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+  public GameBootException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace,
+      Object... payload) {
     super(message, cause, enableSuppression, writableStackTrace);
+    setPayload(payload);
+  }
+
+  /**
+   * Checks for payload.
+   *
+   * @return true, if successful
+   */
+  public boolean hasPayload() {
+    return payload != null && payload.length > 0;
+  }
+
+  /**
+   * Gets the payload.
+   *
+   * @return the payload
+   */
+  public Object[] getPayload() {
+    return payload;
+  }
+
+  /**
+   * Sets the payload.
+   *
+   * @param payload
+   *          the new payload
+   */
+  public void setPayload(Object[] payload) {
+    this.payload = payload;
   }
 
 }

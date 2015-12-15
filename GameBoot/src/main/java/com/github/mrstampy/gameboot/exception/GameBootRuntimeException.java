@@ -48,43 +48,58 @@ public class GameBootRuntimeException extends RuntimeException {
 
   private static final long serialVersionUID = -439786992079674082L;
 
+  private Object[] payload;
+
   /**
-   * Instantiates a new game boot runtime exception.
-   */
-  public GameBootRuntimeException() {
+ * Instantiates a new game boot runtime exception.
+ *
+ * @param payload
+ *          the payload
+ */
+  public GameBootRuntimeException(Object... payload) {
     super();
+    setPayload(payload);
   }
 
   /**
-   * Instantiates a new game boot runtime exception.
-   *
-   * @param message
-   *          the message
-   */
-  public GameBootRuntimeException(String message) {
+ * Instantiates a new game boot runtime exception.
+ *
+ * @param message
+ *          the message
+ * @param payload
+ *          the payload
+ */
+  public GameBootRuntimeException(String message, Object... payload) {
     super(message);
+    setPayload(payload);
   }
 
   /**
-   * Instantiates a new game boot runtime exception.
-   *
-   * @param cause
-   *          the cause
-   */
-  public GameBootRuntimeException(Throwable cause) {
+ * Instantiates a new game boot runtime exception.
+ *
+ * @param cause
+ *          the cause
+ * @param payload
+ *          the payload
+ */
+  public GameBootRuntimeException(Throwable cause, Object... payload) {
     super(cause);
+    setPayload(payload);
   }
 
   /**
-   * Instantiates a new game boot runtime exception.
-   *
-   * @param message
-   *          the message
-   * @param cause
-   *          the cause
-   */
-  public GameBootRuntimeException(String message, Throwable cause) {
+ * Instantiates a new game boot runtime exception.
+ *
+ * @param message
+ *          the message
+ * @param cause
+ *          the cause
+ * @param payload
+ *          the payload
+ */
+  public GameBootRuntimeException(String message, Throwable cause, Object... payload) {
     super(message, cause);
+    setPayload(payload);
   }
 
   /**
@@ -102,6 +117,35 @@ public class GameBootRuntimeException extends RuntimeException {
   public GameBootRuntimeException(String message, Throwable cause, boolean enableSuppression,
       boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
+    setPayload(payload);
+  }
+
+  /**
+ * Checks for payload.
+ *
+ * @return true, if successful
+ */
+  public boolean hasPayload() {
+    return payload != null && payload.length > 0;
+  }
+
+  /**
+ * Gets the payload.
+ *
+ * @return the payload
+ */
+  public Object[] getPayload() {
+    return payload;
+  }
+
+  /**
+ * Sets the payload.
+ *
+ * @param payload
+ *          the new payload
+ */
+  public void setPayload(Object[] payload) {
+    this.payload = payload;
   }
 
 }

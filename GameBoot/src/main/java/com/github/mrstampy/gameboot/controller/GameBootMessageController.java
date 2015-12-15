@@ -160,10 +160,12 @@ public class GameBootMessageController {
    *
    * @param message
    *          the message
+   * @param payload
+   *          the payload
    * @throws GameBootRuntimeException
    *           the game boot runtime exception
    */
-  protected void fail(String message) throws GameBootRuntimeException {
-    throw new GameBootRuntimeException(message);
+  protected void fail(String message, Object... payload) throws GameBootRuntimeException {
+    throw new GameBootRuntimeException(message, payload);
   }
 }

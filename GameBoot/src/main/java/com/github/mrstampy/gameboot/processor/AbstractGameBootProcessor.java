@@ -45,12 +45,14 @@ import java.lang.invoke.MethodHandles;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 /**
  * Abstract superclass for {@link GameBootProcessor}s.
@@ -60,6 +62,9 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
  */
 public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessage> implements GameBootProcessor<M> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  @Autowired
+  private GameBootUtils utils;
 
   /*
    * (non-Javadoc)
@@ -107,10 +112,24 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
   protected Response gameBootErrorResponse(M message, Exception e) {
     log.error("Error in processing {} : {}", message.getType(), e.getMessage());
 
-    Response r = new Response(ResponseCode.FAILURE, e.getMessage());
+    Object[] array = extractPayload(e);
+
+    Object payload = mtArray(array) ? e.getMessage() : utils.postpendArray(e.getMessage(), array);
+
+    Response r = new Response(ResponseCode.FAILURE, payload);
     r.setId(message.getId());
 
     return r;
+  }
+
+  private boolean mtArray(Object[] array) {
+    return array == null || array.length == 0;
+  }
+
+  private Object[] extractPayload(Exception e) {
+    boolean rt = e instanceof GameBootRuntimeException;
+
+    return rt ? ((GameBootRuntimeException) e).getPayload() : ((GameBootException) e).getPayload();
   }
 
   /**
@@ -121,11 +140,13 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    *
    * @param message
    *          the message
+   * @param payload
+   *          the payload
    * @throws GameBootRuntimeException
    *           the game boot runtime exception
    */
-  protected void fail(String message) throws GameBootRuntimeException {
-    throw new GameBootRuntimeException(message);
+  protected void fail(String message, Object... payload) throws GameBootRuntimeException {
+    throw new GameBootRuntimeException(message, payload);
   }
 
   /**
