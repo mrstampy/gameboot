@@ -48,6 +48,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
+import javax.annotation.PostConstruct;
+import javax.resource.spi.IllegalStateException;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -111,6 +114,20 @@ public class GameBootConcurrentConfiguration {
 
   @Value("${scheduler.pool.size}")
   private int schedulerPoolSize;
+
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    checkSize(taskSchedulerPoolSize, "task.scheduler.pool.size");
+    checkSize(taskExecutorPoolSize, "task.executor.pool.size");
+    checkSize(fiberPoolSize, "pu.fiber.scheduler.pool.size");
+    checkSize(fiberForkJoinPoolSize, "pu.fiber.fj.scheduler.pool.size");
+    checkSize(executorPoolSize, "executor.pool.size");
+    checkSize(schedulerPoolSize, "scheduler.pool.size");
+  }
+
+  private void checkSize(int val, String name) throws IllegalStateException {
+    if (val <= 0) throw new IllegalStateException(name + " must be > 0");
+  }
 
   /**
    * Task scheduler.

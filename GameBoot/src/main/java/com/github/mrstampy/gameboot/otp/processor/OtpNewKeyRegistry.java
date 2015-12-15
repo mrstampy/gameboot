@@ -47,7 +47,10 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
@@ -79,6 +82,14 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
   @Autowired
   private ScheduledExecutorService svc;
 
+  @Value("otp.new.key.expiry.seconds")
+  private int newKeyExpiry;
+
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    if (newKeyExpiry <= 0) throw new IllegalStateException("otp.new.key.expiry.seconds must be > 0");
+  }
+
   private Map<Comparable<?>, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
 
   /**
@@ -97,7 +108,7 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
 
     super.put(key, value);
 
-    sf = svc.schedule(() -> cleanup(key), 30, TimeUnit.SECONDS);
+    sf = svc.schedule(() -> cleanup(key), newKeyExpiry, TimeUnit.SECONDS);
     futures.put(key, sf);
   }
 
