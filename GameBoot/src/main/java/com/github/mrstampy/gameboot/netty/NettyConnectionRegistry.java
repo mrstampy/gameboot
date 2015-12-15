@@ -55,8 +55,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
-import com.github.mrstampy.gameboot.netty.util.NettyUtils;
 import com.github.mrstampy.gameboot.util.GameBootRegistry;
+import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -86,7 +86,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   private MetricsHelper helper;
 
   @Autowired
-  private NettyUtils utils;
+  private GameBootUtils utils;
 
   private Map<String, ChannelGroup> groups = new ConcurrentHashMap<>();
 
@@ -268,7 +268,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
     ChannelGroup group = groups.get(groupKey);
 
-    ChannelFutureListener[] all = utils.addToArray(f -> log((ChannelGroupFuture) f, groupKey, message), listeners);
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey, message), listeners);
     ChannelGroupFuture cf = group.writeAndFlush(message);
 
     for (ChannelFutureListener cfl : all) {
@@ -283,7 +283,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
       return;
     }
 
-    ChannelFutureListener[] all = utils.addToArray(f -> log((ChannelFuture) f, key, message), listeners);
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelFuture) f, key, message), listeners);
     ChannelFuture f = channel.writeAndFlush(message);
 
     for (ChannelFutureListener cfl : all) {

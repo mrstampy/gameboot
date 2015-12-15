@@ -41,6 +41,8 @@
  */
 package com.github.mrstampy.gameboot.util;
 
+import java.util.Arrays;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -91,5 +93,54 @@ public class GameBootUtils implements ApplicationContextAware {
   @Override
   public void setApplicationContext(ApplicationContext ctx) throws BeansException {
     this.ctx = ctx;
+  }
+
+  /**
+   * Prepend array.
+   *
+   * @param <T>
+   *          the generic type
+   * @param pre
+   *          the pre
+   * @param post
+   *          the post
+   * @return the t[]
+   */
+  @SuppressWarnings("unchecked")
+  public <T> T[] prependArray(T pre, T... post) {
+    if (pre == null) throw new IllegalArgumentException("Element cannot be null");
+    if (post == null) throw new IllegalArgumentException("Array cannot be null");
+
+    T[] array = Arrays.copyOf(post, post.length + 1);
+
+    array[0] = pre;
+    if (array.length == 1) return array;
+
+    System.arraycopy(post, 0, array, 1, post.length);
+
+    return array;
+  }
+
+  /**
+   * Postpend array.
+   *
+   * @param <T>
+   *          the generic type
+   * @param pre
+   *          the pre
+   * @param post
+   *          the post
+   * @return the t[]
+   */
+  @SuppressWarnings("unchecked")
+  public <T> T[] postpendArray(T pre, T... post) {
+    if (pre == null) throw new IllegalArgumentException("Element cannot be null");
+    if (post == null) throw new IllegalArgumentException("Array cannot be null");
+
+    T[] array = Arrays.copyOf(post, post.length + 1);
+
+    array[post.length] = pre;
+
+    return array;
   }
 }
