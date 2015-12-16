@@ -39,58 +39,31 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.usersession.netty;
+package com.github.mrstampy.gameboot.util;
 
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import java.util.List;
 
-import org.slf4j.MDC;
-import org.springframework.context.annotation.Profile;
-import org.springframework.context.annotation.Scope;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.netty.examples.MDCExecutorNettyMessageHandler;
-import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
-import com.github.mrstampy.gameboot.util.GameBootUtils;
-
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
-
 /**
- * The Class MDCUserSessionInboundHandler clears the Logback {@link MDC} context
- * and sets the {@link #USER_NAME} (userName) and {@link #SESSION_ID}
- * (sessionId) in the {@link MDC} context should these values have been
- * extracted by the {@link UserSessionInboundHandler} superclass. It is intended
- * to be added as the penultimate handler before an instance of
- * {@link MDCExecutorNettyMessageHandler}. <br>
- * <br>
- * 
- * Do not instantiate directly as this is a prototype Spring managed bean. Use
- * {@link GameBootUtils#getBean(Class)} to obtain a unique instance when
- * constructing the {@link ChannelPipeline}.
+ * The Class RegistryCleaner.
  */
 @Component
-@Scope("prototype")
-@Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
-public class MDCUserSessionInboundHandler extends UserSessionInboundHandler {
+public class RegistryCleaner {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * io.netty.channel.SimpleChannelInboundHandler#channelRead0(io.netty.channel.
-   * ChannelHandlerContext, java.lang.Object)
+  @Autowired
+  private List<GameBootRegistry<?>> registries;
+
+  /**
+   * Ensures all registries are cleaned of any values specified by the key.
+   *
+   * @param key
+   *          the key
    */
-  @Override
-  protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-    super.channelRead0(ctx, msg);
+  public void cleanup(Comparable<?> key) {
+    if (key == null) return;
 
-    MDC.clear();
-    initMdc();
-  }
-
-  private void initMdc() {
-    if (isNotEmpty(userName)) MDC.put(USER_NAME, userName);
-
-    if (sessionId != null) MDC.put(SESSION_ID, sessionId.toString());
+    registries.forEach(r -> r.remove(key));
   }
 }

@@ -60,6 +60,7 @@ import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
+import com.github.mrstampy.gameboot.util.RegistryCleaner;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -93,6 +94,9 @@ public class UserSessionInboundHandler extends SimpleChannelInboundHandler<Strin
   @Autowired
   private ObjectMapper mapper;
 
+  @Autowired
+  private RegistryCleaner cleaner;
+
   /** The user name. */
   protected String userName;
 
@@ -108,9 +112,17 @@ public class UserSessionInboundHandler extends SimpleChannelInboundHandler<Strin
    */
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    if (isNotEmpty(userName)) cleaner.cleanup(userName);
+    if (sessionId != null) cleaner.cleanup(sessionId);
+
+    cleaner.cleanup(SESSION_ID);
+
     mapper = null;
     userName = null;
     sessionId = null;
+    cleaner = null;
+
+    ctx.fireChannelInactive();
   }
 
   /*

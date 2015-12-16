@@ -68,6 +68,7 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
+import com.github.mrstampy.gameboot.util.RegistryCleaner;
 
 /**
  * The Class AbstractGameBootWebSocketHandler is the superclass of
@@ -98,6 +99,9 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
 
   @Autowired
   private SystemId generator;
+  
+  @Autowired
+  private RegistryCleaner cleaner;
 
   private Long systemId;
 
@@ -146,6 +150,8 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   @Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    cleaner.cleanup(getSystemId());
+    
     Set<Entry<Comparable<?>, WebSocketSession>> set = registry.getKeysForValue(session);
 
     set.forEach(e -> registry.remove(e.getKey()));

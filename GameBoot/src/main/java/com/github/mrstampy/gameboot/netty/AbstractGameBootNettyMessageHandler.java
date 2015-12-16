@@ -62,6 +62,7 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
+import com.github.mrstampy.gameboot.util.RegistryCleaner;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
@@ -112,6 +113,9 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
 
   @Autowired
   private SystemId generator;
+
+  @Autowired
+  private RegistryCleaner cleaner;
 
   private Long systemId;
 
@@ -168,12 +172,15 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     log.info("Disconnected from {}", ctx.channel());
 
+    cleaner.cleanup(getSystemId());
+
     helper = null;
     registry = null;
     utils = null;
     converter = null;
     generator = null;
     systemId = null;
+    cleaner = null;
   }
 
   /*
