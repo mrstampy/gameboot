@@ -112,11 +112,12 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
   protected Response gameBootErrorResponse(M message, Exception e) {
     log.error("Error in processing {} : {}", message.getType(), e.getMessage());
 
-    Object[] array = extractPayload(e);
+    Object[] payload = extractPayload(e);
 
-    Object payload = mtArray(array) ? e.getMessage() : utils.postpendArray(e.getMessage(), array);
+    payload = mtArray(payload) ? null : utils.postpendArray(e.getMessage(), payload);
 
-    Response r = new Response(ResponseCode.FAILURE, payload);
+    Response r = payload == null ? new Response(ResponseCode.FAILURE, e.getMessage())
+        : new Response(ResponseCode.FAILURE, payload);
     r.setId(message.getId());
 
     return r;

@@ -53,6 +53,8 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
+import com.github.mrstampy.gameboot.otp.messages.OtpError;
+import com.github.mrstampy.gameboot.otp.messages.OtpErrorCode;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
@@ -102,9 +104,11 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
   @Override
   protected void validate(OtpNewKeyAck message) throws Exception {
     Long systemId = message.getSystemId();
-    if (systemId == null || systemId <= 0) fail("No systemId");
+    if (systemId == null || systemId <= 0) fail("No systemId", new OtpError(OtpErrorCode.NO_SYSTEM_ID));
 
-    if (!systemId.equals(message.getProcessorKey())) fail("systemId does not match processor id");
+    if (!systemId.equals(message.getProcessorKey())) {
+      fail("systemId does not match processor id", new OtpError(OtpErrorCode.SYSTEM_ID_MISMATCH));
+    }
   }
 
   /*

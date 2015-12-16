@@ -177,7 +177,7 @@ public class GameBootMessageConverter {
     return mapper.writeValueAsBytes(msg);
   }
 
-  private void fail(String msg, Object...payload) throws GameBootException {
+  private void fail(String msg, Object... payload) throws GameBootException {
     throw new GameBootException(msg, payload);
   }
 }

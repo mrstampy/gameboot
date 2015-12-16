@@ -51,52 +51,52 @@ public class GameBootRuntimeException extends RuntimeException {
   private Object[] payload;
 
   /**
- * Instantiates a new game boot runtime exception.
- *
- * @param payload
- *          the payload
- */
+   * Instantiates a new game boot runtime exception.
+   *
+   * @param payload
+   *          the payload
+   */
   public GameBootRuntimeException(Object... payload) {
     super();
     setPayload(payload);
   }
 
   /**
- * Instantiates a new game boot runtime exception.
- *
- * @param message
- *          the message
- * @param payload
- *          the payload
- */
+   * Instantiates a new game boot runtime exception.
+   *
+   * @param message
+   *          the message
+   * @param payload
+   *          the payload
+   */
   public GameBootRuntimeException(String message, Object... payload) {
     super(message);
     setPayload(payload);
   }
 
   /**
- * Instantiates a new game boot runtime exception.
- *
- * @param cause
- *          the cause
- * @param payload
- *          the payload
- */
+   * Instantiates a new game boot runtime exception.
+   *
+   * @param cause
+   *          the cause
+   * @param payload
+   *          the payload
+   */
   public GameBootRuntimeException(Throwable cause, Object... payload) {
     super(cause);
     setPayload(payload);
   }
 
   /**
- * Instantiates a new game boot runtime exception.
- *
- * @param message
- *          the message
- * @param cause
- *          the cause
- * @param payload
- *          the payload
- */
+   * Instantiates a new game boot runtime exception.
+   *
+   * @param message
+   *          the message
+   * @param cause
+   *          the cause
+   * @param payload
+   *          the payload
+   */
   public GameBootRuntimeException(String message, Throwable cause, Object... payload) {
     super(message, cause);
     setPayload(payload);
@@ -121,29 +121,29 @@ public class GameBootRuntimeException extends RuntimeException {
   }
 
   /**
- * Checks for payload.
- *
- * @return true, if successful
- */
+   * Checks for payload.
+   *
+   * @return true, if successful
+   */
   public boolean hasPayload() {
     return payload != null && payload.length > 0;
   }
 
   /**
- * Gets the payload.
- *
- * @return the payload
- */
+   * Gets the payload.
+   *
+   * @return the payload
+   */
   public Object[] getPayload() {
     return payload;
   }
 
   /**
- * Sets the payload.
- *
- * @param payload
- *          the new payload
- */
+   * Sets the payload.
+   *
+   * @param payload
+   *          the new payload
+   */
   public void setPayload(Object[] payload) {
     this.payload = payload;
   }
