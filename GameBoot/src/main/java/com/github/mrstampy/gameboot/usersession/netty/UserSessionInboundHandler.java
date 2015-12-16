@@ -115,8 +115,6 @@ public class UserSessionInboundHandler extends SimpleChannelInboundHandler<Strin
     if (isNotEmpty(userName)) cleaner.cleanup(userName);
     if (sessionId != null) cleaner.cleanup(sessionId);
 
-    cleaner.cleanup(SESSION_ID);
-
     mapper = null;
     userName = null;
     sessionId = null;
