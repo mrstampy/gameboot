@@ -48,13 +48,13 @@ public enum OtpErrorCode {
   //@formatter:off
   // when the systemId has not been set
   /** The no system id. */
-  NO_SYSTEM_ID(-1, "No process id"),
+  NO_SYSTEM_ID(-1, "No systemId"),
   // powers of 2
   /** The KE y_ power s_ o f_2. */
   KEY_POWERS_OF_2(-2, "Key size must be a power of 2"),
   // when the supplied systemId does not match the systemId of the channel
   /** The system id mismatch. */
-  SYSTEM_ID_MISMATCH(-3, "Process id mismatch"),
+  SYSTEM_ID_MISMATCH(-3, "Processor id mismatch"),
   // must be one of NEW, DELETE
   /** The invalid key function. */
   INVALID_KEY_FUNCTION(-4, "Invalid function"),
