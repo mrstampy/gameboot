@@ -60,6 +60,9 @@ import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.messages.error.Error;
+import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
+import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.RegistryCleaner;
@@ -90,7 +93,7 @@ import io.netty.util.concurrent.Future;
  * @see GameBootMessageController
  * 
  */
-public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexHandler {
+public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexHandler implements ErrorCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /** The Constant MESSAGE_COUNTER. */
@@ -116,6 +119,9 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
 
   @Autowired
   private RegistryCleaner cleaner;
+
+  @Autowired
+  private ErrorLookup lookup;
 
   private Long systemId;
 
@@ -275,11 +281,11 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
       response = process(ctx, msg, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(e.getMessage());
+      response = fail(agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       log.error("Unexpected exception processing message {} on channel {}", msg, ctx.channel(), e);
-      response = fail("An unexpected error has occurred");
+      response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
     }
 
     postProcess(ctx, agbm, response);
@@ -387,7 +393,25 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    *          the ctx
    */
   protected void sendUnexpectedError(ChannelHandlerContext ctx) {
-    sendError(ctx, "An unexpected error has occurred");
+    sendError(UNEXPECTED_ERROR, ctx, "An unexpected error has occurred");
+  }
+
+  /**
+   * Send error.
+   *
+   * @param code
+   *          the code
+   * @param ctx
+   *          the ctx
+   * @param message
+   *          the message
+   */
+  protected void sendError(int code, ChannelHandlerContext ctx, String message) {
+    try {
+      ctx.channel().writeAndFlush(fail(code, null, message));
+    } catch (Exception e) {
+      log.error("Unexpected exception", e);
+    }
   }
 
   /**
@@ -395,14 +419,15 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    *
    * @param ctx
    *          the ctx
-   * @param message
-   *          the message
+   * @param e
+   *          the e
    */
-  protected void sendError(ChannelHandlerContext ctx, String message) {
+  protected void sendError(ChannelHandlerContext ctx, Exception e) {
+    Response r = fail(null, e);
     try {
-      ctx.channel().writeAndFlush(fail(message));
-    } catch (Exception e) {
-      log.error("Unexpected exception", e);
+      ctx.channel().writeAndFlush(converter.toJsonArray(r));
+    } catch (Exception f) {
+      log.error("Unexpected exception", f);
     }
   }
 
@@ -415,14 +440,52 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   }
 
   /**
-   * Returns a fail message.
+   * Fail.
    *
    * @param message
    *          the message
+   * @param e
+   *          the e
+   * @return the response
+   */
+  protected Response fail(AbstractGameBootMessage message, Exception e) {
+    Error error = extractError(e);
+    Object[] payload = extractPayload(e);
+
+    Response r = new Response(message, ResponseCode.FAILURE, payload);
+    r.setError(error);
+
+    return r;
+  }
+
+  private Error extractError(Exception e) {
+    boolean rt = e instanceof GameBootRuntimeException;
+
+    return rt ? ((GameBootRuntimeException) e).getError() : ((GameBootException) e).getError();
+  }
+
+  private Object[] extractPayload(Exception e) {
+    boolean rt = e instanceof GameBootRuntimeException;
+
+    return rt ? ((GameBootRuntimeException) e).getPayload() : ((GameBootException) e).getPayload();
+  }
+
+  /**
+   * Returns a fail message.
+   *
+   * @param code
+   *          the code
+   * @param message
+   *          the message
+   * @param payload
+   *          the payload
    * @return the string
    */
-  protected Response fail(String message) {
-    return new Response(ResponseCode.FAILURE, message);
+  protected Response fail(int code, AbstractGameBootMessage message, String payload) {
+    Response r = new Response(message, ResponseCode.FAILURE, message);
+    r.setError(lookup.lookup(code));
+
+    return r;
   }
 
   /**

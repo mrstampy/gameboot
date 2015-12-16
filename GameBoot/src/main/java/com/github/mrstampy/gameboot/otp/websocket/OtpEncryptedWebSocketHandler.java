@@ -149,7 +149,7 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
       try {
         processForBinary(session, message);
       } catch (GameBootException | GameBootRuntimeException e) {
-        sendErrorBinary(session, e.getMessage());
+        sendErrorBinary(session, e);
       } catch (Exception e) {
         log.error("Unexpected exception", e);
         sendUnexpectedErrorBinary(session);

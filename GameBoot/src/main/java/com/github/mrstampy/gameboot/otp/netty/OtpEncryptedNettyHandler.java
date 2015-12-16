@@ -200,10 +200,10 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
       try {
         processOtpMessage(ctx, msg);
       } catch (GameBootException | GameBootRuntimeException e) {
-        sendError(ctx, e.getMessage());
+        sendError(ctx, e);
       } catch (Exception e) {
         log.error("Unexpected exception", e);
-        sendError(ctx, "An unexpected error has occurred");
+        sendUnexpectedError(ctx);
       }
     });
   }

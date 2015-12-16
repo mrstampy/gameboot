@@ -190,7 +190,7 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
         return logoutUser(message);
       default:
         log.error("Inaccessible: UserMessage.function is broken for {}", message);
-        return failure(UNEXPECTED_ERROR, "Should never reach here");
+        return failure(UNEXPECTED_ERROR, message, "Should never reach here");
       }
     } finally {
       helper.stopTimer(ctx);
@@ -211,7 +211,7 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
   private Response logoutUser(UserMessage message) {
     String userName = message.getUserName();
 
-    return success(assist.logout(userName));
+    return success(message, assist.logout(userName));
   }
 
   private Response loginUser(UserMessage message) {
@@ -229,13 +229,13 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
 
     log.info("Login for {} is {}", userName, ok);
 
-    return ok ? createSession(user) : failure(INVALID_PASSWORD, "Password is invalid");
+    return ok ? createSession(message, user) : failure(INVALID_PASSWORD, message, "Password is invalid");
   }
 
-  private Response createSession(User user) {
+  private Response createSession(UserMessage message, User user) {
     UserSession session = assist.create(user);
 
-    Response r = success(session);
+    Response r = success(message, session);
 
     r.setMappingKeys(user.getUserName(), session.getId());
 
@@ -252,7 +252,7 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
 
     log.info("Updated user {}? {}", user, changed);
 
-    return changed ? success(user) : failure(USER_UNCHANGED, user);
+    return changed ? success(message, user) : failure(USER_UNCHANGED, message, user);
   }
 
   private Response deleteUser(UserMessage message) {
@@ -269,7 +269,7 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
 
     lookup.clearMDC();
 
-    return success(user);
+    return success(message, user);
   }
 
   private Response createNewUser(UserMessage message) {
@@ -279,7 +279,7 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
 
     log.info("Created user {}", user);
 
-    return success(user);
+    return success(message, user);
   }
 
   private boolean populateForUpdate(UserMessage message, User user) {

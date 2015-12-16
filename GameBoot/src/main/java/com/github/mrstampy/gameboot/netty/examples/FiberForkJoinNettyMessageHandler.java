@@ -185,7 +185,7 @@ public class FiberForkJoinNettyMessageHandler extends AbstractGameBootNettyMessa
     } catch (SuspendExecution | InterruptedException e) {
       throw e;
     } catch (GameBootException | GameBootRuntimeException e) {
-      sendError(ctx, e.getMessage());
+      sendError(ctx, e);
     } catch (Exception e) {
       log.error("Unexpected exception", e);
       sendUnexpectedError(ctx);

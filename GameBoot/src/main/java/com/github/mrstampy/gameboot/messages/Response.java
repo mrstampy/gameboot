@@ -95,6 +95,21 @@ public class Response extends AbstractGameBootMessage {
   /**
    * Instantiates a new response.
    *
+   * @param message
+   *          the message
+   * @param responseCode
+   *          the response code
+   * @param response
+   *          the response
+   */
+  public Response(AbstractGameBootMessage message, ResponseCode responseCode, Object... response) {
+    this(responseCode, response);
+    setType(message == null ? null : message.getType());
+  }
+
+  /**
+   * Instantiates a new response.
+   *
    * @param responseCode
    *          the response code
    * @param response
@@ -104,6 +119,23 @@ public class Response extends AbstractGameBootMessage {
     this();
     setResponseCode(responseCode);
     setResponse(response);
+  }
+
+  /**
+   * Instantiates a new response.
+   *
+   * @param message
+   *          the message
+   * @param responseCode
+   *          the response code
+   * @param error
+   *          the error
+   * @param response
+   *          the response
+   */
+  public Response(AbstractGameBootMessage message, ResponseCode responseCode, Error error, Object... response) {
+    this(message, responseCode, response);
+    setError(error);
   }
 
   /**

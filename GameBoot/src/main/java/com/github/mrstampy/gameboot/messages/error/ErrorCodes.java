@@ -108,4 +108,7 @@ public interface ErrorCodes {
 
   /** The Constant USER_UNCHANGED. */
   public static final Integer USER_UNCHANGED = -79;
+
+  /** The Constant NOT_BYTE_ARRAY. */
+  public static final Integer NOT_BYTE_ARRAY = -78;
 }

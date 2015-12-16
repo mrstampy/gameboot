@@ -134,7 +134,7 @@ public class MDCExecutorNettyMessageHandler extends AbstractGameBootNettyMessage
         try {
           process(ctx, msg);
         } catch (GameBootException | GameBootRuntimeException e) {
-          sendError(ctx, e.getMessage());
+          sendError(ctx, e);
         } catch (Exception e) {
           log.error("Unexpected exception", e);
           sendUnexpectedError(ctx);
@@ -161,7 +161,7 @@ public class MDCExecutorNettyMessageHandler extends AbstractGameBootNettyMessage
         try {
           process(ctx, new String(msg));
         } catch (GameBootException | GameBootRuntimeException e) {
-          sendError(ctx, e.getMessage());
+          sendError(ctx, e);
         } catch (Exception e) {
           log.error("Unexpected exception", e);
           sendUnexpectedError(ctx);

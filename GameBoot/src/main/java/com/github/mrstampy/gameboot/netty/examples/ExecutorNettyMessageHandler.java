@@ -126,7 +126,7 @@ public class ExecutorNettyMessageHandler extends AbstractGameBootNettyMessageHan
         try {
           process(ctx, msg);
         } catch (GameBootException | GameBootRuntimeException e) {
-          sendError(ctx, e.getMessage());
+          sendError(ctx, e);
         } catch (Exception e) {
           log.error("Unexpected exception", e);
           sendUnexpectedError(ctx);
@@ -151,7 +151,7 @@ public class ExecutorNettyMessageHandler extends AbstractGameBootNettyMessageHan
         try {
           process(ctx, new String(msg));
         } catch (GameBootException | GameBootRuntimeException e) {
-          sendError(ctx, e.getMessage());
+          sendError(ctx, e);
         } catch (Exception e) {
           log.error("Unexpected exception", e);
           sendUnexpectedError(ctx);

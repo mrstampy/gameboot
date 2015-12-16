@@ -167,7 +167,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     case NEW:
       return newKey(message);
     default:
-      return failure(UNEXPECTED_ERROR, "Implementation error: " + message.getKeyFunction());
+      return failure(UNEXPECTED_ERROR, message, "Implementation error: " + message.getKeyFunction());
     }
   }
 
@@ -177,7 +177,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
 
     registry.remove(systemId);
 
-    return new Response(ResponseCode.SUCCESS);
+    return new Response(message, ResponseCode.SUCCESS);
   }
 
   private Response newKey(OtpKeyRequest message) throws Exception {
@@ -190,7 +190,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
 
     newKeyRegistry.put(systemId, newKey);
 
-    return new Response(ResponseCode.SUCCESS, newKey);
+    return new Response(message, ResponseCode.SUCCESS, newKey);
   }
 
 }

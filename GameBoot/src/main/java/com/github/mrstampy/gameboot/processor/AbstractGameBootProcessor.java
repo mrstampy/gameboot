@@ -97,6 +97,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 
       Response response = processImpl(message);
       response.setId(message.getId());
+      response.setType(message.getType());
 
       log.debug("Created response {} for {}", response, message);
 
@@ -106,7 +107,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
     } catch (Exception e) {
       log.error("Error in processing {}", message.getType(), e);
 
-      Response r = failure(UNEXPECTED_ERROR, "An unexpected error has occurred");
+      Response r = failure(UNEXPECTED_ERROR, message, "An unexpected error has occurred");
       r.setId(message.getId());
 
       return r;
@@ -129,7 +130,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 
     Object[] payload = extractPayload(e);
 
-    Response r = new Response(ResponseCode.FAILURE, error, payload);
+    Response r = new Response(message, ResponseCode.FAILURE, error, payload);
     r.setId(message.getId());
     r.setError(error);
 
@@ -172,10 +173,12 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    *
    * @param message
    *          the message
+   * @param response
+   *          the response
    * @return the response
    */
-  protected Response success(Object... message) {
-    return new Response(ResponseCode.SUCCESS, message);
+  protected Response success(M message, Object... response) {
+    return new Response(message, ResponseCode.SUCCESS, response);
   }
 
   /**
@@ -185,10 +188,12 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    *          the code
    * @param message
    *          the message
+   * @param response
+   *          the response
    * @return the response
    */
-  protected Response failure(int code, Object... message) {
-    return new Response(ResponseCode.FAILURE, lookup.lookup(code), message);
+  protected Response failure(int code, M message, Object... response) {
+    return new Response(message, ResponseCode.FAILURE, lookup.lookup(code), response);
   }
 
   /**

@@ -125,7 +125,7 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
 
     keyRegistry.put(systemId, newKey);
 
-    return new Response(ResponseCode.SUCCESS);
+    return new Response(message, ResponseCode.SUCCESS);
   }
 
 }

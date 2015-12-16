@@ -125,7 +125,7 @@ public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHand
     } catch (SuspendExecution | InterruptedException e) {
       throw e;
     } catch (GameBootException | GameBootRuntimeException e) {
-      sendError(session, e.getMessage());
+      sendError(session, e);
     } catch (Exception e) {
       log.error("Unexpected exception", e);
       sendUnexpectedError(session);
@@ -167,7 +167,7 @@ public class FiberForkJoinWebSocketHandler extends AbstractGameBootWebSocketHand
     } catch (SuspendExecution | InterruptedException e) {
       throw e;
     } catch (GameBootException | GameBootRuntimeException e) {
-      sendErrorBinary(session, e.getMessage());
+      sendErrorBinary(session, e);
     } catch (Exception e) {
       log.error("Unexpected exception", e);
       sendUnexpectedErrorBinary(session);

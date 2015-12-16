@@ -218,7 +218,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (!(msg instanceof byte[])) {
-      sendError(ctx, "Message must be a byte array");
+      sendError(NOT_BYTE_ARRAY, ctx, "Message must be a byte array");
       return;
     }
 
@@ -251,10 +251,10 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
       try {
         process(ctx, new String(msg));
       } catch (GameBootException | GameBootRuntimeException e) {
-        sendError(ctx, e.getMessage());
+        sendError(ctx, e);
       } catch (Exception e) {
         log.error("Unexpected exception", e);
-        sendError(ctx, "An unexpected error has occurred");
+        sendUnexpectedError(ctx);
       }
     });
   }

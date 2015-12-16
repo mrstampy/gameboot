@@ -66,6 +66,9 @@ import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.messages.error.Error;
+import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
+import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.RegistryCleaner;
@@ -78,7 +81,7 @@ import com.github.mrstampy.gameboot.util.RegistryCleaner;
  * 
  * @see GameBootMessageController
  */
-public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocketHandler {
+public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocketHandler implements ErrorCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String MESSAGE_COUNTER = "GameBoot Web Socket Message Counter";
@@ -102,6 +105,9 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
 
   @Autowired
   private RegistryCleaner cleaner;
+
+  @Autowired
+  private ErrorLookup lookup;
 
   private Long systemId;
 
@@ -282,11 +288,11 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
       response = process(session, msg, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(e.getMessage());
+      response = fail(agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       log.error("Unexpected exception processing message {} on channel {}", msg, session.getRemoteAddress(), e);
-      response = fail("An unexpected error has occurred");
+      response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
     }
 
     postProcess(session, agbm, response);
@@ -404,7 +410,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *          the session
    */
   protected void sendUnexpectedError(WebSocketSession session) {
-    sendError(session, "An unexpected error has occurred");
+    sendError(null, session, "An unexpected error has occurred");
   }
 
   /**
@@ -414,7 +420,28 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *          the session
    */
   protected void sendUnexpectedErrorBinary(WebSocketSession session) {
-    sendErrorBinary(session, "An unexpected error has occurred");
+    sendErrorBinary(null, session, "An unexpected error has occurred");
+  }
+
+  /**
+   * Send failure.
+   *
+   * @param messageId
+   *          the message id
+   * @param session
+   *          the session
+   * @param msg
+   *          the msg
+   */
+  protected void sendError(Integer messageId, WebSocketSession session, String msg) {
+    try {
+      Response r = fail(UNEXPECTED_ERROR, msg);
+      r.setId(messageId);
+      TextMessage fail = new TextMessage(converter.toJsonArray(r));
+      session.sendMessage(fail);
+    } catch (Exception e) {
+      log.error("Unexpected exception sending failure {} for {}", msg, getSystemId(), e);
+    }
   }
 
   /**
@@ -422,12 +449,38 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *
    * @param session
    *          the session
+   * @param e
+   *          the e
+   */
+  protected void sendError(WebSocketSession session, Exception e) {
+    try {
+      Response r = fail(null, e);
+      TextMessage fail = new TextMessage(converter.toJsonArray(r));
+      session.sendMessage(fail);
+    } catch (Exception f) {
+      log.error("Unexpected exception sending failure {} for {}, systemId {}",
+          e.getMessage(),
+          session,
+          getSystemId(),
+          f);
+    }
+  }
+
+  /**
+   * Send failure binary.
+   *
+   * @param messageId
+   *          the message id
+   * @param session
+   *          the session
    * @param msg
    *          the msg
    */
-  protected void sendError(WebSocketSession session, String msg) {
+  protected void sendErrorBinary(Integer messageId, WebSocketSession session, String msg) {
     try {
-      TextMessage fail = new TextMessage(converter.toJsonArray(fail(msg)));
+      Response r = fail(UNEXPECTED_ERROR, msg);
+      r.setId(messageId);
+      BinaryMessage fail = new BinaryMessage(converter.toJsonArray(r));
       session.sendMessage(fail);
     } catch (Exception e) {
       log.error("Unexpected exception sending failure {} for {}", msg, getSystemId(), e);
@@ -439,26 +492,85 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *
    * @param session
    *          the session
-   * @param msg
-   *          the msg
+   * @param e
+   *          the e
    */
-  protected void sendErrorBinary(WebSocketSession session, String msg) {
+  protected void sendErrorBinary(WebSocketSession session, Exception e) {
     try {
-      BinaryMessage fail = new BinaryMessage(converter.toJsonArray(fail(msg)));
+      Response r = fail(null, e);
+      BinaryMessage fail = new BinaryMessage(converter.toJsonArray(r));
       session.sendMessage(fail);
-    } catch (Exception e) {
-      log.error("Unexpected exception sending failure {} for {}", msg, getSystemId(), e);
+    } catch (Exception f) {
+      log.error("Unexpected exception sending failure {} for {}, systemId {}",
+          e.getMessage(),
+          session,
+          getSystemId(),
+          f);
     }
+  }
+
+  /**
+   * Fail.
+   *
+   * @param message
+   *          the message
+   * @param e
+   *          the e
+   * @return the response
+   */
+  protected Response fail(AbstractGameBootMessage message, Exception e) {
+    Error error = extractError(e);
+    Object[] payload = extractPayload(e);
+
+    Response r = new Response(message, ResponseCode.FAILURE, payload);
+    r.setError(error);
+
+    return r;
+  }
+
+  private Error extractError(Exception e) {
+    boolean rt = e instanceof GameBootRuntimeException;
+
+    return rt ? ((GameBootRuntimeException) e).getError() : ((GameBootException) e).getError();
+  }
+
+  private Object[] extractPayload(Exception e) {
+    boolean rt = e instanceof GameBootRuntimeException;
+
+    return rt ? ((GameBootRuntimeException) e).getPayload() : ((GameBootException) e).getPayload();
   }
 
   /**
    * Returns a fail message.
    *
+   * @param code
+   *          the code
    * @param message
    *          the message
    * @return the string
    */
-  protected Response fail(String message) {
-    return new Response(ResponseCode.FAILURE, message);
+  protected Response fail(int code, String message) {
+    Response r = new Response(ResponseCode.FAILURE, message);
+    r.setError(lookup.lookup(code));
+
+    return r;
+  }
+
+  /**
+   * Returns a fail message.
+   *
+   * @param code
+   *          the code
+   * @param message
+   *          the message
+   * @param payload
+   *          the payload
+   * @return the string
+   */
+  protected Response fail(int code, AbstractGameBootMessage message, String payload) {
+    Response r = new Response(message, ResponseCode.FAILURE, payload);
+    r.setError(lookup.lookup(code));
+
+    return r;
   }
 }
