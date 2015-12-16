@@ -56,7 +56,7 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 public class Response extends AbstractGameBootMessage {
 
   /** The Constant TYPE. */
-  public static final String TYPE = "RESPONSE";
+  public static final String TYPE = "Response";
 
   /**
    * The Enum ResponseCode.
@@ -104,7 +104,7 @@ public class Response extends AbstractGameBootMessage {
    */
   public Response(AbstractGameBootMessage message, ResponseCode responseCode, Object... response) {
     this(responseCode, response);
-    setType(message == null ? null : message.getType());
+    if (message != null) setType(message.getType());
   }
 
   /**
