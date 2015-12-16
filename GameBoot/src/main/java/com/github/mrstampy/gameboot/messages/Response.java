@@ -156,6 +156,7 @@ public class Response extends AbstractGameBootMessage {
    *          the new response
    */
   public void setResponse(Object... response) {
+    if (response != null && response.length == 0) response = null;
     this.response = response;
   }
 
