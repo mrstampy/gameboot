@@ -56,6 +56,8 @@ import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
+import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
 import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepository;
@@ -67,7 +69,7 @@ import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepos
  */
 @Component
 @Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
-public class UserSessionLookup {
+public class UserSessionLookup implements ErrorCodes {
 
   private static final String CACHED_SESSION_TIMER = "CachedSessionTimer";
 
@@ -88,6 +90,9 @@ public class UserSessionLookup {
 
   @Autowired
   private UserSessionRepository repository;
+
+  @Autowired
+  private ErrorLookup lookup;
 
   /**
    * Post construct.
@@ -116,9 +121,9 @@ public class UserSessionLookup {
     try {
       String noSession = "No session for " + userName;
 
-      check(isEmpty(userName), "No username specified");
+      check(NO_USERNAME, isEmpty(userName), "No username specified");
 
-      check(!activeSessions.hasSession(userName), noSession);
+      check(NO_USER_SESSION, !activeSessions.hasSession(userName), noSession);
 
       List<UserSession> sessions = assist.activeSessions();
 
@@ -147,9 +152,9 @@ public class UserSessionLookup {
     try {
       String noSession = "No session for " + id;
 
-      check(id == null, "No session id specified");
+      check(INVALID_SESSION_ID, id == null, "No session id specified");
 
-      check(!activeSessions.hasSession(id), noSession);
+      check(NO_USER_SESSION, !activeSessions.hasSession(id), noSession);
 
       List<UserSession> sessions = assist.activeSessions();
 
@@ -193,7 +198,7 @@ public class UserSessionLookup {
   }
 
   private UserSession sessionCheck(UserSession session) {
-    check(session == null, "No session");
+    check(NO_USER_SESSION, session == null, "No session");
 
     MDC.put(MDC_SESSION_ID, session.getId().toString());
     MDC.put(MDC_USER_ID, session.getUser().getId().toString());
@@ -205,7 +210,7 @@ public class UserSessionLookup {
     return sessions.stream().filter(p).findFirst();
   }
 
-  private void check(boolean condition, String msg) {
-    if (condition) throw new GameBootRuntimeException(msg);
+  private void check(int code, boolean condition, String msg) {
+    if (condition) throw new GameBootRuntimeException(msg, lookup.lookup(code));
   }
 }

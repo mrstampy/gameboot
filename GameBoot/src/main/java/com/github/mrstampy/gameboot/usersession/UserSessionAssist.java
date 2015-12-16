@@ -60,6 +60,8 @@ import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
+import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.usersession.data.entity.User;
 import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
@@ -73,7 +75,7 @@ import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepos
  */
 @Component
 @Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
-public class UserSessionAssist {
+public class UserSessionAssist implements ErrorCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /** The Constant SESSIONS_CACHE. */
@@ -95,6 +97,9 @@ public class UserSessionAssist {
 
   @Autowired
   private MetricsHelper helper;
+
+  @Autowired
+  private ErrorLookup lookup;
 
   private String sessionsKey = SESSIONS_KEY;
 
@@ -122,7 +127,7 @@ public class UserSessionAssist {
     userCheck(user);
 
     String userName = user.getUserName();
-    check(activeSessions.hasSession(userName), "Session already exists for " + userName);
+    check(USER_SESSION_EXISTS, activeSessions.hasSession(userName), "Session already exists for " + userName);
 
     UserSession session = new UserSession();
     session.setUser(user);
@@ -148,7 +153,7 @@ public class UserSessionAssist {
 
     User user = userRepo.findByUserName(userName);
 
-    check(user == null, "No user for " + userName);
+    check(NO_USER_RECORD, user == null, "No user for " + userName);
 
     return user;
   }
@@ -167,11 +172,9 @@ public class UserSessionAssist {
 
     String noSession = "No session for " + userName;
 
-    check(!activeSessions.hasSession(userName), noSession);
+    check(NO_USER_SESSION, !activeSessions.hasSession(userName), noSession);
 
     UserSession session = userSessionRepo.findOpenSession(userName);
-
-    check(session == null, noSession);
 
     return session;
   }
@@ -189,7 +192,7 @@ public class UserSessionAssist {
     userCheck(user);
 
     String userName = user.getUserName();
-    check(!activeSessions.hasSession(userName), "No session for " + userName);
+    check(NO_USER_SESSION, !activeSessions.hasSession(userName), "No session for " + userName);
 
     return userSessionRepo.findByUserAndEndedIsNull(user);
   }
@@ -204,9 +207,9 @@ public class UserSessionAssist {
    *           the game boot runtime exception
    */
   public UserSession expected(Long id) throws GameBootRuntimeException {
-    if (id == null || id <= 0) throw new GameBootRuntimeException("Id must be > 0: " + id);
+    if (id == null || id <= 0) fail(INVALID_SESSION_ID, "Id must be > 0: " + id);
 
-    check(!activeSessions.hasSession(id), "No session for id " + id);
+    check(NO_USER_SESSION, !activeSessions.hasSession(id), "No session for id " + id);
 
     return userSessionRepo.findOpenSession(id);
   }
@@ -309,14 +312,18 @@ public class UserSessionAssist {
   }
 
   private void userCheck(User user) throws GameBootRuntimeException {
-    check(user == null, "null user");
+    check(NO_USER_RECORD, user == null, "null user");
   }
 
   private void userNameCheck(String userName) throws GameBootRuntimeException {
-    check(isEmpty(userName), "null username");
+    check(NO_USERNAME, isEmpty(userName), "null username");
   }
 
-  private void check(boolean condition, String msg) {
-    if (condition) throw new GameBootRuntimeException(msg);
+  private void check(int code, boolean condition, String msg) {
+    if (condition) fail(code, msg);
+  }
+
+  private void fail(int code, String msg) {
+    throw new GameBootRuntimeException(msg, lookup.lookup(code));
   }
 }

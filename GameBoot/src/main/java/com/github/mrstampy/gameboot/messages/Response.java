@@ -42,8 +42,10 @@
 package com.github.mrstampy.gameboot.messages;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.github.mrstampy.gameboot.messages.error.Error;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
+import com.github.mrstampy.gameboot.util.GameBootRegistry;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
@@ -70,10 +72,14 @@ public class Response extends AbstractGameBootMessage {
     /** The info. */
     INFO,
     /** The alert. */
-    ALERT
+    ALERT,
+    /** The critical. */
+    CRITICAL
   }
 
   private ResponseCode responseCode;
+
+  private Error error;
 
   private Object[] response;
 
@@ -98,6 +104,21 @@ public class Response extends AbstractGameBootMessage {
     this();
     setResponseCode(responseCode);
     setResponse(response);
+  }
+
+  /**
+   * Instantiates a new response.
+   *
+   * @param responseCode
+   *          the response code
+   * @param error
+   *          the error
+   * @param response
+   *          the response
+   */
+  public Response(ResponseCode responseCode, Error error, Object... response) {
+    this(responseCode, response);
+    setError(error);
   }
 
   /**
@@ -171,9 +192,29 @@ public class Response extends AbstractGameBootMessage {
    *          the new mapping keys
    * @see AbstractGameBootNettyMessageHandler
    * @see AbstractGameBootWebSocketHandler
+   * @see GameBootRegistry
    */
   public void setMappingKeys(Comparable<?>... mappingKeys) {
     this.mappingKeys = mappingKeys;
+  }
+
+  /**
+   * Gets the error.
+   *
+   * @return the error
+   */
+  public Error getError() {
+    return error;
+  }
+
+  /**
+   * Sets the error.
+   *
+   * @param error
+   *          the new error
+   */
+  public void setError(Error error) {
+    this.error = error;
   }
 
 }

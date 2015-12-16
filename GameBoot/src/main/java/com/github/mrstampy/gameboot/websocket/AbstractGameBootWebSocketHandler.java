@@ -99,7 +99,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
 
   @Autowired
   private SystemId generator;
-  
+
   @Autowired
   private RegistryCleaner cleaner;
 
@@ -151,7 +151,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
   @Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
     cleaner.cleanup(getSystemId());
-    
+
     Set<Entry<Comparable<?>, WebSocketSession>> set = registry.getKeysForValue(session);
 
     set.forEach(e -> registry.remove(e.getKey()));

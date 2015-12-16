@@ -57,8 +57,6 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
-import com.github.mrstampy.gameboot.otp.messages.OtpError;
-import com.github.mrstampy.gameboot.otp.messages.OtpErrorCode;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
@@ -135,27 +133,21 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
    */
   @Override
   protected void validate(OtpKeyRequest message) throws Exception {
-    if (message.getKeyFunction() == null) {
-      fail("keyFunction one of NEW, DELETE", new OtpError(OtpErrorCode.INVALID_KEY_FUNCTION));
-    }
+    if (message.getKeyFunction() == null) fail(INVALID_KEY_FUNCTION, "keyFunction one of NEW, DELETE");
 
     Long systemId = message.getSystemId();
-    if (systemId == null || systemId <= 0) fail("No systemId", new OtpError(OtpErrorCode.NO_SYSTEM_ID));
+    if (systemId == null || systemId <= 0) fail(NO_SYSTEM_ID, "No systemId");
 
     switch (message.getKeyFunction()) {
     case DELETE:
-      if (!systemId.equals(message.getProcessorKey())) {
-        fail("systemId does not match processor id", new OtpError(OtpErrorCode.SYSTEM_ID_MISMATCH));
-      }
+      if (!systemId.equals(message.getProcessorKey())) fail(SYSTEM_ID_MISMATCH, "systemId does not match processor id");
       break;
     default:
       break;
     }
 
     Integer size = message.getKeySize();
-    if (size != null && !utils.isPowerOf2(size)) {
-      fail("Invalid key size, expecting powers of 2", new OtpError(OtpErrorCode.KEY_POWERS_OF_2));
-    }
+    if (size != null && !utils.isPowerOf2(size)) fail(INVALID_KEY_SIZE, "Invalid key size, expecting powers of 2");
   }
 
   /**
@@ -175,7 +167,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     case NEW:
       return newKey(message);
     default:
-      return failure("Implementation error: " + message.getKeyFunction(), OtpErrorCode.SERVER_ERROR);
+      return failure(UNEXPECTED_ERROR, "Implementation error: " + message.getKeyFunction());
     }
   }
 

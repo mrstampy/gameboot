@@ -59,6 +59,7 @@ import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
 @Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserSessionConfiguration {
 
+  /** The Constant USER_SESSION_PROFILE. */
   public static final String USER_SESSION_PROFILE = "usersession";
 
 }

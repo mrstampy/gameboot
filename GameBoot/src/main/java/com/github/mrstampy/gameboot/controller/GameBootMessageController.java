@@ -59,6 +59,8 @@ import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
+import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 
@@ -74,7 +76,7 @@ import com.github.mrstampy.gameboot.processor.GameBootProcessor;
  * {@link MessageClassFinder} to process alternative messages.
  */
 @Component
-public class GameBootMessageController {
+public class GameBootMessageController implements ErrorCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String MESSAGE_COUNTER = "Message Controller Counter";
@@ -88,8 +90,21 @@ public class GameBootMessageController {
   @Autowired
   private GameBootMessageConverter converter;
 
+  private ErrorLookup lookup;
+
   /** The map. */
   protected Map<String, GameBootProcessor<?>> map = new ConcurrentHashMap<>();
+
+  /**
+   * Sets the error lookup.
+   *
+   * @param lookup
+   *          the new error lookup
+   */
+  @Autowired
+  public void setErrorLookup(ErrorLookup lookup) {
+    this.lookup = lookup;
+  }
 
   /**
    * Post construct, invoke directly from subclass {@link PostConstruct}.
@@ -119,7 +134,7 @@ public class GameBootMessageController {
   public <AGBM extends AbstractGameBootMessage> String process(String request) throws Exception {
     helper.incr(MESSAGE_COUNTER);
 
-    if (isEmpty(request)) fail("Empty message");
+    if (isEmpty(request)) fail(NO_MESSAGE, "Empty message");
 
     AGBM msg = converter.fromJson(request);
 
@@ -148,7 +163,7 @@ public class GameBootMessageController {
 
     if (processor == null) {
       log.error("No processor for {}", request);
-      fail("Unrecognized message");
+      fail(UNKNOWN_MESSAGE, "Unrecognized message");
     }
 
     return processor.process(msg);
@@ -158,6 +173,8 @@ public class GameBootMessageController {
    * Fail, throwing a {@link GameBootRuntimeException} with the specified
    * message.
    *
+   * @param code
+   *          the code
    * @param message
    *          the message
    * @param payload
@@ -165,7 +182,7 @@ public class GameBootMessageController {
    * @throws GameBootRuntimeException
    *           the game boot runtime exception
    */
-  protected void fail(String message, Object... payload) throws GameBootRuntimeException {
-    throw new GameBootRuntimeException(message, payload);
+  protected void fail(int code, String message, Object... payload) throws GameBootRuntimeException {
+    throw new GameBootRuntimeException(message, lookup.lookup(code), payload);
   }
 }

@@ -57,8 +57,7 @@ import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
-import com.codahale.metrics.Timer.Context;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;;
+import com.codahale.metrics.Timer.Context;;
 
 /**
  * The default implementation of {@link MetricsHelper}.
@@ -86,7 +85,7 @@ public class GameBootMetricsHelper implements MetricsHelper {
   @Override
   public void counter(String key, Class<?> clz, String... qualifiers) {
     check(key);
-    if (counters.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
+    if (counters.containsKey(key)) throw new IllegalArgumentException(key + " already exists");
     counters.put(key, registry.counter(name(clz, qualifiers)));
   }
 
@@ -99,7 +98,7 @@ public class GameBootMetricsHelper implements MetricsHelper {
   @Override
   public void timer(String key, Class<?> clz, String... qualifiers) {
     check(key);
-    if (timers.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
+    if (timers.containsKey(key)) throw new IllegalArgumentException(key + " already exists");
     timers.put(key, registry.timer(name(clz, qualifiers)));
   }
 
@@ -113,7 +112,7 @@ public class GameBootMetricsHelper implements MetricsHelper {
   @Override
   public void gauge(Gauge<?> gauge, String key, Class<?> clz, String... qualifiers) {
     check(key);
-    if (gauges.containsKey(key)) throw new GameBootRuntimeException(key + " already exists");
+    if (gauges.containsKey(key)) throw new IllegalArgumentException(key + " already exists");
     gauges.put(key, registry.register(name(clz, qualifiers), gauge));
   }
 
@@ -197,7 +196,7 @@ public class GameBootMetricsHelper implements MetricsHelper {
     check(key);
     Timer t = timers.get(key);
 
-    if (t == null) throw new GameBootRuntimeException("No timer for key " + key);
+    if (t == null) throw new IllegalArgumentException("No timer for key " + key);
 
     Context ctx = t.time();
 
@@ -244,7 +243,7 @@ public class GameBootMetricsHelper implements MetricsHelper {
   private Counter getCounter(String key) {
     Counter c = counters.get(key);
 
-    if (c == null) throw new GameBootRuntimeException("No counter for key " + key);
+    if (c == null) throw new IllegalArgumentException("No counter for key " + key);
 
     return c;
   }

@@ -58,12 +58,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.controller.MessageClassFinder;
 import com.github.mrstampy.gameboot.exception.GameBootException;
+import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
+import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
 
 /**
  * The Class GameBootMessageConverter.
  */
 @Component
-public class GameBootMessageConverter {
+public class GameBootMessageConverter implements ErrorCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String TYPE_NODE_NAME = "type";
@@ -73,6 +75,9 @@ public class GameBootMessageConverter {
 
   @Autowired
   private MessageClassFinder finder;
+
+  @Autowired
+  private ErrorLookup lookup;
 
   /**
    * From json.
@@ -88,7 +93,7 @@ public class GameBootMessageConverter {
    *           the game boot exception
    */
   public <AGBM extends AbstractGameBootMessage> AGBM fromJson(String message) throws IOException, GameBootException {
-    if (isEmpty(message)) fail("No message");
+    if (isEmpty(message)) fail(NO_MESSAGE, "No message");
 
     JsonNode node = mapper.readTree(message);
 
@@ -109,7 +114,7 @@ public class GameBootMessageConverter {
    *           the game boot exception
    */
   public <AGBM extends AbstractGameBootMessage> AGBM fromJson(byte[] message) throws IOException, GameBootException {
-    if (message == null || message.length == 0) fail("No message");
+    if (message == null || message.length == 0) fail(NO_MESSAGE, "No message");
 
     JsonNode node = mapper.readTree(message);
 
@@ -121,17 +126,17 @@ public class GameBootMessageConverter {
       throws GameBootException, IOException, JsonParseException, JsonMappingException {
     JsonNode typeNode = node.get(TYPE_NODE_NAME);
 
-    if (typeNode == null) fail("No type specified");
+    if (typeNode == null) fail(NO_TYPE, "No type specified");
 
     String type = typeNode.asText();
 
-    if (isEmpty(type)) fail("No type specified");
+    if (isEmpty(type)) fail(NO_TYPE, "No type specified");
 
     Class<?> clz = finder.findClass(type);
 
     if (clz == null) {
       log.error("Unknown message type {} for message {}", type, message);
-      fail("Unrecognized message");
+      fail(UNKNOWN_MESSAGE, "Unrecognized message");
     }
 
     return (AGBM) mapper.readValue(message, clz);
@@ -152,7 +157,7 @@ public class GameBootMessageConverter {
    */
   public <AGBM extends AbstractGameBootMessage> String toJson(AGBM msg)
       throws JsonProcessingException, GameBootException {
-    if (msg == null) fail("No message");
+    if (msg == null) fail(NO_MESSAGE, "No message");
 
     return mapper.writeValueAsString(msg);
   }
@@ -172,12 +177,12 @@ public class GameBootMessageConverter {
    */
   public <AGBM extends AbstractGameBootMessage> byte[] toJsonArray(AGBM msg)
       throws JsonProcessingException, GameBootException {
-    if (msg == null) fail("No message");
+    if (msg == null) fail(NO_MESSAGE, "No message");
 
     return mapper.writeValueAsBytes(msg);
   }
 
-  private void fail(String msg, Object... payload) throws GameBootException {
-    throw new GameBootException(msg, payload);
+  private void fail(int code, String msg, Object... payload) throws GameBootException {
+    throw new GameBootException(msg, lookup.lookup(code), payload);
   }
 }

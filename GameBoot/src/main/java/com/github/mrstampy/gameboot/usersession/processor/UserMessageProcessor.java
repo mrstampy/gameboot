@@ -140,21 +140,21 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
    */
   @Override
   protected void validate(UserMessage message) throws Exception {
-    if (message.getFunction() == null) fail("function must be one of CREATE, DELETE, UPDATE, LOGIN, LOGOUT");
+    if (message.getFunction() == null) fail(INVALID_USER_FUNCTION, "Invalid function");
 
-    if (isEmpty(message.getUserName())) fail("userName must be supplied");
+    if (isEmpty(message.getUserName())) fail(NO_USERNAME, "userName must be supplied");
 
     switch (message.getFunction()) {
     case LOGIN:
-      if (isEmpty(message.getOldPassword())) fail("old password must be supplied");
+      if (isEmpty(message.getOldPassword())) fail(OLD_PASSWORD_MISSING, "old password must be supplied");
       break;
     case CREATE:
-      if (isEmpty(message.getNewPassword())) fail("new password must be supplied");
+      if (isEmpty(message.getNewPassword())) fail(NEW_PASSWORD_MISSING, "new password must be supplied");
       break;
     case DELETE:
       break;
     case UPDATE:
-      if (noData(message)) fail("No user data to update");
+      if (noData(message)) fail(NO_USER_DATA, "No user data to update");
       break;
     case LOGOUT:
       break;
@@ -190,7 +190,7 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
         return logoutUser(message);
       default:
         log.error("Inaccessible: UserMessage.function is broken for {}", message);
-        return failure("Should never reach here");
+        return failure(UNEXPECTED_ERROR, "Should never reach here");
       }
     } finally {
       helper.stopTimer(ctx);
@@ -222,14 +222,14 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     case ACTIVE:
       break;
     default:
-      fail(userName + " is in state " + user.getState());
+      fail(CANNOT_DELETE_USER, userName + " is in state " + user.getState());
     }
 
     boolean ok = BCrypt.checkpw(message.getOldPassword(), user.getPasswordHash());
 
     log.info("Login for {} is {}", userName, ok);
 
-    return ok ? createSession(user) : failure("Password is invalid");
+    return ok ? createSession(user) : failure(INVALID_PASSWORD, "Password is invalid");
   }
 
   private Response createSession(User user) {
@@ -252,7 +252,7 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
 
     log.info("Updated user {}? {}", user, changed);
 
-    return changed ? success(user) : failure(user);
+    return changed ? success(user) : failure(USER_UNCHANGED, user);
   }
 
   private Response deleteUser(UserMessage message) {
@@ -314,7 +314,9 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     if (isNotEmpty(message.getNewPassword())) {
       log.trace("Changing password for {}", userName);
 
-      if (!BCrypt.checkpw(message.getOldPassword(), user.getPasswordHash())) fail("Old Password is invalid");
+      if (!BCrypt.checkpw(message.getOldPassword(), user.getPasswordHash())) {
+        fail(INVALID_PASSWORD, "Old Password is invalid");
+      }
 
       setPasswordHash(message, user);
       changed = true;

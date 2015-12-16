@@ -41,6 +41,8 @@
  */
 package com.github.mrstampy.gameboot.messages.error;
 
+import org.apache.commons.lang3.builder.ToStringBuilder;
+
 /**
  * The Class Error.
  */
@@ -123,6 +125,15 @@ public class Error {
    */
   void setDescription(String description) {
     this.description = description;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#toString()
+   */
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
   }
 
 }

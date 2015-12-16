@@ -52,7 +52,9 @@ import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.util.GameBootUtils;
+import com.github.mrstampy.gameboot.messages.error.Error;
+import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
+import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
 
 /**
  * Abstract superclass for {@link GameBootProcessor}s.
@@ -60,11 +62,22 @@ import com.github.mrstampy.gameboot.util.GameBootUtils;
  * @param <M>
  *          the generic type
  */
-public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessage> implements GameBootProcessor<M> {
+public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessage>
+    implements GameBootProcessor<M>, ErrorCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private ErrorLookup lookup;
+
+  /**
+   * Sets the error lookup.
+   *
+   * @param lookup
+   *          the new error lookup
+   */
   @Autowired
-  private GameBootUtils utils;
+  public void setErrorLookup(ErrorLookup lookup) {
+    this.lookup = lookup;
+  }
 
   /*
    * (non-Javadoc)
@@ -77,7 +90,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
   public Response process(M message) throws Exception {
     log.debug("Processing message {}", message);
 
-    if (message == null) fail("Null message");
+    if (message == null) fail(NO_MESSAGE, "Null message");
 
     try {
       validate(message);
@@ -93,7 +106,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
     } catch (Exception e) {
       log.error("Error in processing {}", message.getType(), e);
 
-      Response r = failure("An unexpected error has occurred");
+      Response r = failure(UNEXPECTED_ERROR, "An unexpected error has occurred");
       r.setId(message.getId());
 
       return r;
@@ -110,21 +123,23 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    * @return the response
    */
   protected Response gameBootErrorResponse(M message, Exception e) {
-    log.error("Error in processing {} : {}", message.getType(), e.getMessage());
+    Error error = extractError(e);
+
+    log.error("Error in processing {} : {}, {}", message.getType(), error, e.getMessage());
 
     Object[] payload = extractPayload(e);
 
-    payload = mtArray(payload) ? null : utils.postpendArray(e.getMessage(), payload);
-
-    Response r = payload == null ? new Response(ResponseCode.FAILURE, e.getMessage())
-        : new Response(ResponseCode.FAILURE, payload);
+    Response r = new Response(ResponseCode.FAILURE, error, payload);
     r.setId(message.getId());
+    r.setError(error);
 
     return r;
   }
 
-  private boolean mtArray(Object[] array) {
-    return array == null || array.length == 0;
+  private Error extractError(Exception e) {
+    boolean rt = e instanceof GameBootRuntimeException;
+
+    return rt ? ((GameBootRuntimeException) e).getError() : ((GameBootException) e).getError();
   }
 
   private Object[] extractPayload(Exception e) {
@@ -139,6 +154,8 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    * {@link #process(AbstractGameBootMessage)} implementation which after
    * logging returns a failure response.
    *
+   * @param code
+   *          the code
    * @param message
    *          the message
    * @param payload
@@ -146,8 +163,8 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    * @throws GameBootRuntimeException
    *           the game boot runtime exception
    */
-  protected void fail(String message, Object... payload) throws GameBootRuntimeException {
-    throw new GameBootRuntimeException(message, payload);
+  protected void fail(int code, String message, Object... payload) throws GameBootRuntimeException {
+    throw new GameBootRuntimeException(message, lookup.lookup(code), payload);
   }
 
   /**
@@ -164,12 +181,14 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
   /**
    * Returns an initialized failure {@link Response}.
    *
+   * @param code
+   *          the code
    * @param message
    *          the message
    * @return the response
    */
-  protected Response failure(Object... message) {
-    return new Response(ResponseCode.FAILURE, message);
+  protected Response failure(int code, Object... message) {
+    return new Response(ResponseCode.FAILURE, lookup.lookup(code), message);
   }
 
   /**

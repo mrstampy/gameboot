@@ -41,21 +41,35 @@
  */
 package com.github.mrstampy.gameboot.messages.error;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * The Class GameBootErrorLookup.
  */
 public class GameBootErrorLookup implements ErrorLookup {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  @Autowired
-  private GameBootErrorLoader loader;
+  private ErrorLoader loader;
 
   private Map<Integer, Error> errors;
+
+  /**
+   * Sets the error loader.
+   *
+   * @param loader
+   *          the new error loader
+   */
+  @Autowired
+  public void setErrorLoader(ErrorLoader loader) {
+    this.loader = loader;
+  }
 
   /**
    * Post construct.
@@ -77,7 +91,11 @@ public class GameBootErrorLookup implements ErrorLookup {
    */
   @Override
   public Error lookup(Integer code) {
-    return errors.get(code);
+    Error error = errors.get(code);
+
+    if (error == null) log.warn("No error for code {}", code);
+
+    return error;
   }
 
 }

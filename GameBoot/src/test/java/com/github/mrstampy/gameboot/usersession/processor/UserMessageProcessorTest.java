@@ -464,6 +464,7 @@ public class UserMessageProcessorTest {
   private void failExpected(UserMessage m, String failMsg) {
     try {
       Response r = processor.process(m);
+      log.info(mapper.writeValueAsString(r));
       switch (r.getResponseCode()) {
       case FAILURE:
         assertEquals(m.getId(), r.getId());
