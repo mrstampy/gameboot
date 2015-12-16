@@ -431,7 +431,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    *
    * @return the key
    */
-  protected Long getSystemId() {
+  public Long getSystemId() {
     return systemId;
   }
 

@@ -393,7 +393,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *
    * @return the key
    */
-  protected Long getSystemId() {
+  public Long getSystemId() {
     return systemId;
   }
 
