@@ -61,6 +61,7 @@ import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.exception.GameBootThrowable;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
@@ -452,7 +453,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    * @param e
    *          the e
    */
-  protected void sendError(WebSocketSession session, Exception e) {
+  protected void sendError(WebSocketSession session, GameBootThrowable e) {
     try {
       Response r = fail(null, e);
       TextMessage fail = new TextMessage(converter.toJsonArray(r));
@@ -495,7 +496,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    * @param e
    *          the e
    */
-  protected void sendErrorBinary(WebSocketSession session, Exception e) {
+  protected void sendErrorBinary(WebSocketSession session, GameBootThrowable e) {
     try {
       Response r = fail(null, e);
       BinaryMessage fail = new BinaryMessage(converter.toJsonArray(r));
@@ -518,26 +519,14 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *          the e
    * @return the response
    */
-  protected Response fail(AbstractGameBootMessage message, Exception e) {
-    Error error = extractError(e);
-    Object[] payload = extractPayload(e);
+  protected Response fail(AbstractGameBootMessage message, GameBootThrowable e) {
+    Error error = e.getError();
+    Object[] payload = e.getPayload();
 
     Response r = new Response(message, ResponseCode.FAILURE, payload);
     r.setError(error);
 
     return r;
-  }
-
-  private Error extractError(Exception e) {
-    boolean rt = e instanceof GameBootRuntimeException;
-
-    return rt ? ((GameBootRuntimeException) e).getError() : ((GameBootException) e).getError();
-  }
-
-  private Object[] extractPayload(Exception e) {
-    boolean rt = e instanceof GameBootRuntimeException;
-
-    return rt ? ((GameBootRuntimeException) e).getPayload() : ((GameBootException) e).getPayload();
   }
 
   /**

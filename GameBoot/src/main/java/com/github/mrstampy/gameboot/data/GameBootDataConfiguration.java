@@ -71,12 +71,12 @@ public class GameBootDataConfiguration implements ApplicationContextAware {
   private ApplicationContext ctx;
 
   /**
- * File database populator.
- *
- * @return the resource database populator
- * @throws Exception
- *           the exception
- */
+   * File database populator.
+   *
+   * @return the resource database populator
+   * @throws Exception
+   *           the exception
+   */
   @Bean
   @Conditional(FileCondition.class)
   public ResourceDatabasePopulator fileDatabasePopulator() throws Exception {
@@ -84,12 +84,12 @@ public class GameBootDataConfiguration implements ApplicationContextAware {
   }
 
   /**
- * Ext class path database populator.
- *
- * @return the resource database populator
- * @throws Exception
- *           the exception
- */
+   * Ext class path database populator.
+   *
+   * @return the resource database populator
+   * @throws Exception
+   *           the exception
+   */
   @Bean
   @Conditional(ExternalClassPathCondition.class)
   public ResourceDatabasePopulator extClassPathDatabasePopulator() throws Exception {
@@ -97,20 +97,24 @@ public class GameBootDataConfiguration implements ApplicationContextAware {
   }
 
   /**
- * Classpath database populator.
- *
- * @return the resource database populator
- * @throws Exception
- *           the exception
- */
+   * Classpath database populator.
+   *
+   * @return the resource database populator
+   * @throws Exception
+   *           the exception
+   */
   @Bean
   @Conditional(ClassPathCondition.class)
   public ResourceDatabasePopulator classpathDatabasePopulator() throws Exception {
     return new ResourceDatabasePopulator(ctx.getResource(ClassPathCondition.GAMEBOOT_SQL));
   }
 
-  /* (non-Javadoc)
-   * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * org.springframework.context.ApplicationContextAware#setApplicationContext(
+   * org.springframework.context.ApplicationContext)
    */
   @Override
   public void setApplicationContext(ApplicationContext ctx) throws BeansException {

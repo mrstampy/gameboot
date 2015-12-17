@@ -49,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.exception.GameBootThrowable;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
@@ -123,30 +124,18 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    *          the e
    * @return the response
    */
-  protected Response gameBootErrorResponse(M message, Exception e) {
-    Error error = extractError(e);
+  protected Response gameBootErrorResponse(M message, GameBootThrowable e) {
+    Error error = e.getError();
 
     log.error("Error in processing {} : {}, {}", message.getType(), error, e.getMessage());
 
-    Object[] payload = extractPayload(e);
+    Object[] payload = e.getPayload();
 
     Response r = new Response(message, ResponseCode.FAILURE, error, payload);
     r.setId(message.getId());
     r.setError(error);
 
     return r;
-  }
-
-  private Error extractError(Exception e) {
-    boolean rt = e instanceof GameBootRuntimeException;
-
-    return rt ? ((GameBootRuntimeException) e).getError() : ((GameBootException) e).getError();
-  }
-
-  private Object[] extractPayload(Exception e) {
-    boolean rt = e instanceof GameBootRuntimeException;
-
-    return rt ? ((GameBootRuntimeException) e).getPayload() : ((GameBootException) e).getPayload();
   }
 
   /**

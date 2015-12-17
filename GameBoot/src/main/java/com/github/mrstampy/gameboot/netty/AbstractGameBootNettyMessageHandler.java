@@ -55,6 +55,7 @@ import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.exception.GameBootThrowable;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
@@ -422,7 +423,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    * @param e
    *          the e
    */
-  protected void sendError(ChannelHandlerContext ctx, Exception e) {
+  protected void sendError(ChannelHandlerContext ctx, GameBootThrowable e) {
     Response r = fail(null, e);
     try {
       ctx.channel().writeAndFlush(converter.toJsonArray(r));
@@ -448,26 +449,14 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    *          the e
    * @return the response
    */
-  protected Response fail(AbstractGameBootMessage message, Exception e) {
-    Error error = extractError(e);
-    Object[] payload = extractPayload(e);
+  protected Response fail(AbstractGameBootMessage message, GameBootThrowable e) {
+    Error error = e.getError();
+    Object[] payload = e.getPayload();
 
     Response r = new Response(message, ResponseCode.FAILURE, payload);
     r.setError(error);
 
     return r;
-  }
-
-  private Error extractError(Exception e) {
-    boolean rt = e instanceof GameBootRuntimeException;
-
-    return rt ? ((GameBootRuntimeException) e).getError() : ((GameBootException) e).getError();
-  }
-
-  private Object[] extractPayload(Exception e) {
-    boolean rt = e instanceof GameBootRuntimeException;
-
-    return rt ? ((GameBootRuntimeException) e).getPayload() : ((GameBootException) e).getPayload();
   }
 
   /**
