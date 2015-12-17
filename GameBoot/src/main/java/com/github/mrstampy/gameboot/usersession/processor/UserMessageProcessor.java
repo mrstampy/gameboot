@@ -54,9 +54,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.bcrypt.BCrypt;
-import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.messages.Response;
@@ -64,7 +62,6 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.AbstractTransactionalGameBootProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
-import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.usersession.UserSessionLookup;
 import com.github.mrstampy.gameboot.usersession.data.entity.User;
 import com.github.mrstampy.gameboot.usersession.data.entity.User.UserState;
@@ -76,8 +73,6 @@ import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
  * This implementation of a {@link GameBootProcessor} processes
  * {@link UserMessage}s for user creation, update, delete, login and logout.
  */
-@Component
-@Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor<UserMessage> {
   private static final String USER_UPDATE_COUNTER = "UserUpdateCounter";
 
@@ -197,7 +192,14 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     }
   }
 
-  private boolean noData(UserMessage message) {
+  /**
+   * No data.
+   *
+   * @param message
+   *          the message
+   * @return true, if successful
+   */
+  protected boolean noData(UserMessage message) {
     //@formatter:off
     return isEmpty(message.getNewPassword()) && 
         isEmpty(message.getEmail()) && 
@@ -208,13 +210,27 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     //@formatter:on
   }
 
-  private Response logoutUser(UserMessage message) {
+  /**
+   * Logout user.
+   *
+   * @param message
+   *          the message
+   * @return the response
+   */
+  protected Response logoutUser(UserMessage message) {
     String userName = message.getUserName();
 
     return success(message, assist.logout(userName));
   }
 
-  private Response loginUser(UserMessage message) {
+  /**
+   * Login user.
+   *
+   * @param message
+   *          the message
+   * @return the response
+   */
+  protected Response loginUser(UserMessage message) {
     String userName = message.getUserName();
     User user = assist.expectedUser(userName);
 
@@ -232,7 +248,16 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     return ok ? createSession(message, user) : failure(INVALID_PASSWORD, message, "Password is invalid");
   }
 
-  private Response createSession(UserMessage message, User user) {
+  /**
+   * Creates the session.
+   *
+   * @param message
+   *          the message
+   * @param user
+   *          the user
+   * @return the response
+   */
+  protected Response createSession(UserMessage message, User user) {
     UserSession session = assist.create(user);
 
     Response r = success(message, session);
@@ -242,7 +267,14 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     return r;
   }
 
-  private Response updateUser(UserMessage message) {
+  /**
+   * Update user.
+   *
+   * @param message
+   *          the message
+   * @return the response
+   */
+  protected Response updateUser(UserMessage message) {
     String userName = message.getUserName();
     User user = assist.expectedUser(userName);
 
@@ -255,7 +287,14 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     return changed ? success(message, user) : failure(USER_UNCHANGED, message, user);
   }
 
-  private Response deleteUser(UserMessage message) {
+  /**
+   * Delete user.
+   *
+   * @param message
+   *          the message
+   * @return the response
+   */
+  protected Response deleteUser(UserMessage message) {
     String userName = message.getUserName();
     User user = assist.expectedUser(userName);
 
@@ -272,7 +311,14 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     return success(message, user);
   }
 
-  private Response createNewUser(UserMessage message) {
+  /**
+   * Creates the new user.
+   *
+   * @param message
+   *          the message
+   * @return the response
+   */
+  protected Response createNewUser(UserMessage message) {
     User user = createUser(message);
 
     user = userRepo.save(user);
@@ -282,7 +328,16 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     return success(message, user);
   }
 
-  private boolean populateForUpdate(UserMessage message, User user) {
+  /**
+   * Populate for update.
+   *
+   * @param message
+   *          the message
+   * @param user
+   *          the user
+   * @return true, if successful
+   */
+  protected boolean populateForUpdate(UserMessage message, User user) {
     boolean changed = false;
 
     String userName = message.getUserName();
@@ -345,7 +400,14 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     return in != null && !EqualsBuilder.reflectionEquals(in, exist);
   }
 
-  private User createUser(UserMessage message) {
+  /**
+   * Creates the user.
+   *
+   * @param message
+   *          the message
+   * @return the user
+   */
+  protected User createUser(UserMessage message) {
     User user = new User();
 
     user.setDob(message.getDob());
@@ -360,7 +422,15 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     return user;
   }
 
-  private void setPasswordHash(UserMessage message, User user) {
+  /**
+   * Sets the password hash.
+   *
+   * @param message
+   *          the message
+   * @param user
+   *          the user
+   */
+  protected void setPasswordHash(UserMessage message, User user) {
     String salt = BCrypt.gensalt();
     user.setPasswordHash(BCrypt.hashpw(message.getNewPassword(), salt));
   }

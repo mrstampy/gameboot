@@ -41,13 +41,16 @@
  */
 package com.github.mrstampy.gameboot.usersession;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 import com.github.mrstampy.gameboot.usersession.data.entity.User;
 import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
+import com.github.mrstampy.gameboot.usersession.processor.UserMessageProcessor;
 
 /**
  * Configuration for the {@link User} and {@link UserSession} message
@@ -61,5 +64,16 @@ public class UserSessionConfiguration {
 
   /** The Constant USER_SESSION_PROFILE. */
   public static final String USER_SESSION_PROFILE = "usersession";
+
+  /**
+   * User message processor.
+   *
+   * @return the user message processor
+   */
+  @Bean
+  @ConditionalOnMissingBean(UserMessageProcessor.class)
+  public UserMessageProcessor userMessageProcessor() {
+    return new UserMessageProcessor();
+  }
 
 }
