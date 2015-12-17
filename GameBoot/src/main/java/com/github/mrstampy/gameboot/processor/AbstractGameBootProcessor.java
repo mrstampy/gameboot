@@ -98,7 +98,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 
       Response response = processImpl(message);
       response.setId(message.getId());
-      response.setType(message.getType());
+      if (Response.TYPE.equals(response.getType())) response.setType(message.getType());
 
       log.debug("Created response {} for {}", response, message);
 
