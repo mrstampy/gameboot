@@ -19,7 +19,7 @@
 #                                     `_-~_.-'
 #                                      \-~
 #
-# Data initialization script for GameBoot.  Rename this file to 'data.sql', ensure that the
+# Data initialization script for GameBoot.  Rename this file to 'gameboot.sql', ensure that the
 # 'spring.datasource.initialize' property in application.properties is true and the inserts
 # included in this file will be executed on GameBoot startup.
 # 

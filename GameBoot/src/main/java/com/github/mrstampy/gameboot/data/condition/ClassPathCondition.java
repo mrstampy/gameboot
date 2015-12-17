@@ -39,55 +39,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.util.resource;
+package com.github.mrstampy.gameboot.data.condition;
 
-import java.lang.invoke.MethodHandles;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondition;
 
 /**
- * The Class ResourceLogger logs the resource chosen, at debug level.
+ * The Class ClassPathCondition.
  */
-class ResourceLogger {
+public class ClassPathCondition extends AbstractFallbackResourceCondition {
 
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  private static Map<String, Boolean> loggedResources = new HashMap<>();
-
-  /**
-   * Log.
-   *
-   * @param resource
-   *          the resource
-   */
-  static void log(String resource) {
-    Boolean b = loggedResources.get(resource);
-    if (b == null) {
-      log.info("Using resource {}", resource);
-      loggedResources.put(resource, Boolean.TRUE);
-    }
-  }
+  /** The Constant OTP_PROPERTIES. */
+  public static final String GAMEBOOT_SQL = "classpath:gameboot.sql";
 
   /**
-   * Log.
-   *
-   * @param resource
-   *          the resource
-   * @param fallback
-   *          the fallback
+   * Instantiates a new class path condition.
    */
-  static void log(String resource, String fallback) {
-    Boolean b = loggedResources.get(resource);
-    if (b == null) {
-      log.info("Resource {} exists and will be used as an override for {}", resource, fallback);
-      loggedResources.put(resource, Boolean.TRUE);
-    }
+  public ClassPathCondition() {
+    super(GAMEBOOT_SQL, FileCondition.GAMEBOOT_SQL, ExternalClassPathCondition.GAMEBOOT_SQL);
   }
 
-  private ResourceLogger() {
-
-  }
 }

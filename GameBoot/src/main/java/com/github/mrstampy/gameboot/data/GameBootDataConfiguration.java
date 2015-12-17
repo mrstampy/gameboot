@@ -41,9 +41,19 @@
  */
 package com.github.mrstampy.gameboot.data;
 
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
+import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
+
+import com.github.mrstampy.gameboot.data.condition.ClassPathCondition;
+import com.github.mrstampy.gameboot.data.condition.ExternalClassPathCondition;
+import com.github.mrstampy.gameboot.data.condition.FileCondition;
 
 /**
  * Data configuration for GameBoot. More from the <a href=
@@ -56,6 +66,54 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableJpaAuditing
 @EnableTransactionManagement
-public class GameBootDataConfiguration {
+public class GameBootDataConfiguration implements ApplicationContextAware {
 
+  private ApplicationContext ctx;
+
+  /**
+ * File database populator.
+ *
+ * @return the resource database populator
+ * @throws Exception
+ *           the exception
+ */
+  @Bean
+  @Conditional(FileCondition.class)
+  public ResourceDatabasePopulator fileDatabasePopulator() throws Exception {
+    return new ResourceDatabasePopulator(ctx.getResource(FileCondition.GAMEBOOT_SQL));
+  }
+
+  /**
+ * Ext class path database populator.
+ *
+ * @return the resource database populator
+ * @throws Exception
+ *           the exception
+ */
+  @Bean
+  @Conditional(ExternalClassPathCondition.class)
+  public ResourceDatabasePopulator extClassPathDatabasePopulator() throws Exception {
+    return new ResourceDatabasePopulator(ctx.getResource(ExternalClassPathCondition.GAMEBOOT_SQL));
+  }
+
+  /**
+ * Classpath database populator.
+ *
+ * @return the resource database populator
+ * @throws Exception
+ *           the exception
+ */
+  @Bean
+  @Conditional(ClassPathCondition.class)
+  public ResourceDatabasePopulator classpathDatabasePopulator() throws Exception {
+    return new ResourceDatabasePopulator(ctx.getResource(ClassPathCondition.GAMEBOOT_SQL));
+  }
+
+  /* (non-Javadoc)
+   * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+   */
+  @Override
+  public void setApplicationContext(ApplicationContext ctx) throws BeansException {
+    this.ctx = ctx;
+  }
 }
