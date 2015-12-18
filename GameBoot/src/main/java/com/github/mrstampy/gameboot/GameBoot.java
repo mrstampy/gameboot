@@ -122,9 +122,10 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * 
  * GameBoot is coded upon the
  * <a href="http://projects.spring.io/spring-boot/">Spring Boot</a> application
- * framework and as such any implementation of a GameBoot server can easily
- * include and is not limited to any of the functionalities of a Spring Boot
- * application. The functionalities included with GameBoot are:<br>
+ * framework using <a href="http://java.oracle.com">Java 8</a> and as such any
+ * implementation of a GameBoot server can easily include and is not limited to
+ * any of the functionalities of a Spring Boot application. The functionalities
+ * included with GameBoot are:<br>
  * <br>
  * 
  * 1. <a href="http://projects.spring.io/spring-data-jpa/">Spring JPA</a> with a
