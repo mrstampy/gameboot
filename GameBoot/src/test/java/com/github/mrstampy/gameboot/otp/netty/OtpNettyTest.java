@@ -150,7 +150,6 @@ public class OtpNettyTest {
   public void after() throws Exception {
     deleteOtpKey();
 
-    createEncryptedChannel();
     clearChannel.close();
   }
 
