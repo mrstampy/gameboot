@@ -212,7 +212,6 @@ public class OtpNettyTest {
 
     assertTrue(r.isSuccess());
     assertEquals(1, r.getId().intValue());
-    assertFalse(encChannel.isActive());
 
     OtpNewKeyAck ack = new OtpNewKeyAck();
     ack.setSystemId(clientHandler.getSystemId());
@@ -225,6 +224,8 @@ public class OtpNettyTest {
 
     assertTrue(r.isSuccess());
     assertEquals(2, r.getId().intValue());
+    
+    assertFalse(encChannel.isActive());
   }
 
   private void createClearChannel() throws InterruptedException {

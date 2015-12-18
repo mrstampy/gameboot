@@ -69,6 +69,9 @@ public class Error {
     setFunction(function);
     setDescription(description);
   }
+  
+  public Error() {
+  }
 
   /**
    * Gets the code.
@@ -85,7 +88,7 @@ public class Error {
    * @param code
    *          the new code
    */
-  void setCode(int code) {
+  public void setCode(int code) {
     this.code = code;
   }
 
@@ -104,7 +107,7 @@ public class Error {
    * @param function
    *          the new function
    */
-  void setFunction(String function) {
+  public void setFunction(String function) {
     this.function = function;
   }
 
@@ -123,7 +126,7 @@ public class Error {
    * @param description
    *          the new description
    */
-  void setDescription(String description) {
+  public void setDescription(String description) {
     this.description = description;
   }
 
