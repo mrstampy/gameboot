@@ -189,8 +189,6 @@ public class ClientHandler extends ChannelDuplexHandler {
     case OtpKeyRequest.TYPE:
       log.info("Deleting key");
       otpKey = null;
-      systemId = null;
-      clearChannel = null;
       break;
     default:
       break;

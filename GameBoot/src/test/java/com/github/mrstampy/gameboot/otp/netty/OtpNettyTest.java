@@ -44,7 +44,6 @@ package com.github.mrstampy.gameboot.otp.netty;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.concurrent.CountDownLatch;
@@ -131,8 +130,6 @@ public class OtpNettyTest {
    */
   @Before
   public void before() throws Exception {
-    if (clearChannel != null) return;
-
     encServer.bind(ENC_SERVER_PORT);
     clearServer.bind(CLEAR_SERVER_PORT);
 
@@ -154,6 +151,7 @@ public class OtpNettyTest {
     deleteOtpKey();
 
     createEncryptedChannel();
+    clearChannel.close();
   }
 
   /**
@@ -238,9 +236,6 @@ public class OtpNettyTest {
   }
 
   private void createClearChannel() throws InterruptedException {
-    assertNull(clientHandler.getSystemId());
-    assertNull(clientHandler.getClearChannel());
-
     CountDownLatch cdl = new CountDownLatch(1);
     clientHandler.setResponseLatch(cdl);
 
