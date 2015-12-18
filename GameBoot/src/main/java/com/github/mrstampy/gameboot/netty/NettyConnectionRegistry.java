@@ -271,6 +271,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
     ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey, message), listeners);
     ChannelGroupFuture cf = group.writeAndFlush(message);
+    cf.addListeners(all);
 
     for (ChannelFutureListener cfl : all) {
       cf.addListener(cfl);
@@ -300,6 +301,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
     ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey, message), listeners);
     ChannelGroupFuture cf = group.writeAndFlush(message, matcher);
+    cf.addListeners(all);
 
     for (ChannelFutureListener cfl : all) {
       cf.addListener(cfl);
@@ -315,6 +317,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
     ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelFuture) f, key, message), listeners);
     ChannelFuture f = channel.writeAndFlush(message);
+    f.addListeners(all);
 
     for (ChannelFutureListener cfl : all) {
       f.addListener(cfl);
