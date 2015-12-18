@@ -47,10 +47,184 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
+import com.github.mrstampy.gameboot.controller.MessageClassFinder;
+import com.github.mrstampy.gameboot.data.GameBootDataConfiguration;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.error.Error;
+import com.github.mrstampy.gameboot.messages.error.ErrorLoader;
+import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
+import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.otp.OtpConfiguration;
+import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
+import com.github.mrstampy.gameboot.processor.AbstractTransactionalGameBootProcessor;
+import com.github.mrstampy.gameboot.processor.GameBootProcessor;
+import com.github.mrstampy.gameboot.processor.GameBootProcessorAspect;
+import com.github.mrstampy.gameboot.security.SecurityConfiguration;
+import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
+import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
+import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
+import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
+
 import co.paralleluniverse.springframework.boot.security.autoconfigure.web.FiberSecureSpringBootApplication;
 
 /**
- * The Main Class for the GameBoot application.
+ * <h1>GameBoot</h1>
+ * <h2>A gaming template server architecture</h2>
+ * 
+ * GameBoot is designed the purpose of creating multi-player games implemented
+ * to run in a browser or as stand-alone clients. Once coded configuration of
+ * the server is done via property files. The architecture is not game specific,
+ * rather it is a JSON string and JSON binary processing engine augmented with
+ * complimentary technologies that can be extended to process any new messages
+ * as required. JSON messages are of the required form: <br>
+ * <br>
+ * 
+ * 1. An implementation of {@link AbstractGameBootMessage} is created for all
+ * new message types sent from the client to the server for processing.<br>
+ * 2. A {@link Response} message (or no message) is sent back to the client for
+ * messages processed.<br>
+ * <br>
+ * 
+ * Technologies have been included to assist with the rapid processing of high
+ * message volumes, making the architecture scalable to many thousands of
+ * concurrent users per instance. At the center of the architecture all that is
+ * required to process new messages is:<br>
+ * <br>
+ * 
+ * 1. Extend the GameBoot architecture by implementing a subclass of
+ * {@link AbstractGameBootMessage} representing the new JSON message. This
+ * message is sent from the client to the server for processing. Of importance
+ * is to ensure that the {@link AbstractGameBootMessage#getType()} returns a
+ * GameBoot-unique string, hereafter referred to as The Type.<br>
+ * <br>
+ * 
+ * 2. Implement a {@link GameBootProcessor} (or extend one of
+ * {@link AbstractGameBootProcessor} or
+ * {@link AbstractTransactionalGameBootProcessor}) to process your message.
+ * Ensure that the {@link GameBootProcessor#getType()} implementation returns
+ * The Type of your new message. An {@link AbstractGameBootMessage} will have
+ * only one {@link GameBootProcessor} related by The Type. <br>
+ * <br>
+ * 
+ * 3. Implement the {@link MessageClassFinder} interface to include The Type-to-
+ * {@link AbstractGameBootMessage} message class mapping for all new messages.
+ * <br>
+ * <br>
+ * 
+ * 4. Create {@link Configuration}s aware of new classes and functionalities as
+ * required by your application and a main class to start and wire together your
+ * application.<br>
+ * <br>
+ * 
+ * <h2>GameBoot Technologies</h2><br>
+ * 
+ * GameBoot is coded upon the
+ * <a href="http://projects.spring.io/spring-boot/">Spring Boot</a> application
+ * framework and as such any implementation of a GameBoot server can easily
+ * include and is not limited to any of the functionalities of a Spring Boot
+ * application. The functionalities included with GameBoot are:<br>
+ * <br>
+ * 
+ * 1. <a href="http://projects.spring.io/spring-data-jpa/">Spring JPA</a> with a
+ * choice of backing datastore of
+ * <a href="http://www.h2database.com/html/main.html">H2</a>,
+ * <a href="https://db.apache.org/derby/">Derby</a>,
+ * <a href="https://www.mysql.com/">MySQL</a> or
+ * <a href="http://www.postgresql.org/">Postgres</a>. (
+ * {@link GameBootDataConfiguration})<br>
+ * 2. <a href="http://hibernate.org/orm/envers/">Automatic Auditing</a> of
+ * datastore records as required.<br>
+ * 3. <a href=
+ * "http://docs.spring.io/spring/docs/current/spring-framework-reference/html/cache.html">
+ * Spring Caching</a> using <a href="http://www.ehcache.org/">EhCache</a> as a
+ * <a href="https://github.com/jsr107/jsr107spec">JSR-107</a> cache provider (
+ * {@link UserSessionAssist#activeSessions()}).<br>
+ * 4. <a href="https://dropwizard.github.io/metrics/3.1.0/">Metrics
+ * gathering</a> ({@link MetricsHelper})<br>
+ * 5. <a href=
+ * "http://docs.spring.io/spring/docs/current/spring-framework-reference/html/aop.html">
+ * Spring AOP</a> ({@link GameBootProcessorAspect})<br>
+ * 6. <a href=
+ * "http://docs.spring.io/spring/docs/current/spring-framework-reference/html/mvc.html">
+ * Spring Web</a><br>
+ * 7. <a href="http://projects.spring.io/spring-security/">Spring Security</a>
+ * <br>
+ * 8. <a href=
+ * "http://docs.spring.io/spring/docs/current/spring-framework-reference/html/websocket.html">
+ * Spring Web Sockets</a> ( {@link AbstractGameBootWebSocketHandler})<br>
+ * 9. <a href="http://netty.io/">Netty</a> (
+ * {@link AbstractGameBootNettyMessageHandler})<br>
+ * 10. <a href="http://docs.paralleluniverse.co/comsat/">Comsat</a> to assist
+ * web application development for high volume messages.<br>
+ * 11. <a href="http://docs.paralleluniverse.co/quasar/">Quasar</a> to process
+ * high volume messages.<br>
+ * <br>
+ * 
+ * <h2>Application Property Files</h2> <br>
+ * 
+ * There are several configuration files required by a GameBoot implementation:
+ * <br>
+ * <br>
+ * 
+ * 1. application.properties - implementation supplied and can contain any
+ * additional <a href=
+ * "http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html">
+ * Spring Boot configuration properties</a> and application-specific properties.
+ * <br>
+ * 2. gameboot.properties - the main configuration file for a GameBoot server.
+ * <br>
+ * 3. database.properties - required if using {@link GameBootDataConfiguration},
+ * properties can be included in application.properties otherwise.<br>
+ * 4. logback.groovy - <a href="http://logback.qos.ch/">Logback
+ * configuration</a><br>
+ * 5. security.properties - required if using {@link SecurityConfiguration},
+ * properties can be included in application.properties otherwise.<br>
+ * 6. error.properties - required if using the default implementations of the
+ * {@link ErrorLoader} and {@link ErrorLookup} interfaces.<br>
+ * <br>
+ * 
+ * With the exception of application.properties property files are scanned for
+ * in the following order:<br>
+ * <br>
+ * 
+ * 1. On the filesystem at the location the application was started.<br>
+ * 2. In a '/gameboot' package on the classpath.<br>
+ * 3. On the root of the classpath.<br>
+ * 
+ * <h2>Error Messages</h2> <br>
+ * 
+ * The default implementations of the {@link ErrorLoader} and
+ * {@link ErrorLookup} interfaces expect an 'error.properties' file to be
+ * available. The default implementations facilitate the rapid addition of new
+ * errors which can be definitively mapped on the receiving client. The
+ * {@link Error} part of a failed message processing is returned to the client
+ * in the {@link Response}.<br>
+ * <br>
+ * 
+ * <h2>Example Applications</h2> <br>
+ * 
+ * To assist with the development of the architecture two mini-applications were
+ * developed concurrently.<br>
+ * <br>
+ * 
+ * 1. The 'usersession' application ({@link UserSessionConfiguration}) processes
+ * {@link UserMessage}s to manage a simple
+ * login/logout/creation/maintenance/game-specific session creation for a
+ * client. This mini-app has a backing datastore and uses caching for the
+ * retrieval of online user sessions.<br>
+ * <br>
+ * 
+ * 2. The 'otp' application ({@link OtpConfiguration}) is an implementation of
+ * the <a href="https://en.wikipedia.org/wiki/One-time_pad">One Time Pad</a>
+ * encryption algorithm designed to provide a high level of encryption on clear
+ * channels, bypassing the overhead of SSL/TLS for fast message processing
+ * without sacrificing security.<br>
+ * <br>
+ * 
+ * These applications are available when the profiles ('usersession' and 'otp')
+ * are active.
  */
 @Configuration
 @EnableAutoConfiguration

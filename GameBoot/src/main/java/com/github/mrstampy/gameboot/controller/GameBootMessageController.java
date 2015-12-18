@@ -62,18 +62,27 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
 import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
+import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
- * This class is intended to be used to process incoming messages when the type
- * of message is not known in advance ie. web sockets. Incoming messages are
- * converted to their {@link AbstractGameBootMessage} counterparts and the
- * {@link GameBootProcessor} for that message is used to return the response.
+ * For browser based games specific JSON messages can easily be paired with
+ * their corresponding {@link GameBootProcessor}. This class takes advantage of
+ * the {@link MessageClassFinder} implementation (
+ * {@link GameBootMessageConverter}) to convert messages to their correct
+ * {@link AbstractGameBootMessage} subclass and are submitted to the correct
+ * {@link GameBootProcessor} implementation for processing. This functionality
+ * facilitates message processing for all messages without the need to determine
+ * The Type ahead of time.<br>
  * <br>
- * <br>
+ * 
  * GameBoot enforces one {@link GameBootProcessor} per
  * {@link AbstractGameBootMessage}. Implement a different
  * {@link MessageClassFinder} to process alternative messages.
+ * 
+ * @see AbstractGameBootNettyMessageHandler
+ * @see AbstractGameBootWebSocketHandler
  */
 @Component
 public class GameBootMessageController implements ErrorCodes {
