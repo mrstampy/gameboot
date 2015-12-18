@@ -42,7 +42,6 @@
 package com.github.mrstampy.gameboot.otp.netty.client;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -56,7 +55,6 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 /**
  * The Class ClearClientInitializer.
  */
-@Component
 public class ClearClientInitializer extends ChannelInitializer<NioSocketChannel> {
 
   @Autowired

@@ -48,7 +48,6 @@ import java.util.concurrent.CountDownLatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -70,7 +69,6 @@ import io.netty.util.concurrent.Future;
 /**
  * The Class ClientHandler.
  */
-@Component
 @Sharable
 public class ClientHandler extends ChannelDuplexHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());

@@ -83,7 +83,7 @@ import io.netty.channel.ChannelFuture;
  * The Class OtpNettyTest.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(TestConfiguration.class)
+@SpringApplicationConfiguration({ TestConfiguration.class, OtpNettyTestConfiguration.class })
 @ActiveProfiles({ OtpConfiguration.OTP_PROFILE, UserSessionConfiguration.USER_SESSION_PROFILE })
 public class OtpNettyTest {
 
@@ -224,7 +224,7 @@ public class OtpNettyTest {
 
     assertTrue(r.isSuccess());
     assertEquals(2, r.getId().intValue());
-    
+
     assertFalse(encChannel.isActive());
   }
 

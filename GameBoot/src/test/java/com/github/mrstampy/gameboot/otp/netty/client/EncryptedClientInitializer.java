@@ -46,7 +46,6 @@ import javax.net.ssl.SSLEngine;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.otp.netty.OtpNettyTestConfiguration;
 
@@ -63,7 +62,6 @@ import io.netty.handler.ssl.SslHandler;
 /**
  * The Class EncryptedClientInitializer.
  */
-@Component
 public class EncryptedClientInitializer extends ChannelInitializer<NioSocketChannel> {
 
   @Autowired

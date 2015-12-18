@@ -52,12 +52,12 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 
 import com.github.mrstampy.gameboot.otp.netty.client.ClearClientInitializer;
+import com.github.mrstampy.gameboot.otp.netty.client.ClientHandler;
 import com.github.mrstampy.gameboot.otp.netty.client.EncryptedClientInitializer;
 import com.github.mrstampy.gameboot.otp.netty.server.ClearServerInitializer;
 import com.github.mrstampy.gameboot.otp.netty.server.EncryptedServerInitializer;
@@ -100,56 +100,6 @@ public class OtpNettyTestConfiguration {
 
   private static final String HARDCODED_NSA_APPROVED_PASSWORD = "password";
   private static final String ALIAS = "GameBoot";
-
-  private EncryptedServerInitializer encryptedInitializer;
-  private ClearServerInitializer clearInitializer;
-
-  private EncryptedClientInitializer encrypedClientInitializer;
-  private ClearClientInitializer clearClientInitializer;
-
-  /**
-   * Sets the encrypted initializer.
-   *
-   * @param encryptedInitializer
-   *          the new encrypted initializer
-   */
-  @Autowired
-  public void setEncryptedInitializer(EncryptedServerInitializer encryptedInitializer) {
-    this.encryptedInitializer = encryptedInitializer;
-  }
-
-  /**
-   * Sets the clear initializer.
-   *
-   * @param clearInitializer
-   *          the new clear initializer
-   */
-  @Autowired
-  public void setClearInitializer(ClearServerInitializer clearInitializer) {
-    this.clearInitializer = clearInitializer;
-  }
-
-  /**
-   * Sets the clear client initializer.
-   *
-   * @param clearClientInitializer
-   *          the new clear client initializer
-   */
-  @Autowired
-  public void setClearClientInitializer(ClearClientInitializer clearClientInitializer) {
-    this.clearClientInitializer = clearClientInitializer;
-  }
-
-  /**
-   * Sets the encrypted client initializer.
-   *
-   * @param encryptedClientInitializer
-   *          the new encrypted client initializer
-   */
-  @Autowired
-  public void setEncryptedClientInitializer(EncryptedClientInitializer encryptedClientInitializer) {
-    this.encrypedClientInitializer = encryptedClientInitializer;
-  }
 
   /**
    * Ssl context.
@@ -204,7 +154,7 @@ public class OtpNettyTestConfiguration {
     return new Bootstrap()
         .channel(NioSocketChannel.class)
         .group(new NioEventLoopGroup())
-        .handler(encrypedClientInitializer);
+        .handler(encryptedClientInitializer());
     //@formatter:on
   }
 
@@ -221,7 +171,7 @@ public class OtpNettyTestConfiguration {
     return new Bootstrap()
         .channel(NioSocketChannel.class)
         .group(new NioEventLoopGroup())
-        .handler(clearClientInitializer);
+        .handler(clearClientInitializer());
     //@formatter:on
   }
 
@@ -238,7 +188,7 @@ public class OtpNettyTestConfiguration {
     return new ServerBootstrap()
         .channel(NioServerSocketChannel.class)
         .group(new NioEventLoopGroup(), new NioEventLoopGroup())
-        .childHandler(encryptedInitializer);
+        .childHandler(encryptedServerInitializer());
     //@formatter:on
   }
 
@@ -255,8 +205,33 @@ public class OtpNettyTestConfiguration {
     return new ServerBootstrap()
         .channel(NioServerSocketChannel.class)
         .group(new NioEventLoopGroup(), new NioEventLoopGroup())
-        .childHandler(clearInitializer);
+        .childHandler(clearServerInitializer());
     //@formatter:on
+  }
+
+  @Bean
+  public ClearClientInitializer clearClientInitializer() {
+    return new ClearClientInitializer();
+  }
+
+  @Bean
+  public ClientHandler clientHandler() {
+    return new ClientHandler();
+  }
+
+  @Bean
+  public EncryptedClientInitializer encryptedClientInitializer() {
+    return new EncryptedClientInitializer();
+  }
+
+  @Bean
+  public ClearServerInitializer clearServerInitializer() {
+    return new ClearServerInitializer();
+  }
+
+  @Bean
+  public EncryptedServerInitializer encryptedServerInitializer() {
+    return new EncryptedServerInitializer();
   }
 
   private InputStream getResource(String name) throws Exception {
