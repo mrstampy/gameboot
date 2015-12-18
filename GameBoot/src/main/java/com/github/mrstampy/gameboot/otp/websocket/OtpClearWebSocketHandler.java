@@ -261,10 +261,10 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
     byte[] key = keyRegistry.get(getSystemId());
     byte[] msg = otp(key, session, message);
 
-    String response = process(session, new String(msg));
+    byte[] response = process(session, msg);
     if (response == null) return;
 
-    byte[] r = otp(key, session, response.getBytes());
+    byte[] r = otp(key, session, response);
 
     BinaryMessage m = new BinaryMessage(r);
     session.sendMessage(m);
