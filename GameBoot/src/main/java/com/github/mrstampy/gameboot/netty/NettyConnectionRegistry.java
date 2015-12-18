@@ -251,6 +251,20 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   }
 
   /**
+   * Send to all.
+   *
+   * @param message
+   *          the message
+   * @param matcher
+   *          the matcher
+   * @param listeners
+   *          the listeners
+   */
+  public void sendToAll(String message, ChannelMatcher matcher, ChannelFutureListener... listeners) {
+    sendToGroup(ALL, message, matcher, listeners);
+  }
+
+  /**
    * Send the message to a specific group.
    *
    * @param groupKey
