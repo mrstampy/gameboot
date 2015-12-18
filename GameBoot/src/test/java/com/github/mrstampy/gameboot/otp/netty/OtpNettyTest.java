@@ -180,6 +180,15 @@ public class OtpNettyTest {
     assertEquals(1, r.getResponse().length);
   }
 
+  @Test
+  public void testEncryptedChannel() throws Exception {
+    UserMessage m = new UserMessage();
+
+    sendMessage(m, encChannel);
+
+    assertFalse(encChannel.isActive());
+  }
+
   private void deleteOtpKey() throws Exception {
     OtpKeyRequest delKey = new OtpKeyRequest();
     delKey.setId(3);
@@ -247,7 +256,7 @@ public class OtpNettyTest {
 
   private void createEncryptedChannel() throws InterruptedException {
     ChannelFuture cf = encClient.connect(HOST, ENC_SERVER_PORT);
-    cf.await(5, TimeUnit.SECONDS);
+    cf.await(1, TimeUnit.SECONDS);
 
     assertTrue(cf.isSuccess());
     encChannel = cf.channel();
@@ -259,7 +268,7 @@ public class OtpNettyTest {
 
     channel.writeAndFlush(converter.toJsonArray(message));
 
-    cdl.await(5, TimeUnit.SECONDS);
+    cdl.await(1, TimeUnit.SECONDS);
   }
 
 }
