@@ -209,26 +209,51 @@ public class OtpNettyTestConfiguration {
     //@formatter:on
   }
 
+  /**
+   * Clear client initializer.
+   *
+   * @return the clear client initializer
+   */
   @Bean
   public ClearClientInitializer clearClientInitializer() {
     return new ClearClientInitializer();
   }
 
+  /**
+   * Client handler.
+   *
+   * @return the client handler
+   */
   @Bean
   public ClientHandler clientHandler() {
     return new ClientHandler();
   }
 
+  /**
+   * Encrypted client initializer.
+   *
+   * @return the encrypted client initializer
+   */
   @Bean
   public EncryptedClientInitializer encryptedClientInitializer() {
     return new EncryptedClientInitializer();
   }
 
+  /**
+   * Clear server initializer.
+   *
+   * @return the clear server initializer
+   */
   @Bean
   public ClearServerInitializer clearServerInitializer() {
     return new ClearServerInitializer();
   }
 
+  /**
+   * Encrypted server initializer.
+   *
+   * @return the encrypted server initializer
+   */
   @Bean
   public EncryptedServerInitializer encryptedServerInitializer() {
     return new EncryptedServerInitializer();
