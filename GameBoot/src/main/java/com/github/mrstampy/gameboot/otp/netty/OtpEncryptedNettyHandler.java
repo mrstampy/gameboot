@@ -275,8 +275,14 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
    *          the message
    * @return true, if successful
    */
-  protected boolean validateChannel(ChannelHandlerContext ctx, OtpMessage message) {
+  protected boolean validateChannel(ChannelHandlerContext ctx, OtpMessage message) throws Exception {
     Long systemId = message.getSystemId();
+    if (systemId == null || systemId <= 0) {
+      Response r = fail(NO_SYSTEM_ID, message, null);
+      ctx.writeAndFlush(converter.toJsonArray(r));
+      return false;
+    }
+
     Channel clearChannel = registry.get(systemId);
 
     if (clearChannel == null || !clearChannel.isActive()) {

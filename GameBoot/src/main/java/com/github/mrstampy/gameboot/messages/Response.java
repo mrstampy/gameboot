@@ -104,7 +104,10 @@ public class Response extends AbstractGameBootMessage {
    */
   public Response(AbstractGameBootMessage message, ResponseCode responseCode, Object... response) {
     this(responseCode, response);
-    if (message != null) setType(message.getType());
+    if (message != null) {
+      setType(message.getType());
+      setId(message.getId());
+    }
   }
 
   /**

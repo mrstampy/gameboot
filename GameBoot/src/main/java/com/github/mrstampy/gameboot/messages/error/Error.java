@@ -69,7 +69,7 @@ public class Error {
     setFunction(function);
     setDescription(description);
   }
-  
+
   public Error() {
   }
 

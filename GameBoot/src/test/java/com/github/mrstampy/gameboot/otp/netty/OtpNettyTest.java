@@ -189,8 +189,30 @@ public class OtpNettyTest {
    */
   @Test
   public void testEncryptedChannel() throws Exception {
+    deleteOtpKey();
     createEncryptedChannel();
 
+    assertTrue(encChannel.isActive());
+
+    OtpKeyRequest newKey = new OtpKeyRequest();
+    newKey.setId(10);
+
+    sendMessage(newKey, encChannel);
+
+    Response r = clientHandler.getLastResponse();
+    assertFalse(r.isSuccess());
+    assertEquals(newKey.getId(), r.getId());
+    assertTrue(encChannel.isActive());
+
+    newKey.setSystemId(clientHandler.getSystemId());
+
+    newKey.setId(11);
+
+    sendMessage(newKey, encChannel);
+
+    r = clientHandler.getLastResponse();
+    assertFalse(r.isSuccess());
+    assertEquals(newKey.getId(), r.getId());
     assertTrue(encChannel.isActive());
 
     UserMessage m = new UserMessage();
@@ -198,6 +220,9 @@ public class OtpNettyTest {
     sendMessage(m, encChannel);
 
     assertFalse(encChannel.isActive());
+
+    createEncryptedChannel();
+    encryptClearChannel();
   }
 
   private void deleteOtpKey() throws Exception {

@@ -515,7 +515,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    * @return the string
    */
   protected Response fail(int code, AbstractGameBootMessage message, String payload) {
-    Response r = new Response(message, ResponseCode.FAILURE, message);
+    Response r = new Response(message, ResponseCode.FAILURE, payload);
     r.setError(lookup.lookup(code));
 
     return r;

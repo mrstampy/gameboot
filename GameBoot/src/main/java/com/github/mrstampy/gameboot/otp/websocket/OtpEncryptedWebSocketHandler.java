@@ -225,8 +225,14 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
    * @throws IOException
    *           Signals that an I/O exception has occurred.
    */
-  protected boolean validateChannel(WebSocketSession session, OtpMessage message) throws IOException {
+  protected boolean validateChannel(WebSocketSession session, OtpMessage message) throws Exception {
     Long systemId = message.getSystemId();
+    if (systemId == null || systemId <= 0) {
+      Response r = fail(NO_SYSTEM_ID, message, null);
+      session.sendMessage(new BinaryMessage(converter.toJsonArray(r)));
+      return false;
+    }
+
     WebSocketSession clearChannel = registry.get(systemId);
 
     if (clearChannel == null || !clearChannel.isOpen()) {
