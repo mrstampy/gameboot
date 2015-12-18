@@ -46,6 +46,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.lang.invoke.MethodHandles;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -53,6 +54,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.SpringApplicationConfiguration;
@@ -85,6 +88,7 @@ import io.netty.channel.ChannelFuture;
 @SpringApplicationConfiguration({ TestConfiguration.class, OtpNettyTestConfiguration.class })
 @ActiveProfiles({ OtpConfiguration.OTP_PROFILE, UserSessionConfiguration.USER_SESSION_PROFILE })
 public class OtpNettyTest {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String HOST = "localhost";
 
@@ -270,7 +274,11 @@ public class OtpNettyTest {
     CountDownLatch cdl = new CountDownLatch(1);
     clientHandler.setResponseLatch(cdl);
 
+    boolean b = clientHandler.hasKey();
+
     channel.writeAndFlush(converter.toJsonArray(message));
+
+    log.info("Sending {}: {}", (b ? "encrypted" : "unencrypted"), converter.toJson(message));
 
     cdl.await(1, TimeUnit.SECONDS);
   }
