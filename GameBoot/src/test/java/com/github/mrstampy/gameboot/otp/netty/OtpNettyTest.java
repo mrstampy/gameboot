@@ -180,6 +180,10 @@ public class OtpNettyTest {
 
   @Test
   public void testEncryptedChannel() throws Exception {
+    createEncryptedChannel();
+
+    assertTrue(encChannel.isActive());
+
     UserMessage m = new UserMessage();
 
     sendMessage(m, encChannel);
