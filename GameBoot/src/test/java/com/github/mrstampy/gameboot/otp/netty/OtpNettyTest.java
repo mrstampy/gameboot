@@ -195,7 +195,6 @@ public class OtpNettyTest {
     assertTrue(encChannel.isActive());
 
     OtpKeyRequest newKey = new OtpKeyRequest();
-    newKey.setId(10);
 
     sendMessage(newKey, encChannel);
 
@@ -203,15 +202,21 @@ public class OtpNettyTest {
     createEncryptedChannel();
 
     newKey.setSystemId(clientHandler.getSystemId());
-    newKey.setId(11);
 
     sendMessage(newKey, encChannel);
 
     assertFalse(encChannel.isActive());
     createEncryptedChannel();
 
-    newKey.setId(12);
     newKey.setKeyFunction(KeyFunction.DELETE);
+
+    sendMessage(newKey, encChannel);
+
+    assertFalse(encChannel.isActive());
+    createEncryptedChannel();
+
+    newKey.setSystemId(12345l);
+    newKey.setKeyFunction(KeyFunction.NEW);
 
     sendMessage(newKey, encChannel);
 

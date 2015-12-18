@@ -183,7 +183,12 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
 
     Response r = process(session, controller, message);
-    if (r == null) return;
+
+    if (r == null || !r.isSuccess()) {
+      log.error("Unexpected response {}, disconnecting {}", r, session);
+      session.close();
+      return;
+    }
 
     BinaryMessage bm = new BinaryMessage(converter.toJsonArray(r));
     session.sendMessage(bm);

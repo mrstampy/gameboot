@@ -257,7 +257,11 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
 
     Response r = process(ctx, controller, message);
 
-    if (r == null) return;
+    if (r == null || !r.isSuccess()) {
+      log.error("Unexpected response {}, disconnecting {}", r, ctx.channel());
+      ctx.channel().close();
+      return;
+    }
 
     String type = message.getType();
     ChannelFuture cf = ctx.channel().writeAndFlush(converter.toJsonArray(r));
