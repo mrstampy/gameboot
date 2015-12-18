@@ -178,6 +178,12 @@ public class OtpNettyTest {
     assertEquals(1, r.getResponse().length);
   }
 
+  /**
+   * Test encrypted channel.
+   *
+   * @throws Exception
+   *           the exception
+   */
   @Test
   public void testEncryptedChannel() throws Exception {
     createEncryptedChannel();
