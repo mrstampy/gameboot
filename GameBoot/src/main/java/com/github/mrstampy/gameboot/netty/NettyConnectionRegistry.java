@@ -63,6 +63,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.ChannelGroupFuture;
+import io.netty.channel.group.ChannelMatcher;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 
@@ -270,6 +271,35 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
     ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey, message), listeners);
     ChannelGroupFuture cf = group.writeAndFlush(message);
+
+    for (ChannelFutureListener cfl : all) {
+      cf.addListener(cfl);
+    }
+  }
+
+  /**
+   * Send to group.
+   *
+   * @param groupKey
+   *          the group key
+   * @param message
+   *          the message
+   * @param matcher
+   *          the matcher
+   * @param listeners
+   *          the listeners
+   */
+  public void sendToGroup(String groupKey, String message, ChannelMatcher matcher, ChannelFutureListener... listeners) {
+    groupCheck(groupKey);
+    if (!groups.containsKey(groupKey)) {
+      log.warn("No group {} to send message {}", groupKey, message);
+      return;
+    }
+
+    ChannelGroup group = groups.get(groupKey);
+
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey, message), listeners);
+    ChannelGroupFuture cf = group.writeAndFlush(message, matcher);
 
     for (ChannelFutureListener cfl : all) {
       cf.addListener(cfl);
