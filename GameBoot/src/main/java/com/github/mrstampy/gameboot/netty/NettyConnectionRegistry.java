@@ -316,7 +316,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
   private void sendMessage(Comparable<?> key, String message, Channel channel, ChannelFutureListener... listeners) {
     checkMessage(message);
-    if (channel == null || !channel.isWritable()) {
+    if (channel == null || !channel.isActive()) {
       log.warn("Cannot send {} to {}", message, channel);
       return;
     }
