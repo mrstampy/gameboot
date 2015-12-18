@@ -163,7 +163,9 @@ public class ClientHandler extends ChannelDuplexHandler {
     Response r = getResponse(msg);
     lastResponse = r;
 
-    log.info("Unencrypted: \n{}", mapper.writeValueAsString(r));
+    boolean c = ctx.pipeline().get(SslHandler.class) != null;
+
+    log.info("Unencrypted: on {} channel\n{}", (c ? "secured" : "unsecured"), mapper.writeValueAsString(r));
 
     if (!ok(r.getResponseCode())) return;
 
