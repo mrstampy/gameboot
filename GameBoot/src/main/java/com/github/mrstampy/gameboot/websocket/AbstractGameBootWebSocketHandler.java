@@ -223,10 +223,10 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *           the exception
    */
   protected void processForBinary(WebSocketSession session, byte[] message) throws Exception {
-    String response = process(session, new String(message));
+    byte[] response = process(session, message);
     if (response == null) return;
 
-    BinaryMessage m = new BinaryMessage(response.getBytes());
+    BinaryMessage m = new BinaryMessage(response);
     session.sendMessage(m);
   }
 
@@ -286,7 +286,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
 
       if (!inspect(session, agbm)) return null;
 
-      response = process(session, msg, controller, agbm);
+      response = process(session, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       response = fail(agbm, e);
@@ -299,6 +299,45 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
     postProcess(session, agbm, response);
 
     return response == null ? null : converter.toJson(response);
+  }
+
+  /**
+   * Process.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param session
+   *          the session
+   * @param msg
+   *          the msg
+   * @return the byte[]
+   * @throws Exception
+   *           the exception
+   */
+  protected <AGBM extends AbstractGameBootMessage> byte[] process(WebSocketSession session, byte[] msg)
+      throws Exception {
+    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
+
+    Response response = null;
+    AGBM agbm = null;
+    try {
+      agbm = converter.fromJson(msg);
+
+      if (!inspect(session, agbm)) return null;
+
+      response = process(session, controller, agbm);
+    } catch (GameBootException | GameBootRuntimeException e) {
+      helper.incr(FAILED_MESSAGE_COUNTER);
+      response = fail(agbm, e);
+    } catch (Exception e) {
+      helper.incr(FAILED_MESSAGE_COUNTER);
+      log.error("Unexpected exception processing message {} on channel {}", msg, session.getRemoteAddress(), e);
+      response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
+    }
+
+    postProcess(session, agbm, response);
+
+    return response == null ? null : converter.toJsonArray(response);
   }
 
   /**
@@ -315,8 +354,6 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *          the generic type
    * @param session
    *          the session
-   * @param msg
-   *          the msg
    * @param controller
    *          the controller
    * @param agbm
@@ -325,14 +362,14 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    * @throws Exception
    *           the exception
    */
-  protected <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session, String msg,
+  protected <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session,
       GameBootMessageController controller, AGBM agbm) throws Exception {
     if (agbm.getSystemId() == null) agbm.setSystemId(getSystemId());
     agbm.setTransport(Transport.WEB_SOCKET);
     agbm.setLocal(session.getLocalAddress());
     agbm.setRemote(session.getRemoteAddress());
 
-    Response r = controller.process(msg, agbm);
+    Response r = controller.process(agbm);
     processMappingKeys(r, session);
     r.setSystemId(agbm.getSystemId());
     return r;

@@ -279,7 +279,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
 
       if (!inspect(ctx, agbm)) return;
 
-      response = process(ctx, msg, controller, agbm);
+      response = process(ctx, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       response = fail(agbm, e);
@@ -297,7 +297,53 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
 
     ChannelFuture f = ctx.channel().writeAndFlush(r);
 
-    f.addListener(e -> log(e, msg, r, ctx));
+    Response res = response;
+    f.addListener(e -> log(e, res, ctx));
+  }
+
+  /**
+   * Process.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param ctx
+   *          the ctx
+   * @param msg
+   *          the msg
+   * @throws Exception
+   *           the exception
+   */
+  protected <AGBM extends AbstractGameBootMessage> void process(ChannelHandlerContext ctx, byte[] msg)
+      throws Exception {
+    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
+
+    Response response = null;
+    AGBM agbm = null;
+    try {
+      agbm = converter.fromJson(msg);
+
+      if (!inspect(ctx, agbm)) return;
+
+      response = process(ctx, controller, agbm);
+    } catch (GameBootException | GameBootRuntimeException e) {
+      helper.incr(FAILED_MESSAGE_COUNTER);
+      response = fail(agbm, e);
+    } catch (Exception e) {
+      helper.incr(FAILED_MESSAGE_COUNTER);
+      log.error("Unexpected exception processing message {} on channel {}", msg, ctx.channel(), e);
+      response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
+    }
+
+    postProcess(ctx, agbm, response);
+
+    if (response == null) return;
+
+    byte[] r = converter.toJsonArray(response);
+
+    ChannelFuture f = ctx.channel().writeAndFlush(r);
+
+    Response res = response;
+    f.addListener(e -> log(e, res, ctx));
   }
 
   /**
@@ -314,8 +360,6 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    *          the generic type
    * @param ctx
    *          the ctx
-   * @param msg
-   *          the msg
    * @param controller
    *          the controller
    * @param agbm
@@ -328,14 +372,14 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    * @throws GameBootException
    *           the game boot exception
    */
-  protected <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, String msg,
+  protected <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx,
       GameBootMessageController controller, AGBM agbm) throws Exception, JsonProcessingException, GameBootException {
     if (agbm.getSystemId() == null) agbm.setSystemId(getSystemId());
     agbm.setTransport(Transport.NETTY);
     agbm.setLocal((InetSocketAddress) ctx.channel().localAddress());
     agbm.setRemote((InetSocketAddress) ctx.channel().remoteAddress());
 
-    Response r = controller.process(msg, agbm);
+    Response r = controller.process(agbm);
     processMappingKeys(r, ctx.channel());
     r.setSystemId(agbm.getSystemId());
 
@@ -432,11 +476,11 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
     }
   }
 
-  private void log(Future<? super Void> f, String msg, String response, ChannelHandlerContext ctx) {
+  private void log(Future<? super Void> f, Response response, ChannelHandlerContext ctx) {
     if (f.isSuccess()) {
-      log.debug("Successfully sent {} for message {} to {}", response, msg, ctx.channel());
+      log.debug("Successfully sent {} to {}", response, ctx.channel());
     } else {
-      log.error("Could not send {} for message {} to {}", response, msg, ctx.channel(), f.cause());
+      log.error("Could not send {} for message {} to {}", response, ctx.channel(), f.cause());
     }
   }
 

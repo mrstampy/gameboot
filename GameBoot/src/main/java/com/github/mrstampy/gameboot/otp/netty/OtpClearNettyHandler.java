@@ -249,7 +249,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
     svc.execute(() -> {
       try {
-        process(ctx, new String(msg));
+        process(ctx, msg);
       } catch (GameBootException | GameBootRuntimeException e) {
         sendError(ctx, e);
       } catch (Exception e) {

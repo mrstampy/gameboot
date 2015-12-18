@@ -254,7 +254,7 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
 
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
 
-    Response r = process(ctx, new String(msg), controller, message);
+    Response r = process(ctx, controller, message);
 
     if (r == null) return;
 

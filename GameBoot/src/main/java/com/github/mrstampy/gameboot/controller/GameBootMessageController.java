@@ -138,7 +138,7 @@ public class GameBootMessageController implements ErrorCodes {
 
     AGBM msg = converter.fromJson(request);
 
-    Response r = process(request, msg);
+    Response r = process(msg);
 
     return r == null ? null : converter.toJson(r);
   }
@@ -149,8 +149,6 @@ public class GameBootMessageController implements ErrorCodes {
    *
    * @param <AGBM>
    *          the generic type
-   * @param request
-   *          the request
    * @param msg
    *          the msg
    * @return the response
@@ -158,11 +156,11 @@ public class GameBootMessageController implements ErrorCodes {
    *           the exception
    */
   @SuppressWarnings("unchecked")
-  public <AGBM extends AbstractGameBootMessage> Response process(String request, AGBM msg) throws Exception {
+  public <AGBM extends AbstractGameBootMessage> Response process(AGBM msg) throws Exception {
     GameBootProcessor<AGBM> processor = (GameBootProcessor<AGBM>) map.get(msg.getType());
 
     if (processor == null) {
-      log.error("No processor for {}", request);
+      log.error("No processor for {}", msg.getType());
       fail(UNKNOWN_MESSAGE, "Unrecognized message");
     }
 

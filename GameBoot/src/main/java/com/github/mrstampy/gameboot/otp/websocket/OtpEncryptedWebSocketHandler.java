@@ -181,7 +181,7 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
 
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
 
-    Response r = process(session, new String(msg), controller, message);
+    Response r = process(session, controller, message);
     if (r == null) return;
 
     BinaryMessage bm = new BinaryMessage(converter.toJsonArray(r));
