@@ -54,6 +54,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
@@ -265,6 +266,29 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
     cf.addListener(f -> ctx.close());
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
+   * process(io.netty.channel.ChannelHandlerContext,
+   * com.github.mrstampy.gameboot.controller.GameBootMessageController,
+   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+   */
+  protected <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx,
+      GameBootMessageController controller, AGBM agbm) throws Exception, JsonProcessingException, GameBootException {
+    switch (agbm.getType()) {
+    case OtpKeyRequest.TYPE:
+      if (((OtpKeyRequest) agbm).getKeyFunction() == KeyFunction.NEW) return super.process(ctx, controller, agbm);
+    }
+
+    log.error("Unauthorized message received on OTP encrypted channel {}, disconnecting: {}", ctx.channel(), agbm);
+
+    ctx.channel().close();
+
+    return null;
+  }
+
   /**
    * Validates that the clear channel exists. Override to provide additional
    * validation.
@@ -274,12 +298,16 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
    * @param message
    *          the message
    * @return true, if successful
+   * @throws Exception
+   *           the exception
    */
   protected boolean validateChannel(ChannelHandlerContext ctx, OtpMessage message) throws Exception {
     Long systemId = message.getSystemId();
     if (systemId == null || systemId <= 0) {
-      Response r = fail(NO_SYSTEM_ID, message, null);
-      ctx.writeAndFlush(converter.toJsonArray(r));
+      log.error("System id missing from {}, disconnecting {}", message, ctx.channel());
+
+      ctx.channel().close();
+
       return false;
     }
 

@@ -111,4 +111,7 @@ public interface ErrorCodes {
 
   /** The Constant NOT_BYTE_ARRAY. */
   public static final Integer NOT_BYTE_ARRAY = -78;
+
+  /** The Constant UNEXPECTED_MESSAGE. */
+  public static final Integer UNEXPECTED_MESSAGE = -77;
 }

@@ -202,12 +202,17 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
    * inspect(org.springframework.web.socket.WebSocketSession,
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
-  protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm) {
+  protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm)
+      throws Exception {
     boolean ok = true;
 
     switch (agbm.getType()) {
     case OtpKeyRequest.TYPE:
       ok = isDeleteRequest(session, (OtpKeyRequest) agbm);
+      if (!ok) {
+        Response fail = fail(UNEXPECTED_MESSAGE, agbm, null);
+        session.sendMessage(new BinaryMessage(converter.toJsonArray(fail)));
+      }
     case OtpNewKeyAck.TYPE:
       ((OtpMessage) agbm).setProcessorKey(getSystemId());
       break;

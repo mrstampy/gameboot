@@ -70,6 +70,9 @@ public class Error {
     setDescription(description);
   }
 
+  /**
+   * Instantiates a new error.
+   */
   public Error() {
   }
 

@@ -56,6 +56,7 @@ import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
@@ -198,6 +199,29 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
    * 
    * @see
    * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * process(org.springframework.web.socket.WebSocketSession,
+   * com.github.mrstampy.gameboot.controller.GameBootMessageController,
+   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+   */
+  protected <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session,
+      GameBootMessageController controller, AGBM agbm) throws Exception, JsonProcessingException, GameBootException {
+    switch (agbm.getType()) {
+    case OtpKeyRequest.TYPE:
+      if (((OtpKeyRequest) agbm).getKeyFunction() == KeyFunction.NEW) return super.process(session, controller, agbm);
+    }
+
+    log.error("Unauthorized message received on OTP encrypted channel {}, disconnecting: {}", session, agbm);
+
+    session.close(CloseStatus.BAD_DATA);
+
+    return null;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
    * inspect(org.springframework.web.socket.WebSocketSession,
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
@@ -222,14 +246,16 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
    * @param message
    *          the message
    * @return true, if successful
-   * @throws IOException
-   *           Signals that an I/O exception has occurred.
+   * @throws Exception
+   *           the exception
    */
   protected boolean validateChannel(WebSocketSession session, OtpMessage message) throws Exception {
     Long systemId = message.getSystemId();
     if (systemId == null || systemId <= 0) {
-      Response r = fail(NO_SYSTEM_ID, message, null);
-      session.sendMessage(new BinaryMessage(converter.toJsonArray(r)));
+      log.error("System id missing from {}, disconnecting {}", message, session);
+
+      session.close();
+
       return false;
     }
 

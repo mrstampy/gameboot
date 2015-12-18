@@ -286,12 +286,17 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    * investigate(io.netty.channel.ChannelHandlerContext,
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
-  protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm) {
+  protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm)
+      throws Exception {
     boolean ok = true;
 
     switch (agbm.getType()) {
     case OtpKeyRequest.TYPE:
       ok = isDeleteRequest(ctx, (OtpKeyRequest) agbm);
+      if (!ok) {
+        Response fail = fail(UNEXPECTED_MESSAGE, agbm, null);
+        ctx.writeAndFlush(converter.toJsonArray(fail));
+      }
     case OtpNewKeyAck.TYPE:
       ((OtpMessage) agbm).setProcessorKey(getSystemId());
       break;

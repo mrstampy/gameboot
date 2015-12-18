@@ -199,27 +199,55 @@ public class OtpNettyTest {
 
     sendMessage(newKey, encChannel);
 
-    Response r = clientHandler.getLastResponse();
-    assertFalse(r.isSuccess());
-    assertEquals(newKey.getId(), r.getId());
-    assertTrue(encChannel.isActive());
+    assertFalse(encChannel.isActive());
+    createEncryptedChannel();
 
     newKey.setSystemId(clientHandler.getSystemId());
-
     newKey.setId(11);
 
     sendMessage(newKey, encChannel);
 
-    r = clientHandler.getLastResponse();
-    assertFalse(r.isSuccess());
-    assertEquals(newKey.getId(), r.getId());
-    assertTrue(encChannel.isActive());
+    assertFalse(encChannel.isActive());
+    createEncryptedChannel();
+
+    newKey.setId(12);
+    newKey.setKeyFunction(KeyFunction.DELETE);
+
+    sendMessage(newKey, encChannel);
+
+    assertFalse(encChannel.isActive());
+    createEncryptedChannel();
 
     UserMessage m = new UserMessage();
 
     sendMessage(m, encChannel);
 
     assertFalse(encChannel.isActive());
+
+    createEncryptedChannel();
+    encryptClearChannel();
+  }
+
+  /**
+   * Delete unencrypted.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  public void deleteUnencrypted() throws Exception {
+    deleteOtpKey();
+
+    OtpKeyRequest del = new OtpKeyRequest();
+    del.setId(99);
+    del.setSystemId(clientHandler.getSystemId());
+    del.setKeyFunction(KeyFunction.DELETE);
+
+    sendMessage(del, clearChannel);
+
+    Response r = clientHandler.getLastResponse();
+    assertFalse(r.isSuccess());
+    assertEquals(del.getId(), r.getId());
 
     createEncryptedChannel();
     encryptClearChannel();
