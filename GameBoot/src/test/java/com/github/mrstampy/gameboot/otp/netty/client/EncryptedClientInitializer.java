@@ -82,9 +82,9 @@ public class EncryptedClientInitializer extends ChannelInitializer<NioSocketChan
     ChannelPipeline pipeline = ch.pipeline();
 
     pipeline.addLast(new SslHandler(createSslEngine()));
-    pipeline.addLast(new LengthFieldPrepender(4));
+    pipeline.addLast(new LengthFieldPrepender(2));
     pipeline.addLast(new ObjectEncoder());
-    pipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 4, 0, 4));
+    pipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2));
     pipeline.addLast(new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)));
     pipeline.addLast(clientHandler);
   }
