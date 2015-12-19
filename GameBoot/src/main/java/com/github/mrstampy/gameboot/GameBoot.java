@@ -184,6 +184,8 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * properties can be included in application.properties otherwise.<br>
  * 6. error.properties - required if using the default implementations of the
  * {@link ErrorLoader} and {@link ErrorLookup} interfaces.<br>
+ * 7. otp.properties - if including the OTP functionality (
+ * {@link OtpConfiguration}).<br>
  * <br>
  * 
  * With the exception of application.properties property files are scanned for
