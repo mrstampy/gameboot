@@ -378,7 +378,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    *          the r
    */
   protected <AGBM extends AbstractGameBootMessage> void postProcessForKey(AGBM agbm, Response r) {
-    if (agbm.getId().equals(DEFAULT_KEY_CHANGE_ID)) {
+    if (DEFAULT_KEY_CHANGE_ID.equals(agbm.getId())) {
       agbm.setId(null);
       r.setId(null);
     }
