@@ -186,10 +186,14 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * {@link ErrorLoader} and {@link ErrorLookup} interfaces.<br>
  * 7. otp.properties - if including the OTP functionality (
  * {@link OtpConfiguration}).<br>
+ * 8. ehcache.xml - if caching is enabled. The location of this file is
+ * specified in gameboot.properties<br>
+ * 9. gameboot.sql - if present this file will be used to initialize the
+ * database on startup. For development and testing purposes.<br>
  * <br>
  * 
- * With the exception of application.properties property files are scanned for
- * in the following order:<br>
+ * With the exception of application.properties, logback.groovy and ehcache.xml
+ * property files are scanned for in the following order:<br>
  * <br>
  * 
  * 1. On the filesystem at the location the application was started.<br>
