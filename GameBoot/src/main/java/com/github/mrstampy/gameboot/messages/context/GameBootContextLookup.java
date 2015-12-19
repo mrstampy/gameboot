@@ -39,22 +39,63 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messages.error;
+package com.github.mrstampy.gameboot.messages.context;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Map;
 
+import javax.annotation.PostConstruct;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
 /**
- * The Interface ErrorLoader.
+ * The Class GameBootErrorLookup.
  */
-public interface ErrorLoader {
+public class GameBootContextLookup implements ResponseContextLookup {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  private ResponseContextLoader loader;
+
+  private Map<Integer, ResponseContext> errors;
 
   /**
-   * Gets the error properties.
+   * Sets the error loader.
    *
-   * @return the error properties
+   * @param loader
+   *          the new error loader
+   */
+  @Autowired
+  public void setErrorLoader(ResponseContextLoader loader) {
+    this.loader = loader;
+  }
+
+  /**
+   * Post construct.
+   *
    * @throws Exception
    *           the exception
    */
-  Map<Integer, Error> getErrorProperties() throws Exception;
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    errors = loader.getErrorProperties();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.messages.error.ErrorLookup#lookup(java.lang.
+   * Integer)
+   */
+  @Override
+  public ResponseContext lookup(Integer code) {
+    ResponseContext error = errors.get(code);
+
+    if (error == null) log.warn("No error for code {}", code);
+
+    return error;
+  }
 
 }

@@ -69,9 +69,9 @@ import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.messages.error.Error;
-import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
-import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
+import com.github.mrstampy.gameboot.messages.context.ResponseContext;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.RegistryCleaner;
@@ -84,7 +84,8 @@ import com.github.mrstampy.gameboot.util.RegistryCleaner;
  * 
  * @see GameBootMessageController
  */
-public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocketHandler implements ErrorCodes {
+public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocketHandler
+    implements ResponseContextCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String MESSAGE_COUNTER = "GameBoot Web Socket Message Counter";
@@ -110,7 +111,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
   private RegistryCleaner cleaner;
 
   @Autowired
-  private ErrorLookup lookup;
+  private ResponseContextLookup lookup;
 
   /** The system ids. */
   protected Map<String, Long> systemIds = new ConcurrentHashMap<>();
@@ -579,11 +580,11 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    * @return the response
    */
   protected Response fail(AbstractGameBootMessage message, GameBootThrowable e) {
-    Error error = e.getError();
+    ResponseContext error = e.getError();
     Object[] payload = e.getPayload();
 
     Response r = new Response(message, ResponseCode.FAILURE, payload);
-    r.setError(error);
+    r.setContext(error);
 
     return r;
   }
@@ -599,7 +600,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   protected Response fail(int code, String message) {
     Response r = new Response(ResponseCode.FAILURE, message);
-    r.setError(lookup.lookup(code));
+    r.setContext(lookup.lookup(code));
 
     return r;
   }
@@ -617,7 +618,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   protected Response fail(int code, AbstractGameBootMessage message, String payload) {
     Response r = new Response(message, ResponseCode.FAILURE, payload);
-    r.setError(lookup.lookup(code));
+    r.setContext(lookup.lookup(code));
 
     return r;
   }

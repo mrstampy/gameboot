@@ -39,37 +39,19 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messages.error;
-
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+package com.github.mrstampy.gameboot.messages.context;
 
 /**
- * The Class GameBootErrorConfiguration.
+ * The Interface ErrorLookup.
  */
-@Configuration
-public class GameBootErrorConfiguration {
+public interface ResponseContextLookup {
 
   /**
-   * Error loader.
+   * Lookup.
    *
-   * @return the error loader
+   * @param code
+   *          the code
+   * @return the error
    */
-  @Bean
-  @ConditionalOnMissingBean(ErrorLoader.class)
-  public ErrorLoader errorLoader() {
-    return new GameBootErrorLoader();
-  }
-
-  /**
-   * Error lookup.
-   *
-   * @return the error lookup
-   */
-  @Bean
-  @ConditionalOnMissingBean(ErrorLookup.class)
-  public ErrorLookup errorLookup() {
-    return new GameBootErrorLookup();
-  }
+  ResponseContext lookup(Integer code);
 }

@@ -39,107 +39,22 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messages.error;
+package com.github.mrstampy.gameboot.messages.context;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import java.util.Map;
 
 /**
- * The Class Error.
+ * The Interface ErrorLoader.
  */
-public class Error {
-
-  private int code;
-
-  private String function;
-
-  private String description;
+public interface ResponseContextLoader {
 
   /**
-   * Instantiates a new error.
+   * Gets the error properties.
    *
-   * @param code
-   *          the code
-   * @param function
-   *          the function
-   * @param description
-   *          the description
+   * @return the error properties
+   * @throws Exception
+   *           the exception
    */
-  public Error(int code, String function, String description) {
-    setCode(code);
-    setFunction(function);
-    setDescription(description);
-  }
-
-  /**
-   * Instantiates a new error.
-   */
-  public Error() {
-  }
-
-  /**
-   * Gets the code.
-   *
-   * @return the code
-   */
-  public int getCode() {
-    return code;
-  }
-
-  /**
-   * Sets the code.
-   *
-   * @param code
-   *          the new code
-   */
-  public void setCode(int code) {
-    this.code = code;
-  }
-
-  /**
-   * Gets the function.
-   *
-   * @return the function
-   */
-  public String getFunction() {
-    return function;
-  }
-
-  /**
-   * Sets the function.
-   *
-   * @param function
-   *          the new function
-   */
-  public void setFunction(String function) {
-    this.function = function;
-  }
-
-  /**
-   * Gets the description.
-   *
-   * @return the description
-   */
-  public String getDescription() {
-    return description;
-  }
-
-  /**
-   * Sets the description.
-   *
-   * @param description
-   *          the new description
-   */
-  public void setDescription(String description) {
-    this.description = description;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
-  public String toString() {
-    return ToStringBuilder.reflectionToString(this);
-  }
+  Map<Integer, ResponseContext> getErrorProperties() throws Exception;
 
 }

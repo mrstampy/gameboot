@@ -61,9 +61,9 @@ import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.messages.error.Error;
-import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
-import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
+import com.github.mrstampy.gameboot.messages.context.ResponseContext;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.RegistryCleaner;
@@ -94,7 +94,7 @@ import io.netty.util.concurrent.Future;
  * @see GameBootMessageController
  * 
  */
-public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexHandler implements ErrorCodes {
+public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexHandler implements ResponseContextCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /** The Constant MESSAGE_COUNTER. */
@@ -122,7 +122,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   private RegistryCleaner cleaner;
 
   @Autowired
-  private ErrorLookup lookup;
+  private ResponseContextLookup lookup;
 
   private Long systemId;
 
@@ -494,11 +494,11 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    * @return the response
    */
   protected Response fail(AbstractGameBootMessage message, GameBootThrowable e) {
-    Error error = e.getError();
+    ResponseContext error = e.getError();
     Object[] payload = e.getPayload();
 
     Response r = new Response(message, ResponseCode.FAILURE, payload);
-    r.setError(error);
+    r.setContext(error);
 
     return r;
   }
@@ -516,7 +516,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    */
   protected Response fail(int code, AbstractGameBootMessage message, String payload) {
     Response r = new Response(message, ResponseCode.FAILURE, payload);
-    r.setError(lookup.lookup(code));
+    r.setContext(lookup.lookup(code));
 
     return r;
   }

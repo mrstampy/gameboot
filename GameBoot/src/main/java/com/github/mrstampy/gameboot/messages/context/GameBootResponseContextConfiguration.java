@@ -39,63 +39,37 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messages.error;
+package com.github.mrstampy.gameboot.messages.context;
 
-import java.lang.invoke.MethodHandles;
-import java.util.Map;
-
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * The Class GameBootErrorLookup.
+ * The Class GameBootErrorConfiguration.
  */
-public class GameBootErrorLookup implements ErrorLookup {
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  private ErrorLoader loader;
-
-  private Map<Integer, Error> errors;
+@Configuration
+public class GameBootResponseContextConfiguration {
 
   /**
-   * Sets the error loader.
+   * Error loader.
    *
-   * @param loader
-   *          the new error loader
+   * @return the error loader
    */
-  @Autowired
-  public void setErrorLoader(ErrorLoader loader) {
-    this.loader = loader;
+  @Bean
+  @ConditionalOnMissingBean(ResponseContextLoader.class)
+  public ResponseContextLoader errorLoader() {
+    return new GameBootContextLoader();
   }
 
   /**
-   * Post construct.
+   * Error lookup.
    *
-   * @throws Exception
-   *           the exception
+   * @return the error lookup
    */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    errors = loader.getErrorProperties();
+  @Bean
+  @ConditionalOnMissingBean(ResponseContextLookup.class)
+  public ResponseContextLookup errorLookup() {
+    return new GameBootContextLookup();
   }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.messages.error.ErrorLookup#lookup(java.lang.
-   * Integer)
-   */
-  @Override
-  public Error lookup(Integer code) {
-    Error error = errors.get(code);
-
-    if (error == null) log.warn("No error for code {}", code);
-
-    return error;
-  }
-
 }

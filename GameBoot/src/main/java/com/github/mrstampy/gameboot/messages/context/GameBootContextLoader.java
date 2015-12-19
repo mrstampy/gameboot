@@ -39,7 +39,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messages.error;
+package com.github.mrstampy.gameboot.messages.context;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
@@ -61,7 +61,7 @@ import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondit
 /**
  * The Class GameBootErrorLoader.
  */
-public class GameBootErrorLoader implements ApplicationContextAware, ErrorLoader {
+public class GameBootContextLoader implements ApplicationContextAware, ResponseContextLoader {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String CODE = ".code";
@@ -79,7 +79,7 @@ public class GameBootErrorLoader implements ApplicationContextAware, ErrorLoader
    */
   @Override
   @SuppressWarnings("unchecked")
-  public Map<Integer, Error> getErrorProperties() throws Exception {
+  public Map<Integer, ResponseContext> getErrorProperties() throws Exception {
     Resource r = getOverridableErrorResource();
 
     if (r == null || !r.exists()) {
@@ -92,7 +92,7 @@ public class GameBootErrorLoader implements ApplicationContextAware, ErrorLoader
 
     List<String> codes = getCodes(p);
 
-    Map<Integer, Error> map = new ConcurrentHashMap<>();
+    Map<Integer, ResponseContext> map = new ConcurrentHashMap<>();
 
     codes.forEach(c -> createError(c, p, map));
 
@@ -115,7 +115,7 @@ public class GameBootErrorLoader implements ApplicationContextAware, ErrorLoader
     return r.exists() ? r : null;
   }
 
-  private void createError(String c, Properties p, Map<Integer, Error> map) {
+  private void createError(String c, Properties p, Map<Integer, ResponseContext> map) {
     try {
       String keyPart = c.substring(0, c.length() - CODE.length());
 
@@ -125,7 +125,7 @@ public class GameBootErrorLoader implements ApplicationContextAware, ErrorLoader
 
       log.trace("Creating error code {}, function {}, description '{}'", code, function, description);
 
-      map.put(code, new Error(code, function, description));
+      map.put(code, new ResponseContext(code, function, description));
     } catch (Exception e) {
       log.error("***********************************");
       log.error("Malformed error properties for code {}", c);

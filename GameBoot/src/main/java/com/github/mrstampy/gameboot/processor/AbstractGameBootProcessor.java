@@ -53,9 +53,9 @@ import com.github.mrstampy.gameboot.exception.GameBootThrowable;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.messages.error.Error;
-import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
-import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
+import com.github.mrstampy.gameboot.messages.context.ResponseContext;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 
 /**
  * Abstract superclass for {@link GameBootProcessor}s.
@@ -64,10 +64,10 @@ import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
  *          the generic type
  */
 public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessage>
-    implements GameBootProcessor<M>, ErrorCodes {
+    implements GameBootProcessor<M>, ResponseContextCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private ErrorLookup lookup;
+  private ResponseContextLookup lookup;
 
   /**
    * Sets the error lookup.
@@ -76,7 +76,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    *          the new error lookup
    */
   @Autowired
-  public void setErrorLookup(ErrorLookup lookup) {
+  public void setErrorLookup(ResponseContextLookup lookup) {
     this.lookup = lookup;
   }
 
@@ -125,7 +125,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    * @return the response
    */
   protected Response gameBootErrorResponse(M message, GameBootThrowable e) {
-    Error error = e.getError();
+    ResponseContext error = e.getError();
 
     log.error("Error in processing {} : {}, {}", message.getType(), error, e.getMessage());
 
@@ -133,7 +133,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
 
     Response r = new Response(message, ResponseCode.FAILURE, error, payload);
     r.setId(message.getId());
-    r.setError(error);
+    r.setContext(error);
 
     return r;
   }

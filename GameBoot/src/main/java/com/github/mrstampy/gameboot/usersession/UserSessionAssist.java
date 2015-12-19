@@ -60,8 +60,8 @@ import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
-import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
-import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.usersession.data.entity.User;
 import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
@@ -75,7 +75,7 @@ import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepos
  */
 @Component
 @Profile(UserSessionConfiguration.USER_SESSION_PROFILE)
-public class UserSessionAssist implements ErrorCodes {
+public class UserSessionAssist implements ResponseContextCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /** The Constant SESSIONS_CACHE. */
@@ -99,7 +99,7 @@ public class UserSessionAssist implements ErrorCodes {
   private MetricsHelper helper;
 
   @Autowired
-  private ErrorLookup lookup;
+  private ResponseContextLookup lookup;
 
   private String sessionsKey = SESSIONS_KEY;
 

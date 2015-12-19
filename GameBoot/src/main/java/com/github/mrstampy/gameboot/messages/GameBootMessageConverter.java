@@ -58,14 +58,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.controller.MessageClassFinder;
 import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
-import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 
 /**
  * The Class GameBootMessageConverter.
  */
 @Component
-public class GameBootMessageConverter implements ErrorCodes {
+public class GameBootMessageConverter implements ResponseContextCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String TYPE_NODE_NAME = "type";
@@ -77,7 +77,7 @@ public class GameBootMessageConverter implements ErrorCodes {
   private MessageClassFinder finder;
 
   @Autowired
-  private ErrorLookup lookup;
+  private ResponseContextLookup lookup;
 
   /**
    * From json.

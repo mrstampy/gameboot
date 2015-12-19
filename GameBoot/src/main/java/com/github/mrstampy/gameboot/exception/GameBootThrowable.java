@@ -41,7 +41,7 @@
  */
 package com.github.mrstampy.gameboot.exception;
 
-import com.github.mrstampy.gameboot.messages.error.Error;
+import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 
 /**
  * The Interface GameBootThrowable.
@@ -75,7 +75,7 @@ public interface GameBootThrowable {
    *
    * @return the error
    */
-  Error getError();
+  ResponseContext getError();
 
   /**
    * Sets the error.
@@ -83,7 +83,7 @@ public interface GameBootThrowable {
    * @param error
    *          the new error
    */
-  void setError(Error error);
+  void setError(ResponseContext error);
 
   /**
    * Gets the message.

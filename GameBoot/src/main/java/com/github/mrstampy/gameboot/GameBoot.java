@@ -51,9 +51,10 @@ import com.github.mrstampy.gameboot.controller.MessageClassFinder;
 import com.github.mrstampy.gameboot.data.GameBootDataConfiguration;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
-import com.github.mrstampy.gameboot.messages.error.Error;
-import com.github.mrstampy.gameboot.messages.error.ErrorLoader;
-import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
+import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.messages.context.ResponseContext;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextLoader;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
@@ -183,7 +184,8 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * 5. security.properties - required if using {@link SecurityConfiguration},
  * properties can be included in application.properties otherwise.<br>
  * 6. error.properties - required if using the default implementations of the
- * {@link ErrorLoader} and {@link ErrorLookup} interfaces.<br>
+ * {@link ResponseContextLoader} and {@link ResponseContextLookup} interfaces.
+ * <br>
  * 7. otp.properties - if including the OTP functionality (
  * {@link OtpConfiguration}).<br>
  * 8. ehcache.xml - if caching is enabled. The location of this file is
@@ -202,12 +204,14 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * 
  * <h2>Error Messages</h2> <br>
  * 
- * The default implementations of the {@link ErrorLoader} and
- * {@link ErrorLookup} interfaces expect an 'error.properties' file to be
- * available. The default implementations facilitate the rapid addition of new
- * errors which can be definitively mapped on the receiving client. The
- * {@link Error} part of a failed message processing is returned to the client
- * in the {@link Response}.<br>
+ * The default implementations of the {@link ResponseContextLoader} and
+ * {@link ResponseContextLookup} interfaces expect an 'error.properties' file to
+ * be available. While intended for error message context any contextual
+ * messages can be added which complement any of the {@link ResponseCode}s of
+ * responses sent to the client. The default implementations facilitate the
+ * rapid addition of new response contexts which can be definitively mapped on
+ * the receiving client. The {@link ResponseContext} part of message processing
+ * is returned to the client in the {@link Response} as appropriate.<br>
  * <br>
  * 
  * <h2>Example Applications</h2> <br>

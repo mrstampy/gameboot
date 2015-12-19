@@ -39,12 +39,12 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messages.error;
+package com.github.mrstampy.gameboot.messages.context;
 
 /**
  * The Interface ErrorCodes.
  */
-public interface ErrorCodes {
+public interface ResponseContextCodes {
 
   /** The Constant UNEXPECTED_ERROR. */
   public static final Integer UNEXPECTED_ERROR = -99;

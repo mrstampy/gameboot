@@ -39,19 +39,107 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messages.error;
+package com.github.mrstampy.gameboot.messages.context;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 /**
- * The Interface ErrorLookup.
+ * The Class Error.
  */
-public interface ErrorLookup {
+public class ResponseContext {
+
+  private int code;
+
+  private String function;
+
+  private String description;
 
   /**
-   * Lookup.
+   * Instantiates a new error.
    *
    * @param code
    *          the code
-   * @return the error
+   * @param function
+   *          the function
+   * @param description
+   *          the description
    */
-  Error lookup(Integer code);
+  public ResponseContext(int code, String function, String description) {
+    setCode(code);
+    setFunction(function);
+    setDescription(description);
+  }
+
+  /**
+   * Instantiates a new error.
+   */
+  public ResponseContext() {
+  }
+
+  /**
+   * Gets the code.
+   *
+   * @return the code
+   */
+  public int getCode() {
+    return code;
+  }
+
+  /**
+   * Sets the code.
+   *
+   * @param code
+   *          the new code
+   */
+  public void setCode(int code) {
+    this.code = code;
+  }
+
+  /**
+   * Gets the function.
+   *
+   * @return the function
+   */
+  public String getFunction() {
+    return function;
+  }
+
+  /**
+   * Sets the function.
+   *
+   * @param function
+   *          the new function
+   */
+  public void setFunction(String function) {
+    this.function = function;
+  }
+
+  /**
+   * Gets the description.
+   *
+   * @return the description
+   */
+  public String getDescription() {
+    return description;
+  }
+
+  /**
+   * Sets the description.
+   *
+   * @param description
+   *          the new description
+   */
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#toString()
+   */
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
+  }
+
 }

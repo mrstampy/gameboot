@@ -42,7 +42,7 @@
 package com.github.mrstampy.gameboot.messages;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.mrstampy.gameboot.messages.error.Error;
+import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.util.GameBootRegistry;
@@ -79,7 +79,7 @@ public class Response extends AbstractGameBootMessage {
 
   private ResponseCode responseCode;
 
-  private Error error;
+  private ResponseContext context;
 
   private Object[] response;
 
@@ -136,9 +136,10 @@ public class Response extends AbstractGameBootMessage {
    * @param response
    *          the response
    */
-  public Response(AbstractGameBootMessage message, ResponseCode responseCode, Error error, Object... response) {
+  public Response(AbstractGameBootMessage message, ResponseCode responseCode, ResponseContext error,
+      Object... response) {
     this(message, responseCode, response);
-    setError(error);
+    setContext(error);
   }
 
   /**
@@ -151,9 +152,9 @@ public class Response extends AbstractGameBootMessage {
    * @param response
    *          the response
    */
-  public Response(ResponseCode responseCode, Error error, Object... response) {
+  public Response(ResponseCode responseCode, ResponseContext error, Object... response) {
     this(responseCode, response);
-    setError(error);
+    setContext(error);
   }
 
   /**
@@ -239,8 +240,8 @@ public class Response extends AbstractGameBootMessage {
    *
    * @return the error
    */
-  public Error getError() {
-    return error;
+  public ResponseContext getContext() {
+    return context;
   }
 
   /**
@@ -249,8 +250,8 @@ public class Response extends AbstractGameBootMessage {
    * @param error
    *          the new error
    */
-  public void setError(Error error) {
-    this.error = error;
+  public void setContext(ResponseContext error) {
+    this.context = error;
   }
 
 }

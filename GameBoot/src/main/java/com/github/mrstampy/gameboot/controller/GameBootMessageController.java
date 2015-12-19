@@ -59,8 +59,8 @@ import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
-import com.github.mrstampy.gameboot.messages.error.ErrorCodes;
-import com.github.mrstampy.gameboot.messages.error.ErrorLookup;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
@@ -85,7 +85,7 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * @see AbstractGameBootWebSocketHandler
  */
 @Component
-public class GameBootMessageController implements ErrorCodes {
+public class GameBootMessageController implements ResponseContextCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String MESSAGE_COUNTER = "Message Controller Counter";
@@ -99,7 +99,7 @@ public class GameBootMessageController implements ErrorCodes {
   @Autowired
   private GameBootMessageConverter converter;
 
-  private ErrorLookup lookup;
+  private ResponseContextLookup lookup;
 
   /** The map. */
   protected Map<String, GameBootProcessor<?>> map = new ConcurrentHashMap<>();
@@ -111,7 +111,7 @@ public class GameBootMessageController implements ErrorCodes {
    *          the new error lookup
    */
   @Autowired
-  public void setErrorLookup(ErrorLookup lookup) {
+  public void setErrorLookup(ResponseContextLookup lookup) {
     this.lookup = lookup;
   }
 
