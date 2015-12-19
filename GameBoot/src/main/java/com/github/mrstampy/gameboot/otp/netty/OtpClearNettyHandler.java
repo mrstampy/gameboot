@@ -347,11 +347,10 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    *          the r
    */
   protected <AGBM extends AbstractGameBootMessage> void postProcess(ChannelHandlerContext ctx, AGBM agbm, Response r) {
-    try {
-      if (expectingKeyChange.get()) postProcessForKey(agbm, r);
-    } finally {
-      expectingKeyChange.set(false);
-    }
+    if (!expectingKeyChange.get()) return;
+
+    postProcessForKey(agbm, r);
+    expectingKeyChange.set(false);
   }
 
   /**
