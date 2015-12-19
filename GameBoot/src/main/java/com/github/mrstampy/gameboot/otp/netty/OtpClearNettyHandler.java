@@ -137,6 +137,8 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   private static final String OTP_DECRYPT_COUNTER = "Netty OTP Decrypt Counter";
 
   private static final String OTP_ENCRYPT_COUNTER = "Netty OTP Encrypt Counter";
+  
+  private static final Integer DEFAULT_KEY_CHANGE_ID = Integer.MAX_VALUE;
 
   @Autowired
   private OneTimePad oneTimePad;
@@ -336,7 +338,8 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   }
 
   protected <AGBM extends AbstractGameBootMessage> void pendingKeyChange(AGBM agbm) {
-    expectingKeyChange.put(agbm.hashCode(), Boolean.TRUE);
+    if(agbm.getId() == null) agbm.setId(DEFAULT_KEY_CHANGE_ID);
+    expectingKeyChange.put(agbm.getId(), Boolean.TRUE);
   }
 
   /**
@@ -352,7 +355,9 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    *          the r
    */
   protected <AGBM extends AbstractGameBootMessage> void postProcess(ChannelHandlerContext ctx, AGBM agbm, Response r) {
-    Integer id = agbm.hashCode();
+    Integer id = agbm.getId();
+    if(id == null) return;
+    
     Boolean b = expectingKeyChange.get(id);
     if (b == null) return;
 
@@ -374,6 +379,11 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    *          the r
    */
   protected <AGBM extends AbstractGameBootMessage> void postProcessForKey(AGBM agbm, Response r) {
+    if(agbm.getId().equals(DEFAULT_KEY_CHANGE_ID)) {
+      agbm.setId(null);
+      r.setId(null);
+    }
+    
     if (!r.isSuccess()) return;
 
     switch (agbm.getType()) {
