@@ -42,12 +42,13 @@
 package com.github.mrstampy.gameboot.otp.netty;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.PostConstruct;
 
+import org.ehcache.internal.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,7 +161,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   protected AtomicReference<byte[]> otpKey = new AtomicReference<>();
 
   /** The expecting key change. */
-  protected AtomicBoolean expectingKeyChange = new AtomicBoolean(false);
+  protected Map<Integer, Boolean> expectingKeyChange = new ConcurrentHashMap<>();
 
   /**
    * Post construct.
@@ -316,7 +317,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     case OtpKeyRequest.TYPE:
       ok = isDeleteRequest(ctx, (OtpKeyRequest) agbm);
       if (ok) {
-        expectingKeyChange.set(true);
+        pendingKeyChange(agbm);
       } else {
         Response fail = fail(UNEXPECTED_MESSAGE, agbm, null);
         ctx.writeAndFlush(converter.toJsonArray(fail));
@@ -325,13 +326,17 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
       break;
     case OtpNewKeyAck.TYPE:
       ((OtpMessage) agbm).setProcessorKey(getSystemId());
-      expectingKeyChange.set(true);
+      pendingKeyChange(agbm);
       break;
     default:
       ok = isValidType(ctx, agbm);
     }
 
     return ok;
+  }
+
+  protected <AGBM extends AbstractGameBootMessage> void pendingKeyChange(AGBM agbm) {
+    expectingKeyChange.put(agbm.hashCode(), Boolean.TRUE);
   }
 
   /**
@@ -347,10 +352,15 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    *          the r
    */
   protected <AGBM extends AbstractGameBootMessage> void postProcess(ChannelHandlerContext ctx, AGBM agbm, Response r) {
-    if (!expectingKeyChange.get()) return;
+    Integer id = agbm.hashCode();
+    Boolean b = expectingKeyChange.get(id);
+    if (b == null) return;
 
-    postProcessForKey(agbm, r);
-    expectingKeyChange.set(false);
+    try {
+      postProcessForKey(agbm, r);
+    } finally {
+      expectingKeyChange.remove(id);
+    }
   }
 
   /**
