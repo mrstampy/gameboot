@@ -42,11 +42,13 @@
 package com.github.mrstampy.gameboot.websocket;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.ehcache.internal.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,7 +112,8 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
   @Autowired
   private ErrorLookup lookup;
 
-  private Long systemId;
+  /** The system ids. */
+  protected Map<String, Long> systemIds = new ConcurrentHashMap<>();
 
   /**
    * Post construct created message counters if necessary. Subclasses will need
@@ -140,7 +143,8 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-    this.systemId = generator.next();
+    Long systemId = generator.next();
+    systemIds.put(session.getId(), systemId);
     addToRegistry(session);
   }
 
@@ -157,7 +161,10 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   @Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-    cleaner.cleanup(getSystemId());
+    String id = session.getId();
+
+    systemIds.remove(id);
+    cleaner.cleanup(getSystemId(id));
 
     Set<Entry<Comparable<?>, WebSocketSession>> set = registry.getKeysForValue(session);
 
@@ -364,7 +371,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    */
   protected <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session,
       GameBootMessageController controller, AGBM agbm) throws Exception {
-    if (agbm.getSystemId() == null) agbm.setSystemId(getSystemId());
+    if (agbm.getSystemId() == null) agbm.setSystemId(getSystemId(session));
     agbm.setTransport(Transport.WEB_SOCKET);
     agbm.setLocal(session.getLocalAddress());
     agbm.setRemote(session.getRemoteAddress());
@@ -428,17 +435,32 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *          the session
    */
   protected void addToRegistry(WebSocketSession session) {
-    if (!registry.contains(getSystemId())) registry.put(getSystemId(), session);
+    Long systemId = getSystemId(session);
+    if (!registry.contains(systemId)) registry.put(systemId, session);
   }
 
   /**
    * Gets the key in {@link #afterConnectionEstablished(WebSocketSession)} from
    * {@link SystemId#next()}.
    *
+   * @param session
+   *          the session
    * @return the key
    */
-  public Long getSystemId() {
-    return systemId;
+  public Long getSystemId(WebSocketSession session) {
+    String id = session.getId();
+    return getSystemId(id);
+  }
+
+  /**
+   * Gets the system id.
+   *
+   * @param sessionId
+   *          the {@link WebSocketSession} session id
+   * @return the system id
+   */
+  public Long getSystemId(String sessionId) {
+    return systemIds.get(sessionId);
   }
 
   /**
@@ -478,7 +500,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
       TextMessage fail = new TextMessage(converter.toJsonArray(r));
       session.sendMessage(fail);
     } catch (Exception e) {
-      log.error("Unexpected exception sending failure {} for {}", msg, getSystemId(), e);
+      log.error("Unexpected exception sending failure {} for {}", msg, getSystemId(session), e);
     }
   }
 
@@ -499,7 +521,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
       log.error("Unexpected exception sending failure {} for {}, systemId {}",
           e.getMessage(),
           session,
-          getSystemId(),
+          getSystemId(session),
           f);
     }
   }
@@ -521,7 +543,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
       BinaryMessage fail = new BinaryMessage(converter.toJsonArray(r));
       session.sendMessage(fail);
     } catch (Exception e) {
-      log.error("Unexpected exception sending failure {} for {}", msg, getSystemId(), e);
+      log.error("Unexpected exception sending failure {} for {}", msg, getSystemId(session), e);
     }
   }
 
@@ -542,7 +564,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
       log.error("Unexpected exception sending failure {} for {}, systemId {}",
           e.getMessage(),
           session,
-          getSystemId(),
+          getSystemId(session),
           f);
     }
   }

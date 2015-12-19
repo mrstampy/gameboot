@@ -154,31 +154,33 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
     super.postConstruct();
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
-   * afterConnectionEstablished(org.springframework.web.socket.WebSocketSession)
+  /**
+   * After connection established.
+   *
+   * @param session
+   *          the session
+   * @throws Exception
+   *           the exception
    */
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
     super.afterConnectionEstablished(session);
 
     Response r = new Response(ResponseCode.INFO);
-    r.setSystemId(getSystemId());
+    r.setSystemId(getSystemId(session));
 
     BinaryMessage bm = new BinaryMessage(converter.toJsonArray(r));
 
     session.sendMessage(bm);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * handleBinaryMessageImpl(org.springframework.web.socket.WebSocketSession,
-   * byte[])
+  /**
+   * Handle binary message impl.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
    */
   @Override
   protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
@@ -194,13 +196,18 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
     });
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * inspect(org.springframework.web.socket.WebSocketSession,
-   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+  /**
+   * Inspect.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param session
+   *          the session
+   * @param agbm
+   *          the agbm
+   * @return true, if successful
+   * @throws Exception
+   *           the exception
    */
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm)
       throws Exception {
@@ -214,7 +221,7 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
         session.sendMessage(new BinaryMessage(converter.toJsonArray(fail)));
       }
     case OtpNewKeyAck.TYPE:
-      ((OtpMessage) agbm).setProcessorKey(getSystemId());
+      ((OtpMessage) agbm).setProcessorKey(getSystemId(session));
       break;
     default:
       ok = isValidType(session, agbm);
@@ -244,26 +251,37 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
     boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
 
     Long sysId = keyRequest.getSystemId();
-    boolean ok = d && isEncrypting() && getSystemId().equals(sysId);
+    Long thisSysId = getSystemId(session);
+    boolean ok = d && isEncrypting(thisSysId) && thisSysId.equals(sysId);
 
-    if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, session.getRemoteAddress(), getSystemId());
+    if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, session.getRemoteAddress(), thisSysId);
 
     return ok;
   }
 
-  private boolean isEncrypting() {
-    return keyRegistry.contains(getSystemId());
+  /**
+   * Checks if is encrypting.
+   *
+   * @param systemId
+   *          the system id
+   * @return true, if is encrypting
+   */
+  protected boolean isEncrypting(Long systemId) {
+    return keyRegistry.contains(systemId);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * processForBinary(org.springframework.web.socket.WebSocketSession, byte[])
+  /**
+   * Process for binary.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
+   * @throws Exception
+   *           the exception
    */
   protected void processForBinary(WebSocketSession session, byte[] message) throws Exception {
-    byte[] key = keyRegistry.get(getSystemId());
+    byte[] key = keyRegistry.get(getSystemId(session));
     byte[] msg = otp(key, session, message);
 
     byte[] response = process(session, msg);
@@ -283,7 +301,7 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
 
   @SuppressWarnings("unused")
   private byte[] evaluateForNewKeyAck(WebSocketSession session, byte[] msg) {
-    Long systemId = getSystemId();
+    Long systemId = getSystemId(session);
     if (!newKeyRegistry.contains(systemId)) return msg;
 
     byte[] newKey = newKeyRegistry.get(systemId);
@@ -300,13 +318,15 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
     return msg;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * handleTextMessageImpl(org.springframework.web.socket.WebSocketSession,
-   * java.lang.String)
+  /**
+   * Handle text message impl.
+   *
+   * @param session
+   *          the session
+   * @param message
+   *          the message
+   * @throws Exception
+   *           the exception
    */
   @Override
   protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
