@@ -137,7 +137,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   private static final String OTP_DECRYPT_COUNTER = "Netty OTP Decrypt Counter";
 
   private static final String OTP_ENCRYPT_COUNTER = "Netty OTP Encrypt Counter";
-  
+
   private static final Integer DEFAULT_KEY_CHANGE_ID = Integer.MAX_VALUE;
 
   @Autowired
@@ -324,10 +324,8 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
         Response fail = fail(UNEXPECTED_MESSAGE, agbm, null);
         ctx.writeAndFlush(converter.toJsonArray(fail));
       }
-      ((OtpMessage) agbm).setProcessorKey(getSystemId());
       break;
     case OtpNewKeyAck.TYPE:
-      ((OtpMessage) agbm).setProcessorKey(getSystemId());
       pendingKeyChange(agbm);
       break;
     default:
@@ -338,8 +336,9 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   }
 
   protected <AGBM extends AbstractGameBootMessage> void pendingKeyChange(AGBM agbm) {
-    if(agbm.getId() == null) agbm.setId(DEFAULT_KEY_CHANGE_ID);
+    if (agbm.getId() == null) agbm.setId(DEFAULT_KEY_CHANGE_ID);
     expectingKeyChange.put(agbm.getId(), Boolean.TRUE);
+    ((OtpMessage) agbm).setProcessorKey(getSystemId());
   }
 
   /**
@@ -356,8 +355,8 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    */
   protected <AGBM extends AbstractGameBootMessage> void postProcess(ChannelHandlerContext ctx, AGBM agbm, Response r) {
     Integer id = agbm.getId();
-    if(id == null) return;
-    
+    if (id == null) return;
+
     Boolean b = expectingKeyChange.get(id);
     if (b == null) return;
 
@@ -379,11 +378,11 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    *          the r
    */
   protected <AGBM extends AbstractGameBootMessage> void postProcessForKey(AGBM agbm, Response r) {
-    if(agbm.getId().equals(DEFAULT_KEY_CHANGE_ID)) {
+    if (agbm.getId().equals(DEFAULT_KEY_CHANGE_ID)) {
       agbm.setId(null);
       r.setId(null);
     }
-    
+
     if (!r.isSuccess()) return;
 
     switch (agbm.getType()) {
