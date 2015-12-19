@@ -43,6 +43,8 @@ package com.github.mrstampy.gameboot.otp.netty;
 
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.annotation.PostConstruct;
 
@@ -154,6 +156,12 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   @Autowired
   private GameBootMessageConverter converter;
 
+  /** The otp key. */
+  protected AtomicReference<byte[]> otpKey = new AtomicReference<>();
+
+  /** The expecting key change. */
+  protected AtomicBoolean expectingKeyChange = new AtomicBoolean(false);
+
   /**
    * Post construct.
    *
@@ -173,11 +181,13 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     }
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see io.netty.channel.ChannelInboundHandlerAdapter#channelActive(io.netty.
-   * channel.ChannelHandlerContext)
+  /**
+   * Channel active.
+   *
+   * @param ctx
+   *          the ctx
+   * @throws Exception
+   *           the exception
    */
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -189,12 +199,13 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     ctx.channel().writeAndFlush(converter.toJsonArray(r));
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * io.netty.channel.ChannelInboundHandlerAdapter#channelInactive(io.netty.
-   * channel.ChannelHandlerContext)
+  /**
+   * Channel inactive.
+   *
+   * @param ctx
+   *          the ctx
+   * @throws Exception
+   *           the exception
    */
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
@@ -208,12 +219,15 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     newKeyRegistry = null;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * io.netty.channel.ChannelInboundHandlerAdapter#channelRead(io.netty.channel.
-   * ChannelHandlerContext, java.lang.Object)
+  /**
+   * Channel read.
+   *
+   * @param ctx
+   *          the ctx
+   * @param msg
+   *          the msg
+   * @throws Exception
+   *           the exception
    */
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -239,12 +253,15 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     super.channelRead(ctx, converted);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
-   * channelReadImpl(io.netty.channel.ChannelHandlerContext, byte[])
+  /**
+   * Channel read impl.
+   *
+   * @param ctx
+   *          the ctx
+   * @param msg
+   *          the msg
+   * @throws Exception
+   *           the exception
    */
   protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
     svc.execute(() -> {
@@ -286,6 +303,19 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    * investigate(io.netty.channel.ChannelHandlerContext,
    * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
+  /**
+   * Inspect.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param ctx
+   *          the ctx
+   * @param agbm
+   *          the agbm
+   * @return true, if successful
+   * @throws Exception
+   *           the exception
+   */
   protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm)
       throws Exception {
     boolean ok = true;
@@ -293,18 +323,82 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     switch (agbm.getType()) {
     case OtpKeyRequest.TYPE:
       ok = isDeleteRequest(ctx, (OtpKeyRequest) agbm);
-      if (!ok) {
+      if (ok) {
+        expectingKeyChange.set(true);
+      } else {
         Response fail = fail(UNEXPECTED_MESSAGE, agbm, null);
         ctx.writeAndFlush(converter.toJsonArray(fail));
       }
+      ((OtpMessage) agbm).setProcessorKey(getSystemId());
+      break;
     case OtpNewKeyAck.TYPE:
       ((OtpMessage) agbm).setProcessorKey(getSystemId());
+      expectingKeyChange.set(true);
       break;
     default:
       ok = isValidType(ctx, agbm);
     }
 
     return ok;
+  }
+
+  /**
+   * Post process.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param ctx
+   *          the ctx
+   * @param agbm
+   *          the agbm
+   * @param r
+   *          the r
+   */
+  protected <AGBM extends AbstractGameBootMessage> void postProcess(ChannelHandlerContext ctx, AGBM agbm, Response r) {
+    try {
+      if (expectingKeyChange.get()) postProcessForKey(agbm, r);
+    } finally {
+      expectingKeyChange.set(false);
+    }
+  }
+
+  /**
+   * Post process for key.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param agbm
+   *          the agbm
+   * @param r
+   *          the r
+   */
+  protected <AGBM extends AbstractGameBootMessage> void postProcessForKey(AGBM agbm, Response r) {
+    if (!r.isSuccess()) return;
+
+    switch (agbm.getType()) {
+    case OtpNewKeyAck.TYPE:
+      activateNewKey();
+      break;
+    case OtpKeyRequest.TYPE:
+      deactivateKey();
+      break;
+    default:
+      break;
+    }
+  }
+
+  /**
+   * Deactivate key.
+   */
+  protected void deactivateKey() {
+    otpKey.set(null);
+  }
+
+  /**
+   * Activate new key.
+   */
+  protected void activateNewKey() {
+    otpKey.set(keyRegistry.get(getSystemId()));
   }
 
   /**
@@ -337,11 +431,17 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     return keyRegistry.contains(getSystemId());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see io.netty.channel.ChannelDuplexHandler#write(io.netty.channel.
-   * ChannelHandlerContext, java.lang.Object, io.netty.channel.ChannelPromise)
+  /**
+   * Write.
+   *
+   * @param ctx
+   *          the ctx
+   * @param msg
+   *          the msg
+   * @param promise
+   *          the promise
+   * @throws Exception
+   *           the exception
    */
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
@@ -350,7 +450,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
       return;
     }
 
-    byte[] key = keyRegistry.get(getSystemId());
+    byte[] key = otpKey.get();
 
     byte[] processed = (msg instanceof byte[]) ? (byte[]) msg : ((String) msg).getBytes();
 

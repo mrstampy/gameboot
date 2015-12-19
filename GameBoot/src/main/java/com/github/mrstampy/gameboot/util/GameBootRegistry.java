@@ -115,6 +115,18 @@ public abstract class GameBootRegistry<V> {
   }
 
   /**
+   * Contains value.
+   *
+   * @param value
+   *          the value
+   * @return true, if successful
+   */
+  public boolean containsValue(V value) {
+    checkValue(value);
+    return map.containsValue(value);
+  }
+
+  /**
    * Size.
    *
    * @return the int
