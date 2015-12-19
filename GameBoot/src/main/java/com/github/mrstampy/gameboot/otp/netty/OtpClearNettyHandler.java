@@ -295,14 +295,6 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     return msg;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
-   * investigate(io.netty.channel.ChannelHandlerContext,
-   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
-   */
   /**
    * Inspect.
    *
@@ -427,8 +419,13 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     return ok;
   }
 
-  private boolean isEncrypting() {
-    return keyRegistry.contains(getSystemId());
+  /**
+   * Checks if is encrypting.
+   *
+   * @return true, if is encrypting
+   */
+  protected boolean isEncrypting() {
+    return otpKey.get() != null;
   }
 
   /**
