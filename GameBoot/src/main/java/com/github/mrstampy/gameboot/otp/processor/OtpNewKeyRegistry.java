@@ -137,6 +137,15 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
     return b;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.util.GameBootRegistry#isLogOk()
+   */
+  protected final boolean isLogOk() {
+    return false;
+  }
+
   private void cleanup(Comparable<?> key) {
     super.remove(key);
     futures.remove(key);

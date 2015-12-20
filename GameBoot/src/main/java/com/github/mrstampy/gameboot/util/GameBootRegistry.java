@@ -43,12 +43,16 @@ package com.github.mrstampy.gameboot.util;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simple registry superclass backed by a {@link ConcurrentHashMap}.
@@ -57,6 +61,8 @@ import java.util.stream.Collectors;
  *          the value type
  */
 public abstract class GameBootRegistry<V> {
+
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /** The map. */
   protected Map<Comparable<?>, V> map = new ConcurrentHashMap<>();
@@ -73,7 +79,19 @@ public abstract class GameBootRegistry<V> {
     checkKey(key);
     checkValue(value);
 
+    if (isLogOk()) log.debug("Registering {} = {} in {}", key, value, getClass().getSimpleName());
+
     map.put(key, value);
+  }
+
+  /**
+   * Override in subclassed to disable logging (debug level) for registries
+   * containing sensitive information. Default true.
+   * 
+   * @return true if ok to log
+   */
+  protected boolean isLogOk() {
+    return true;
   }
 
   /**
@@ -98,6 +116,8 @@ public abstract class GameBootRegistry<V> {
    */
   public V remove(Comparable<?> key) {
     checkKey(key);
+
+    if (isLogOk()) log.debug("Deregistering {} in {}", key, getClass().getSimpleName());
 
     return map.remove(key);
   }

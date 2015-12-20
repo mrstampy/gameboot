@@ -74,4 +74,13 @@ public class KeyRegistry extends GameBootRegistry<byte[]> {
     helper.gauge(() -> size(), REGISTRY_SIZE, getClass(), "otp", "key", "registry", "size");
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.util.GameBootRegistry#isLogOk()
+   */
+  protected final boolean isLogOk() {
+    return false;
+  }
+
 }
