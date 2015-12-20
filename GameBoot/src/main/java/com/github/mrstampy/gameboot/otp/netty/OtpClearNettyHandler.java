@@ -243,14 +243,15 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
 
     byte[] key = otpKey.get();
 
+    byte[] b = evaluateForNewKeyAck(ctx, mb);
+    
     if (key == null) {
-      super.channelRead(ctx, evaluateForNewKeyAck(ctx, mb));
+      super.channelRead(ctx, b);
       return;
     }
 
     helper.incr(OTP_DECRYPT_COUNTER);
 
-    byte[] b = evaluateForNewKeyAck(ctx, mb);
     byte[] converted = b == mb ? oneTimePad.convert(key, mb) : b;
 
     super.channelRead(ctx, converted);
