@@ -335,6 +335,14 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     return ok;
   }
 
+  /**
+   * Pending key change.
+   *
+   * @param <AGBM>
+   *          the generic type
+   * @param agbm
+   *          the agbm
+   */
   protected <AGBM extends AbstractGameBootMessage> void pendingKeyChange(AGBM agbm) {
     if (agbm.getId() == null) agbm.setId(DEFAULT_KEY_CHANGE_ID);
     expectingKeyChange.put(agbm.getId(), Boolean.TRUE);
