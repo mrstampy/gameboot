@@ -47,8 +47,8 @@ import javax.net.ssl.SSLEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import com.github.mrstampy.gameboot.otp.OtpTestConfiguration;
 import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
-import com.github.mrstampy.gameboot.otp.netty.OtpNettyTestConfiguration;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.ChannelInitializer;
@@ -67,7 +67,7 @@ import io.netty.handler.ssl.SslHandler;
 public class EncryptedServerInitializer extends ChannelInitializer<NioSocketChannel> {
 
   @Autowired
-  @Qualifier(OtpNettyTestConfiguration.SERVER_SSL_CONTEXT)
+  @Qualifier(OtpTestConfiguration.SERVER_SSL_CONTEXT)
   private SSLContext sslContext;
 
   @Autowired

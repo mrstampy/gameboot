@@ -39,63 +39,39 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.otp.netty.client;
+package com.github.mrstampy.gameboot.otp.websocket;
 
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
+import java.lang.invoke.MethodHandles;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 
-import com.github.mrstampy.gameboot.otp.OtpTestConfiguration;
-
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelPipeline;
-import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.handler.ssl.SslHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.web.WebApplicationInitializer;
+import org.springframework.web.servlet.DispatcherServlet;
 
 /**
- * The Class EncryptedClientInitializer.
+ * The Class WebSocketTestInitializer.
  */
-public class EncryptedClientInitializer extends ChannelInitializer<NioSocketChannel> {
-
-  @Autowired
-  @Qualifier(OtpTestConfiguration.CLIENT_SSL_CONTEXT)
-  private SSLContext sslContext;
-
-  @Autowired
-  private ClientHandler clientHandler;
+public class WebSocketTestInitializer implements WebApplicationInitializer {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /*
    * (non-Javadoc)
    * 
    * @see
-   * io.netty.channel.ChannelInitializer#initChannel(io.netty.channel.Channel)
+   * org.springframework.web.WebApplicationInitializer#onStartup(javax.servlet.
+   * ServletContext)
    */
   @Override
-  protected void initChannel(NioSocketChannel ch) throws Exception {
-    ChannelPipeline pipeline = ch.pipeline();
+  public void onStartup(ServletContext container) throws ServletException {
+    log.info("********************** YEP, ITS WORKING ******************");
 
-    pipeline.addLast(new SslHandler(createSslEngine()));
-    pipeline.addLast(new LengthFieldPrepender(2));
-    pipeline.addLast(new ObjectEncoder());
-    pipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2));
-    pipeline.addLast(new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)));
-    pipeline.addLast(clientHandler);
-  }
-
-  private SSLEngine createSslEngine() {
-    SSLEngine engine = sslContext.createSSLEngine();
-
-    engine.setUseClientMode(true);
-    engine.setNeedClientAuth(false);
-
-    return engine;
+    ServletRegistration.Dynamic registration = container.addServlet("dispatcher", new DispatcherServlet());
+    registration.setLoadOnStartup(1);
+    registration.addMapping("/");
   }
 
 }

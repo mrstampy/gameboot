@@ -50,6 +50,7 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
 
 import com.github.mrstampy.gameboot.otp.netty.OtpNettyTestConfiguration;
+import com.github.mrstampy.gameboot.otp.websocket.OtpWebSocketTestConfiguration;
 
 import co.paralleluniverse.springframework.boot.security.autoconfigure.web.FiberSecureSpringBootApplication;
 
@@ -68,7 +69,8 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
 		excludeFilters = { 
 				@Filter(type = FilterType.ASSIGNABLE_TYPE, classes = {
 						GameBoot.class,
-						OtpNettyTestConfiguration.class
+						OtpNettyTestConfiguration.class,
+						OtpWebSocketTestConfiguration.class
 				})
 		}
 )

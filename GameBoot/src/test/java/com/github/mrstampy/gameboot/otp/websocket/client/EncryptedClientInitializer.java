@@ -39,29 +39,32 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.otp.netty.client;
+package com.github.mrstampy.gameboot.otp.websocket.client;
+
+import java.net.URISyntaxException;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLEngine;
+import javax.websocket.ClientEndpoint;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 
 import com.github.mrstampy.gameboot.otp.OtpTestConfiguration;
+import com.github.mrstampy.gameboot.otp.netty.client.ClientHandler;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import io.netty.handler.codec.LengthFieldPrepender;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.handler.codec.http.HttpClientCodec;
+import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.ssl.SslHandler;
 
 /**
  * The Class EncryptedClientInitializer.
  */
+@ClientEndpoint
 public class EncryptedClientInitializer extends ChannelInitializer<NioSocketChannel> {
 
   @Autowired
@@ -70,6 +73,15 @@ public class EncryptedClientInitializer extends ChannelInitializer<NioSocketChan
 
   @Autowired
   private ClientHandler clientHandler;
+
+  @Value("${wss.host}")
+  private String host;
+
+  @Value("${wss.port}")
+  private int port;
+
+  @Value("${wss.path}")
+  private String path;
 
   /*
    * (non-Javadoc)
@@ -82,11 +94,23 @@ public class EncryptedClientInitializer extends ChannelInitializer<NioSocketChan
     ChannelPipeline pipeline = ch.pipeline();
 
     pipeline.addLast(new SslHandler(createSslEngine()));
-    pipeline.addLast(new LengthFieldPrepender(2));
-    pipeline.addLast(new ObjectEncoder());
-    pipeline.addLast(new LengthFieldBasedFrameDecoder(Integer.MAX_VALUE, 0, 2, 0, 2));
-    pipeline.addLast(new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)));
+    pipeline.addLast(new HttpClientCodec());
+    pipeline.addLast(new HttpObjectAggregator(8192));
+    pipeline.addLast(getWebSocketHandler());
+
     pipeline.addLast(clientHandler);
+  }
+
+  private WebSocketHandler getWebSocketHandler() throws URISyntaxException {
+    WebSocketHandler handler = new WebSocketHandler();
+
+    handler.setHost(host);
+    handler.setPort(port);
+    handler.setPath(path);
+    handler.setEncrypted(true);
+    handler.init();
+
+    return handler;
   }
 
   private SSLEngine createSslEngine() {
