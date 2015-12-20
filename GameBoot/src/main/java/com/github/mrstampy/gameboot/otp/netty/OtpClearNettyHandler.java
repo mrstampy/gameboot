@@ -241,7 +241,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
 
     byte[] mb = (byte[]) msg;
 
-    byte[] key = keyRegistry.get(getSystemId());
+    byte[] key = otpKey.get();
 
     if (key == null) {
       super.channelRead(ctx, evaluateForNewKeyAck(ctx, mb));
