@@ -133,7 +133,7 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
     SslHandler handler = ctx.pipeline().get(SslHandler.class);
 
     if (handler == null) {
-      log.error("Unencrypted channels cannot process OTP messages.  Disconnecting {}", ctx.channel());
+      log.error("Unencrypted channels cannot process OTP New Key requests.  Disconnecting {}", ctx.channel());
       ctx.close();
       return;
     }
