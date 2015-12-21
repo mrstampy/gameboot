@@ -176,6 +176,8 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
 
   private void processImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
     OtpKeyRequest message = convertAndValidate(ctx, msg);
+    
+    if(message == null) return;
 
     Response r = processor.process(message);
 
