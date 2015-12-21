@@ -49,6 +49,7 @@ import static org.junit.Assert.fail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -78,6 +79,9 @@ public class OtpKeyRequestProcessorTest {
 
   @Autowired
   private OtpKeyRequestProcessor processor;
+
+  @Value("${otp.maximum.key.size}")
+  private Integer maxKeySize;
 
   /**
    * Test processor.
@@ -109,6 +113,10 @@ public class OtpKeyRequestProcessorTest {
     failExpected(r, "No key function");
 
     r.setKeyFunction(KeyFunction.NEW);
+    r.setKeySize(maxKeySize + 1);
+    failExpected(r, "> max key size");
+
+    r.setKeySize(KEY_SIZE);
 
     Response rep = processor.process(r);
 
