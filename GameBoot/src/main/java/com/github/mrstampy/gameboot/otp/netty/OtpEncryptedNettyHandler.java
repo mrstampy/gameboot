@@ -159,6 +159,21 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
    * (non-Javadoc)
    * 
    * @see
+   * io.netty.channel.ChannelInboundHandlerAdapter#channelInactive(io.netty.
+   * channel.ChannelHandlerContext)
+   */
+  @Override
+  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    svc = null;
+    converter = null;
+    processor = null;
+    registry = null;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
    * io.netty.channel.SimpleChannelInboundHandler#channelRead0(io.netty.channel.
    * ChannelHandlerContext, java.lang.Object)
    */
@@ -176,8 +191,8 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
 
   private void processImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
     OtpKeyRequest message = convertAndValidate(ctx, msg);
-    
-    if(message == null) return;
+
+    if (message == null) return;
 
     Response r = processor.process(message);
 
@@ -223,38 +238,6 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
     }
 
     return message;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * io.netty.channel.ChannelInboundHandlerAdapter#channelInactive(io.netty.
-   * channel.ChannelHandlerContext)
-   */
-  @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    svc = null;
-    converter = null;
-    processor = null;
-    registry = null;
-  }
-
-  /**
-   * Validates that the clear channel exists. Override to provide additional
-   * validation.
-   *
-   * @param ctx
-   *          the ctx
-   * @param message
-   *          the message
-   * @return true, if successful
-   * @throws Exception
-   *           the exception
-   */
-  protected boolean validateChannel(ChannelHandlerContext ctx, OtpKeyRequest message) throws Exception {
-
-    return true;
   }
 
   private void log(Future<? super Void> f, ChannelHandlerContext ctx, String type) {
