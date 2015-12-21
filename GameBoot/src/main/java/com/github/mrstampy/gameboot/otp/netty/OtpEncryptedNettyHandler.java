@@ -144,11 +144,6 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
   private void validate(Future<? super Channel> f, ChannelHandlerContext ctx) {
     if (f.isSuccess()) {
       log.debug("Handshake successful with {}", ctx.channel());
-      try {
-        super.channelActive(ctx);
-      } catch (Exception e) {
-        log.error("Unexpected exception", e);
-      }
     } else {
       log.error("Handshake unsuccessful, disconnecting {}", ctx.channel(), f.cause());
       ctx.close();
@@ -196,12 +191,13 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
 
     Response r = processor.process(message);
 
-    if (r.isSuccess()) {
-      sendResponse(ctx, message, r);
-    } else {
+    if (r == null || !r.isSuccess()) {
       log.error("New Key generation for {} failed with {}", message, r);
       ctx.close();
+      return;
     }
+    
+    sendResponse(ctx, message, r);
   }
 
   private void sendResponse(ChannelHandlerContext ctx, OtpKeyRequest message, Response r)

@@ -43,6 +43,7 @@ package com.github.mrstampy.gameboot.otp.websocket;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 
 import org.slf4j.Logger;
@@ -55,22 +56,16 @@ import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-import com.github.mrstampy.gameboot.controller.GameBootMessageController;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
-import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.util.GameBootUtils;
-import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
+import com.github.mrstampy.gameboot.otp.processor.OtpKeyRequestProcessor;
 import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
 
 /**
@@ -99,7 +94,7 @@ import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
  */
 @Component
 @Profile(OtpConfiguration.OTP_PROFILE)
-public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandler {
+public class OtpEncryptedWebSocketHandler extends BinaryWebSocketHandler {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -114,7 +109,7 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
   private WebSocketSessionRegistry registry;
 
   @Autowired
-  private GameBootUtils utils;
+  private OtpKeyRequestProcessor processor;
 
   /**
    * After connection established.
@@ -136,26 +131,47 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     super.afterConnectionEstablished(session);
   }
 
-  /**
-   * Handle binary message impl.
-   *
-   * @param session
-   *          the session
-   * @param message
-   *          the message
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
+   * handleBinaryMessage(org.springframework.web.socket.WebSocketSession,
+   * org.springframework.web.socket.BinaryMessage)
    */
-  @Override
-  protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
+  protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
     svc.execute(() -> {
       try {
-        processForBinary(session, message);
-      } catch (GameBootException | GameBootRuntimeException e) {
-        sendErrorBinary(session, e);
+        byte[] array = extractArray(session, message);
+        if (array != null) processForBinary(session, array);
       } catch (Exception e) {
-        log.error("Unexpected exception", e);
-        sendUnexpectedErrorBinary(session);
+        log.error("Unexpected exception, disconnecting {}", session, e);
+        try {
+          session.close();
+        } catch (Exception e1) {
+          log.error("Unexpected exception closing session {}", session, e1);
+        }
       }
     });
+  }
+
+  private byte[] extractArray(WebSocketSession session, BinaryMessage message) throws IOException {
+    ByteBuffer buf = message.getPayload();
+
+    if (buf.hasArray()) return buf.array();
+
+    int size = buf.remaining();
+
+    if (size == 0) {
+      log.error("No message, closing session {}", session);
+      session.close();
+      return null;
+    }
+
+    byte[] b = new byte[size];
+
+    buf.get(b, 0, b.length);
+
+    return b;
   }
 
   /**
@@ -169,20 +185,11 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
    *           the exception
    */
   protected void processForBinary(WebSocketSession session, byte[] msg) throws Exception {
-    OtpMessage message = null;
-    try {
-      message = converter.fromJson(msg);
-    } catch (Exception e) {
-      log.error("Message received on {} not an OTP message, disconnecting", session.getRemoteAddress());
-      session.close();
-      return;
-    }
+    OtpKeyRequest message = converter.fromJson(msg);
 
     if (!validateChannel(session, message)) return;
 
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
-    Response r = process(session, controller, message);
+    Response r = processor.process(message);
 
     if (r == null || !r.isSuccess()) {
       log.error("Unexpected response {}, disconnecting {}", r, session);
@@ -199,49 +206,6 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     session.close(CloseStatus.NORMAL);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * process(org.springframework.web.socket.WebSocketSession,
-   * com.github.mrstampy.gameboot.controller.GameBootMessageController,
-   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
-   */
-  protected <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session,
-      GameBootMessageController controller, AGBM agbm) throws Exception, JsonProcessingException, GameBootException {
-    switch (agbm.getType()) {
-    case OtpKeyRequest.TYPE:
-      if (((OtpKeyRequest) agbm).getKeyFunction() == KeyFunction.NEW) return super.process(session, controller, agbm);
-    }
-
-    log.error("Unauthorized message received on OTP encrypted channel {}, disconnecting: {}", session, agbm);
-
-    session.close(CloseStatus.BAD_DATA);
-
-    return null;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
-   * inspect(org.springframework.web.socket.WebSocketSession,
-   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
-   */
-  protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm)
-      throws Exception {
-    boolean ok = agbm instanceof OtpKeyRequest && KeyFunction.NEW == ((OtpKeyRequest) agbm).getKeyFunction();
-
-    if (!ok) {
-      log.error("Unexpected message received, disconnecting: {}", agbm);
-      session.close();
-    }
-
-    return ok;
-  }
-
   /**
    * Validates that the clear channel exists. Override to provide additional
    * validation.
@@ -254,13 +218,12 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
    * @throws Exception
    *           the exception
    */
-  protected boolean validateChannel(WebSocketSession session, OtpMessage message) throws Exception {
+  protected boolean validateChannel(WebSocketSession session, OtpKeyRequest message) throws Exception {
     Long systemId = message.getSystemId();
-    if (systemId == null || systemId <= 0) {
+    if (systemId == null) {
       log.error("System id missing from {}, disconnecting {}", message, session);
 
       session.close();
-
       return false;
     }
 
@@ -275,25 +238,6 @@ public class OtpEncryptedWebSocketHandler extends AbstractGameBootWebSocketHandl
     }
 
     return true;
-  }
-
-  /**
-   * Handle text message impl.
-   *
-   * @param session
-   *          the session
-   * @param message
-   *          the message
-   * @throws Exception
-   *           the exception
-   */
-  @Override
-  protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
-    try {
-      session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Text messages not supported"));
-    } catch (IOException e) {
-      // ignore
-    }
   }
 
 }

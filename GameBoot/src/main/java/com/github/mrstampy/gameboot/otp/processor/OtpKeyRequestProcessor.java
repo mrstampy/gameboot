@@ -136,7 +136,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     if (message.getKeyFunction() == null) fail(INVALID_KEY_FUNCTION, "keyFunction one of NEW, DELETE");
 
     Long systemId = message.getSystemId();
-    if (systemId == null || systemId <= 0) fail(NO_SYSTEM_ID, "No systemId");
+    if (systemId == null) fail(NO_SYSTEM_ID, "No systemId");
 
     switch (message.getKeyFunction()) {
     case DELETE:

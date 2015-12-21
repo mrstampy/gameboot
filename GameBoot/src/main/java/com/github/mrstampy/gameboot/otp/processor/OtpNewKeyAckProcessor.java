@@ -102,7 +102,7 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
   @Override
   protected void validate(OtpNewKeyAck message) throws Exception {
     Long systemId = message.getSystemId();
-    if (systemId == null || systemId <= 0) fail(NO_SYSTEM_ID, "No systemId");
+    if (systemId == null) fail(NO_SYSTEM_ID, "No systemId");
 
     if (!systemId.equals(message.getProcessorKey())) fail(SYSTEM_ID_MISMATCH, "systemId does not match processor id");
   }
