@@ -44,8 +44,6 @@ package com.github.mrstampy.gameboot.otp.netty;
 import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ExecutorService;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,25 +54,22 @@ import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
-import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
-import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.otp.processor.OtpKeyRequestProcessor;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.concurrent.Future;
 
@@ -111,7 +106,7 @@ import io.netty.util.concurrent.Future;
 @Component
 @Scope("prototype")
 @Profile(OtpConfiguration.OTP_PROFILE)
-public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandler {
+public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Autowired
@@ -122,21 +117,10 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
   private ExecutorService svc;
 
   @Autowired
-  private NettyConnectionRegistry registry;
+  private OtpKeyRequestProcessor processor;
 
   @Autowired
-  private GameBootUtils utils;
-
-  /**
-   * Post construct.
-   *
-   * @throws Exception
-   *           the exception
-   */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    super.postConstruct();
-  }
+  private NettyConnectionRegistry registry;
 
   /*
    * (non-Javadoc)
@@ -175,122 +159,83 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
    * (non-Javadoc)
    * 
    * @see
+   * io.netty.channel.SimpleChannelInboundHandler#channelRead0(io.netty.channel.
+   * ChannelHandlerContext, java.lang.Object)
+   */
+  @Override
+  protected void channelRead0(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+    svc.execute(() -> {
+      try {
+        processImpl(ctx, msg);
+      } catch (Exception e) {
+        log.error("Unexpected exception, closing OTP New Key channel {}", ctx.channel(), e);
+        ctx.close();
+      }
+    });
+  }
+
+  private void processImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+    OtpKeyRequest message = convertAndValidate(ctx, msg);
+
+    Response r = processor.process(message);
+
+    if (r.isSuccess()) {
+      sendResponse(ctx, message, r);
+    } else {
+      log.error("New Key generation for {} failed with {}", message, r);
+      ctx.close();
+    }
+  }
+
+  private void sendResponse(ChannelHandlerContext ctx, OtpKeyRequest message, Response r)
+      throws JsonProcessingException, GameBootException {
+    ChannelFuture cf = ctx.writeAndFlush(converter.toJsonArray(r));
+
+    cf.addListener(f -> log(f, ctx, message.getType()));
+  }
+
+  private OtpKeyRequest convertAndValidate(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+    OtpKeyRequest message = converter.fromJson(msg);
+
+    switch (message.getKeyFunction()) {
+    case NEW:
+      break;
+    default:
+      log.error("Cannot process {}, closing OTP New Key channel {}", message, ctx.channel());
+      ctx.close();
+      return null;
+    }
+
+    Long systemId = message.getSystemId();
+    if (systemId == null) {
+      log.error("System id missing from {}, disconnecting {}", message, ctx.channel());
+      ctx.close();
+      return null;
+    }
+
+    Channel clearChannel = registry.get(systemId);
+    if (clearChannel == null || !clearChannel.isActive()) {
+      log.error("No clear channel for {}, from encrypted channel {}, disconnecting", systemId, ctx.channel());
+      ctx.close();
+      return null;
+    }
+
+    return message;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
    * io.netty.channel.ChannelInboundHandlerAdapter#channelInactive(io.netty.
    * channel.ChannelHandlerContext)
    */
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    super.channelInactive(ctx);
-
     svc = null;
     converter = null;
+    processor = null;
     registry = null;
-    utils = null;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
-   * channelReadImpl(io.netty.channel.ChannelHandlerContext, byte[])
-   */
-  @Override
-  protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-    svc.execute(() -> {
-      try {
-        processOtpMessage(ctx, msg);
-      } catch (GameBootException | GameBootRuntimeException e) {
-        sendError(ctx, e);
-      } catch (Exception e) {
-        log.error("Unexpected exception", e);
-        sendUnexpectedError(ctx);
-      }
-    });
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
-   * inspect(io.netty.channel.ChannelHandlerContext,
-   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
-   */
-  protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm) {
-    boolean ok = agbm instanceof OtpKeyRequest && KeyFunction.NEW == ((OtpKeyRequest) agbm).getKeyFunction();
-
-    if (!ok) {
-      log.error("Unexpected message received, disconnecting: {}", agbm);
-      ctx.close();
-    }
-
-    return ok;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
-   * channelReadImpl(io.netty.channel.ChannelHandlerContext, java.lang.String)
-   */
-  protected void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception {
-    log.error("Received text; binary only.  Closing channel {}", ctx.channel());
-
-    ctx.close();
-  }
-
-  private void processOtpMessage(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-    OtpMessage message = null;
-    try {
-      message = converter.fromJson(msg);
-    } catch (Exception e) {
-      log.error("Message received on {} not an OTP message, disconnecting", ctx.channel());
-      ctx.close();
-      return;
-    }
-
-    if (!validateChannel(ctx, message)) return;
-
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
-    Response r = process(ctx, controller, message);
-
-    if (r == null || !r.isSuccess()) {
-      log.error("Unexpected response {}, disconnecting {}", r, ctx.channel());
-      ctx.channel().close();
-      return;
-    }
-
-    String type = message.getType();
-    ChannelFuture cf = ctx.channel().writeAndFlush(converter.toJsonArray(r));
-
-    cf.addListener(f -> log(f, ctx, type));
-    cf.addListener(f -> ctx.close());
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
-   * process(io.netty.channel.ChannelHandlerContext,
-   * com.github.mrstampy.gameboot.controller.GameBootMessageController,
-   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
-   */
-  protected <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx,
-      GameBootMessageController controller, AGBM agbm) throws Exception, JsonProcessingException, GameBootException {
-    switch (agbm.getType()) {
-    case OtpKeyRequest.TYPE:
-      if (((OtpKeyRequest) agbm).getKeyFunction() == KeyFunction.NEW) return super.process(ctx, controller, agbm);
-    }
-
-    log.error("Unauthorized message received on OTP encrypted channel {}, disconnecting: {}", ctx.channel(), agbm);
-
-    ctx.channel().close();
-
-    return null;
   }
 
   /**
@@ -305,33 +250,19 @@ public class OtpEncryptedNettyHandler extends AbstractGameBootNettyMessageHandle
    * @throws Exception
    *           the exception
    */
-  protected boolean validateChannel(ChannelHandlerContext ctx, OtpMessage message) throws Exception {
-    Long systemId = message.getSystemId();
-    if (systemId == null || systemId <= 0) {
-      log.error("System id missing from {}, disconnecting {}", message, ctx.channel());
-
-      ctx.channel().close();
-
-      return false;
-    }
-
-    Channel clearChannel = registry.get(systemId);
-
-    if (clearChannel == null || !clearChannel.isActive()) {
-      log.error("No clear channel for {}, from encrypted channel {}, disconnecting", systemId, ctx.channel());
-      ctx.close();
-      return false;
-    }
+  protected boolean validateChannel(ChannelHandlerContext ctx, OtpKeyRequest message) throws Exception {
 
     return true;
   }
 
   private void log(Future<? super Void> f, ChannelHandlerContext ctx, String type) {
     if (f.isSuccess()) {
-      log.debug("Successful send of {} to {}", type, ctx.channel().remoteAddress());
+      log.debug("Successful send of {} to {}, closing channel", type, ctx.channel().remoteAddress());
     } else {
-      log.error("Unsuccessful send of {} to {}", type, ctx.channel().remoteAddress(), f.cause());
+      log.error("Unsuccessful send of {} to {}, closing channel", type, ctx.channel().remoteAddress(), f.cause());
     }
+
+    ctx.close();
   }
 
 }
