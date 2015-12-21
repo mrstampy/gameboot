@@ -219,6 +219,15 @@ public class OtpEncryptedWebSocketHandler extends BinaryWebSocketHandler {
    *           the exception
    */
   protected boolean validateChannel(WebSocketSession session, OtpKeyRequest message) throws Exception {
+    switch (message.getKeyFunction()) {
+    case NEW:
+      break;
+    default:
+      log.error("Cannot process {}, closing OTP New Key session {}", message, session);
+      session.close();
+      return false;
+    }
+
     Long systemId = message.getSystemId();
     if (systemId == null) {
       log.error("System id missing from {}, disconnecting {}", message, session);
@@ -228,7 +237,6 @@ public class OtpEncryptedWebSocketHandler extends BinaryWebSocketHandler {
     }
 
     WebSocketSession clearChannel = registry.get(systemId);
-
     if (clearChannel == null || !clearChannel.isOpen()) {
       log.error("No clear channel for {}, from encrypted channel {}, disconnecting",
           systemId,

@@ -72,6 +72,7 @@ import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRegistry;
+import com.github.mrstampy.gameboot.util.concurrent.MDCRunnable;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
@@ -184,14 +185,18 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
    */
   @Override
   protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
-    svc.execute(() -> {
-      try {
-        processForBinary(session, message);
-      } catch (GameBootException | GameBootRuntimeException e) {
-        sendErrorBinary(session, e);
-      } catch (Exception e) {
-        log.error("Unexpected exception", e);
-        sendUnexpectedErrorBinary(session);
+    svc.execute(new MDCRunnable() {
+
+      @Override
+      protected void runImpl() {
+        try {
+          processForBinary(session, message);
+        } catch (GameBootException | GameBootRuntimeException e) {
+          sendErrorBinary(session, e);
+        } catch (Exception e) {
+          log.error("Unexpected exception", e);
+          sendUnexpectedErrorBinary(session);
+        }
       }
     });
   }

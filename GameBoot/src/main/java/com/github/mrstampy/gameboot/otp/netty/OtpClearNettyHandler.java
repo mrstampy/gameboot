@@ -73,6 +73,7 @@ import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRegistry;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
+import com.github.mrstampy.gameboot.util.concurrent.MDCRunnable;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -244,7 +245,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     byte[] key = otpKey.get();
 
     byte[] b = evaluateForNewKeyAck(ctx, mb);
-    
+
     if (key == null) {
       super.channelRead(ctx, b);
       return;
@@ -268,14 +269,18 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    *           the exception
    */
   protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-    svc.execute(() -> {
-      try {
-        process(ctx, msg);
-      } catch (GameBootException | GameBootRuntimeException e) {
-        sendError(ctx, e);
-      } catch (Exception e) {
-        log.error("Unexpected exception", e);
-        sendUnexpectedError(ctx);
+    svc.execute(new MDCRunnable() {
+
+      @Override
+      protected void runImpl() {
+        try {
+          process(ctx, msg);
+        } catch (GameBootException | GameBootRuntimeException e) {
+          sendError(ctx, e);
+        } catch (Exception e) {
+          log.error("Unexpected exception", e);
+          sendUnexpectedError(ctx);
+        }
       }
     });
   }
