@@ -113,7 +113,7 @@ public class OtpKeyRequestProcessorTest {
     failExpected(r, "No key function");
 
     r.setKeyFunction(KeyFunction.NEW);
-    r.setKeySize(maxKeySize + 1);
+    r.setKeySize(maxKeySize * 2);
     failExpected(r, "> max key size");
 
     r.setKeySize(KEY_SIZE);
