@@ -50,31 +50,21 @@ import java.lang.invoke.MethodHandles;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.socket.server.support.WebSocketHttpRequestHandler;
 
-import com.github.mrstampy.gameboot.TestConfiguration;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.netty.client.ClientHandler;
-import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
 
@@ -85,9 +75,11 @@ import io.netty.channel.ChannelFuture;
 /**
  * The Class OtpNettyTest.
  */
-//@RunWith(SpringJUnit4ClassRunner.class)
-//@SpringApplicationConfiguration({ TestConfiguration.class, OtpWebSocketTestConfiguration.class })
-//@ActiveProfiles({ OtpConfiguration.OTP_PROFILE, UserSessionConfiguration.USER_SESSION_PROFILE })
+// @RunWith(SpringJUnit4ClassRunner.class)
+// @SpringApplicationConfiguration({ TestConfiguration.class,
+// OtpWebSocketTestConfiguration.class })
+// @ActiveProfiles({ OtpConfiguration.OTP_PROFILE,
+// UserSessionConfiguration.USER_SESSION_PROFILE })
 public class OtpWebSocketTest {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
@@ -139,7 +131,7 @@ public class OtpWebSocketTest {
    * @throws Exception
    *           the exception
    */
-//  @Before
+  // @Before
   public void before() throws Exception {
     createClearChannel();
 
@@ -154,7 +146,7 @@ public class OtpWebSocketTest {
    * @throws Exception
    *           the exception
    */
-//  @After
+  // @After
   public void after() throws Exception {
     deleteOtpKey();
 
@@ -167,7 +159,7 @@ public class OtpWebSocketTest {
    * @throws Exception
    *           the exception
    */
-//  @Test
+  // @Test
   public void testEncryptedCreateUser() throws Exception {
     UserMessage m = new UserMessage();
     m.setId(1);
@@ -191,7 +183,7 @@ public class OtpWebSocketTest {
    * @throws Exception
    *           the exception
    */
-//  @Test
+  // @Test
   public void testEncryptedChannel() throws Exception {
     deleteOtpKey();
     createEncryptedChannel();
@@ -243,7 +235,7 @@ public class OtpWebSocketTest {
    * @throws Exception
    *           the exception
    */
-//  @Test
+  // @Test
   public void deleteUnencrypted() throws Exception {
     deleteOtpKey();
 

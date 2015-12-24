@@ -42,37 +42,20 @@
 package com.github.mrstampy.gameboot.netty;
 
 import java.lang.invoke.MethodHandles;
-import java.net.InetSocketAddress;
 
 import javax.annotation.PostConstruct;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
-import com.github.mrstampy.gameboot.exception.GameBootThrowable;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
-import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
-import com.github.mrstampy.gameboot.messages.Response;
-import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
-import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
-import com.github.mrstampy.gameboot.metrics.MetricsHelper;
-import com.github.mrstampy.gameboot.util.GameBootUtils;
-import com.github.mrstampy.gameboot.util.RegistryCleaner;
+import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.concurrent.Future;
 
 /**
  * This class is the superclass for last-in-pipeline GameBoot Netty handlers.
@@ -90,11 +73,15 @@ import io.netty.util.concurrent.Future;
  * Subclasses should have an annotated {@link PostConstruct} method which calls
  * the {@link AbstractGameBootNettyMessageHandler#postConstruct()}.<br>
  * <br>
- * 
+ *
+ * @param <C>
+ *          the generic type
+ * @param <CP>
+ *          the generic type
  * @see GameBootMessageController
- * 
  */
-public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexHandler implements ResponseContextCodes {
+public abstract class AbstractGameBootNettyMessageHandler<C, CP extends ConnectionProcessor<ChannelHandlerContext>>
+    extends ChannelDuplexHandler implements ResponseContextCodes {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /** The Constant MESSAGE_COUNTER. */
@@ -103,28 +90,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
   /** The Constant FAILED_MESSAGE_COUNTER. */
   protected static final String FAILED_MESSAGE_COUNTER = "Netty Failed Message Counter";
 
-  @Autowired
-  private MetricsHelper helper;
-
-  @Autowired
-  private GameBootUtils utils;
-
-  @Autowired
-  private NettyConnectionRegistry registry;
-
-  @Autowired
-  private GameBootMessageConverter converter;
-
-  @Autowired
-  private SystemId generator;
-
-  @Autowired
-  private RegistryCleaner cleaner;
-
-  @Autowired
-  private ResponseContextLookup lookup;
-
-  private Long systemId;
+  private CP connectionProcessor;
 
   /**
    * Post construct created message counters if necessary. Subclasses will need
@@ -134,13 +100,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    *           the exception
    */
   protected void postConstruct() throws Exception {
-    if (!helper.containsCounter(MESSAGE_COUNTER)) {
-      helper.counter(MESSAGE_COUNTER, getClass(), "inbound", "messages");
-    }
-
-    if (!helper.containsCounter(FAILED_MESSAGE_COUNTER)) {
-      helper.counter(FAILED_MESSAGE_COUNTER, getClass(), "failed", "messages");
-    }
+    if (connectionProcessor == null) throw new IllegalStateException("Netty Connection Processor not set");
   }
 
   /**
@@ -158,12 +118,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    */
   @Override
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    this.systemId = generator.next();
-
-    log.info("Connected to {}, adding to registry with key {}", ctx.channel(), systemId);
-
-    registry.putInGroup(NettyConnectionRegistry.ALL, ctx.channel());
-    registry.put(systemId, ctx.channel());
+    connectionProcessor.onConnection(ctx);
   }
 
   /**
@@ -177,17 +132,9 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    */
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    log.info("Disconnected from {}", ctx.channel());
+    connectionProcessor.onDisconnection(ctx);
 
-    cleaner.cleanup(getSystemId());
-
-    helper = null;
-    registry = null;
-    utils = null;
-    converter = null;
-    generator = null;
-    systemId = null;
-    cleaner = null;
+    connectionProcessor = null;
   }
 
   /*
@@ -213,312 +160,7 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    */
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    helper.incr(MESSAGE_COUNTER);
-
-    log.debug("Received message {} on {}", msg, ctx.channel());
-
-    if (msg instanceof String) {
-      channelReadImpl(ctx, (String) msg);
-    } else if (msg instanceof byte[]) {
-      channelReadImpl(ctx, (byte[]) msg);
-    } else {
-      log.error("Only strings or byte arrays: {} from {}. Disconnecting", msg.getClass(), ctx.channel());
-      ctx.close();
-    }
-  }
-
-  /**
-   * Channel read impl, blank by default. Override to handle (or exclude) byte
-   * array messages.
-   *
-   * @param ctx
-   *          the ctx
-   * @param msg
-   *          the msg
-   * @throws Exception
-   *           the exception
-   */
-  protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-  }
-
-  /**
-   * Channel read impl, override to handle (or exclude) string messages.
-   *
-   * @param ctx
-   *          the ctx
-   * @param msg
-   *          the msg
-   * @throws Exception
-   *           the exception
-   */
-  protected void channelReadImpl(ChannelHandlerContext ctx, String msg) throws Exception {
-  }
-
-  /**
-   * Process, should be invoked from
-   * {@link #channelReadImpl(ChannelHandlerContext, String)} or
-   * {@link #channelReadImpl(ChannelHandlerContext, byte[])}.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param ctx
-   *          the ctx
-   * @param msg
-   *          the msg
-   * @throws Exception
-   *           the exception
-   */
-  protected <AGBM extends AbstractGameBootMessage> void process(ChannelHandlerContext ctx, String msg)
-      throws Exception {
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
-    Response response = null;
-    AGBM agbm = null;
-    try {
-      agbm = converter.fromJson(msg);
-
-      if (!inspect(ctx, agbm)) return;
-
-      response = process(ctx, controller, agbm);
-    } catch (GameBootException | GameBootRuntimeException e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(agbm, e);
-    } catch (Exception e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message {} on channel {}", msg, ctx.channel(), e);
-      response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
-    }
-
-    postProcess(ctx, agbm, response);
-
-    if (response == null) return;
-
-    String r = converter.toJson(response);
-
-    ChannelFuture f = ctx.channel().writeAndFlush(r);
-
-    Response res = response;
-    f.addListener(e -> log(e, res, ctx));
-  }
-
-  /**
-   * Process.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param ctx
-   *          the ctx
-   * @param msg
-   *          the msg
-   * @throws Exception
-   *           the exception
-   */
-  protected <AGBM extends AbstractGameBootMessage> void process(ChannelHandlerContext ctx, byte[] msg)
-      throws Exception {
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
-    Response response = null;
-    AGBM agbm = null;
-    try {
-      agbm = converter.fromJson(msg);
-
-      if (!inspect(ctx, agbm)) return;
-
-      response = process(ctx, controller, agbm);
-    } catch (GameBootException | GameBootRuntimeException e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(agbm, e);
-    } catch (Exception e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message {} on channel {}", msg, ctx.channel(), e);
-      response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
-    }
-
-    postProcess(ctx, agbm, response);
-
-    if (response == null) return;
-
-    byte[] r = converter.toJsonArray(response);
-
-    ChannelFuture f = ctx.channel().writeAndFlush(r);
-
-    Response res = response;
-    f.addListener(e -> log(e, res, ctx));
-  }
-
-  /**
-   * Process, can be invoked in lieu of
-   * {@link #process(ChannelHandlerContext, String)} should the message have
-   * been {@link GameBootMessageConverter}'ed for inspection in an override of
-   * {@link #channelReadImpl(ChannelHandlerContext, byte[])} or
-   * {@link #channelReadImpl(ChannelHandlerContext, String)}. If invoking this
-   * method directly ensure that the instance of
-   * {@link GameBootMessageController} is obtained via
-   * {@link GameBootUtils#getBean(Class)}.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param ctx
-   *          the ctx
-   * @param controller
-   *          the controller
-   * @param agbm
-   *          the agbm
-   * @return the response
-   * @throws Exception
-   *           the exception
-   * @throws JsonProcessingException
-   *           the json processing exception
-   * @throws GameBootException
-   *           the game boot exception
-   */
-  protected <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx,
-      GameBootMessageController controller, AGBM agbm) throws Exception, JsonProcessingException, GameBootException {
-    if (agbm.getSystemId() == null) agbm.setSystemId(getSystemId());
-    agbm.setTransport(Transport.NETTY);
-    agbm.setLocal((InetSocketAddress) ctx.channel().localAddress());
-    agbm.setRemote((InetSocketAddress) ctx.channel().remoteAddress());
-
-    Response r = controller.process(agbm);
-    processMappingKeys(r, ctx.channel());
-    r.setSystemId(agbm.getSystemId());
-
-    return r;
-  }
-
-  private void processMappingKeys(Response r, Channel channel) {
-    Comparable<?>[] keys = r.getMappingKeys();
-    if (keys == null || keys.length == 0) return;
-
-    for (int i = 0; i < keys.length; i++) {
-      registry.put(keys[i], channel);
-    }
-  }
-
-  /**
-   * Investigate the message prior to processing. Overrides which fail
-   * inspection are responsible for sending any failure messages to the client
-   * prior to returning false.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param ctx
-   *          the ctx
-   * @param agbm
-   *          the agbm
-   * @return true, if successful
-   * @throws Exception
-   *           the exception
-   */
-  protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm)
-      throws Exception {
-    return true;
-  }
-
-  /**
-   * Post process the request and response. Empty implementation; override as
-   * appropriate.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param ctx
-   *          the ctx
-   * @param agbm
-   *          the agbm
-   * @param r
-   *          the r
-   */
-  protected <AGBM extends AbstractGameBootMessage> void postProcess(ChannelHandlerContext ctx, AGBM agbm, Response r) {
-  }
-
-  /**
-   * Send unexpected error.
-   *
-   * @param ctx
-   *          the ctx
-   */
-  protected void sendUnexpectedError(ChannelHandlerContext ctx) {
-    sendError(UNEXPECTED_ERROR, ctx, "An unexpected error has occurred");
-  }
-
-  /**
-   * Send error.
-   *
-   * @param code
-   *          the code
-   * @param ctx
-   *          the ctx
-   * @param message
-   *          the message
-   */
-  protected void sendError(int code, ChannelHandlerContext ctx, String message) {
-    try {
-      ctx.channel().writeAndFlush(fail(code, null, message));
-    } catch (Exception e) {
-      log.error("Unexpected exception", e);
-    }
-  }
-
-  /**
-   * Send error.
-   *
-   * @param ctx
-   *          the ctx
-   * @param e
-   *          the e
-   */
-  protected void sendError(ChannelHandlerContext ctx, GameBootThrowable e) {
-    Response r = fail(null, e);
-    try {
-      ctx.channel().writeAndFlush(converter.toJsonArray(r));
-    } catch (Exception f) {
-      log.error("Unexpected exception", f);
-    }
-  }
-
-  private void log(Future<? super Void> f, Response response, ChannelHandlerContext ctx) {
-    if (f.isSuccess()) {
-      log.debug("Successfully sent {} to {}", response, ctx.channel());
-    } else {
-      log.error("Could not send {} for message {} to {}", response, ctx.channel(), f.cause());
-    }
-  }
-
-  /**
-   * Fail.
-   *
-   * @param message
-   *          the message
-   * @param e
-   *          the e
-   * @return the response
-   */
-  protected Response fail(AbstractGameBootMessage message, GameBootThrowable e) {
-    ResponseContext error = e.getError();
-    Object[] payload = e.getPayload();
-
-    Response r = new Response(message, ResponseCode.FAILURE, payload);
-    r.setContext(error);
-
-    return r;
-  }
-
-  /**
-   * Returns a fail message.
-   *
-   * @param code
-   *          the code
-   * @param message
-   *          the message
-   * @param payload
-   *          the payload
-   * @return the string
-   */
-  protected Response fail(int code, AbstractGameBootMessage message, String payload) {
-    Response r = new Response(message, ResponseCode.FAILURE, payload);
-    r.setContext(lookup.lookup(code));
-
-    return r;
+    connectionProcessor.onMessage(ctx, msg);
   }
 
   /**
@@ -528,7 +170,26 @@ public abstract class AbstractGameBootNettyMessageHandler extends ChannelDuplexH
    * @return the key
    */
   public Long getSystemId() {
-    return systemId;
+    return connectionProcessor.getSystemId(null);
+  }
+
+  /**
+   * Gets the connection processor.
+   *
+   * @return the connection processor
+   */
+  public CP getConnectionProcessor() {
+    return connectionProcessor;
+  }
+
+  /**
+   * Sets the connection processor.
+   *
+   * @param connectionProcessor
+   *          the new connection processor
+   */
+  public void setConnectionProcessor(CP connectionProcessor) {
+    this.connectionProcessor = connectionProcessor;
   }
 
 }

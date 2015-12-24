@@ -48,7 +48,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.netty.examples.MDCExecutorNettyMessageHandler;
 import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
@@ -59,9 +58,7 @@ import io.netty.channel.ChannelPipeline;
  * The Class MDCUserSessionInboundHandler clears the Logback {@link MDC} context
  * and sets the {@link #USER_NAME} (userName) and {@link #SESSION_ID}
  * (sessionId) in the {@link MDC} context should these values have been
- * extracted by the {@link UserSessionInboundHandler} superclass. It is intended
- * to be added as the penultimate handler before an instance of
- * {@link MDCExecutorNettyMessageHandler}. <br>
+ * extracted by the {@link UserSessionInboundHandler} superclass. <br>
  * <br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use

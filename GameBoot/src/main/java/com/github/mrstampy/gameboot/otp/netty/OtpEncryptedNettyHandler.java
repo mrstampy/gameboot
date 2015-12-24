@@ -196,7 +196,7 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
       ctx.close();
       return;
     }
-    
+
     sendResponse(ctx, message, r);
   }
 

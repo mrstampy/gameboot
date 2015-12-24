@@ -41,39 +41,22 @@
  */
 package com.github.mrstampy.gameboot.otp.netty;
 
-import java.lang.invoke.MethodHandles;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicReference;
-
 import javax.annotation.PostConstruct;
 
-import org.ehcache.internal.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 
-import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
-import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRegistry;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
-import com.github.mrstampy.gameboot.util.concurrent.MDCRunnable;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPipeline;
@@ -128,43 +111,13 @@ import io.netty.channel.ChannelPromise;
  * @see KeyRegistry
  * @see OneTimePad
  * @see OtpConfiguration
- * @see #inspect(ChannelHandlerContext, AbstractGameBootMessage)
- * @see #isValidType(ChannelHandlerContext, AbstractGameBootMessage)
  */
 @Profile(OtpConfiguration.OTP_PROFILE)
-public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  private static final String OTP_DECRYPT_COUNTER = "Netty OTP Decrypt Counter";
-
-  private static final String OTP_ENCRYPT_COUNTER = "Netty OTP Encrypt Counter";
-
-  private static final Integer DEFAULT_KEY_CHANGE_ID = Integer.MAX_VALUE;
-
-  @Autowired
-  private OneTimePad oneTimePad;
-
-  @Autowired
-  private KeyRegistry keyRegistry;
-
-  @Autowired
-  private OtpNewKeyRegistry newKeyRegistry;
-
-  @Autowired
-  private MetricsHelper helper;
-
-  @Autowired
-  @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
-  private ExecutorService svc;
+public class OtpClearNettyHandler
+    extends AbstractGameBootNettyMessageHandler<ChannelHandlerContext, OtpClearNettyProcessor> {
 
   @Autowired
   private GameBootMessageConverter converter;
-
-  /** The otp key. */
-  protected AtomicReference<byte[]> otpKey = new AtomicReference<>();
-
-  /** The expecting key change. */
-  protected Map<Integer, Boolean> expectingKeyChange = new ConcurrentHashMap<>();
 
   /**
    * Post construct.
@@ -175,14 +128,6 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   @PostConstruct
   public void postConstruct() throws Exception {
     super.postConstruct();
-
-    if (!helper.containsCounter(OTP_DECRYPT_COUNTER)) {
-      helper.counter(OTP_DECRYPT_COUNTER, getClass(), "otp", "decrypt", "counter");
-    }
-
-    if (!helper.containsCounter(OTP_ENCRYPT_COUNTER)) {
-      helper.counter(OTP_ENCRYPT_COUNTER, getClass(), "otp", "encrypt", "counter");
-    }
   }
 
   /**
@@ -200,7 +145,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
     Response r = new Response(ResponseCode.INFO);
     r.setSystemId(getSystemId());
 
-    ctx.channel().writeAndFlush(converter.toJsonArray(r));
+    getConnectionProcessor().sendMessage(ctx, converter.toJsonArray(r), r);
   }
 
   /**
@@ -215,12 +160,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     super.channelInactive(ctx);
 
-    oneTimePad = null;
-    keyRegistry = null;
-    helper = null;
     converter = null;
-    svc = null;
-    newKeyRegistry = null;
   }
 
   /**
@@ -235,220 +175,7 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    */
   @Override
   public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    if (!(msg instanceof byte[])) {
-      sendError(NOT_BYTE_ARRAY, ctx, "Message must be a byte array");
-      return;
-    }
-
-    byte[] mb = (byte[]) msg;
-
-    byte[] key = otpKey.get();
-
-    byte[] b = evaluateForNewKeyAck(ctx, mb);
-
-    if (key == null) {
-      super.channelRead(ctx, b);
-      return;
-    }
-
-    helper.incr(OTP_DECRYPT_COUNTER);
-
-    byte[] converted = b == mb ? oneTimePad.convert(key, mb) : b;
-
-    super.channelRead(ctx, converted);
-  }
-
-  /**
-   * Channel read impl.
-   *
-   * @param ctx
-   *          the ctx
-   * @param msg
-   *          the msg
-   * @throws Exception
-   *           the exception
-   */
-  protected void channelReadImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception {
-    svc.execute(new MDCRunnable() {
-
-      @Override
-      protected void runImpl() {
-        try {
-          process(ctx, msg);
-        } catch (GameBootException | GameBootRuntimeException e) {
-          sendError(ctx, e);
-        } catch (Exception e) {
-          log.error("Unexpected exception", e);
-          sendUnexpectedError(ctx);
-        }
-      }
-    });
-  }
-
-  @SuppressWarnings("unused")
-  private byte[] evaluateForNewKeyAck(ChannelHandlerContext ctx, byte[] msg) {
-    Long systemId = getSystemId();
-    if (!newKeyRegistry.contains(systemId)) return msg;
-
-    byte[] newKey = newKeyRegistry.get(systemId);
-
-    try {
-      byte[] converted = oneTimePad.convert(newKey, msg);
-      OtpNewKeyAck ack = converter.fromJson(converted);
-      return converted;
-    } catch (Exception e) {
-      String s = keyRegistry.contains(systemId) ? "old key" : "unencrypted";
-      log.warn("Awaiting new key ack, assuming {} for {}, system id {}.", s, ctx.channel(), systemId);
-    }
-
-    return msg;
-  }
-
-  /**
-   * Inspect.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param ctx
-   *          the ctx
-   * @param agbm
-   *          the agbm
-   * @return true, if successful
-   * @throws Exception
-   *           the exception
-   */
-  protected <AGBM extends AbstractGameBootMessage> boolean inspect(ChannelHandlerContext ctx, AGBM agbm)
-      throws Exception {
-    boolean ok = true;
-
-    switch (agbm.getType()) {
-    case OtpKeyRequest.TYPE:
-      ok = isDeleteRequest(ctx, (OtpKeyRequest) agbm);
-      if (ok) {
-        pendingKeyChange(agbm);
-      } else {
-        Response fail = fail(UNEXPECTED_MESSAGE, agbm, null);
-        ctx.writeAndFlush(converter.toJsonArray(fail));
-      }
-      break;
-    case OtpNewKeyAck.TYPE:
-      pendingKeyChange(agbm);
-      break;
-    default:
-      ok = isValidType(ctx, agbm);
-    }
-
-    return ok;
-  }
-
-  /**
-   * Pending key change.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param agbm
-   *          the agbm
-   */
-  protected <AGBM extends AbstractGameBootMessage> void pendingKeyChange(AGBM agbm) {
-    if (agbm.getId() == null) agbm.setId(DEFAULT_KEY_CHANGE_ID);
-    expectingKeyChange.put(agbm.getId(), Boolean.TRUE);
-    ((OtpMessage) agbm).setProcessorKey(getSystemId());
-  }
-
-  /**
-   * Post process.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param ctx
-   *          the ctx
-   * @param agbm
-   *          the agbm
-   * @param r
-   *          the r
-   */
-  protected <AGBM extends AbstractGameBootMessage> void postProcess(ChannelHandlerContext ctx, AGBM agbm, Response r) {
-    Integer id = agbm.getId();
-    if (id == null) return;
-
-    Boolean b = expectingKeyChange.get(id);
-    if (b == null) return;
-
-    try {
-      postProcessForKey(agbm, r);
-    } finally {
-      expectingKeyChange.remove(id);
-    }
-  }
-
-  /**
-   * Post process for key.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param agbm
-   *          the agbm
-   * @param r
-   *          the r
-   */
-  protected <AGBM extends AbstractGameBootMessage> void postProcessForKey(AGBM agbm, Response r) {
-    if (DEFAULT_KEY_CHANGE_ID.equals(agbm.getId())) {
-      agbm.setId(null);
-      r.setId(null);
-    }
-
-    if (!r.isSuccess()) return;
-
-    switch (agbm.getType()) {
-    case OtpNewKeyAck.TYPE:
-      activateNewKey();
-      break;
-    case OtpKeyRequest.TYPE:
-      deactivateKey();
-      break;
-    default:
-      break;
-    }
-  }
-
-  /**
-   * Deactivate key.
-   */
-  protected void deactivateKey() {
-    otpKey.set(null);
-  }
-
-  /**
-   * Activate new key.
-   */
-  protected void activateNewKey() {
-    otpKey.set(keyRegistry.get(getSystemId()));
-  }
-
-  /**
-   * Checks if is valid type.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param ctx
-   *          the ctx
-   * @param agbm
-   *          the agbm
-   * @return true, if is valid type
-   */
-  protected <AGBM extends AbstractGameBootMessage> boolean isValidType(ChannelHandlerContext ctx, AGBM agbm) {
-    return true;
-  }
-
-  private boolean isDeleteRequest(ChannelHandlerContext ctx, OtpKeyRequest keyRequest) {
-    boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
-
-    Long sysId = keyRequest.getSystemId();
-    boolean ok = d && isEncrypting() && getSystemId().equals(sysId);
-
-    if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, ctx.channel(), getSystemId());
-
-    return ok;
+    getConnectionProcessor().onMessage(ctx, msg);
   }
 
   /**
@@ -456,8 +183,8 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    *
    * @return true, if is encrypting
    */
-  protected boolean isEncrypting() {
-    return otpKey.get() != null;
+  public boolean isEncrypting() {
+    return getConnectionProcessor().isEncrypting();
   }
 
   /**
@@ -474,25 +201,16 @@ public class OtpClearNettyHandler extends AbstractGameBootNettyMessageHandler {
    */
   @Override
   public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-    if (!(msg instanceof String) && !(msg instanceof byte[])) {
-      log.error("Internal error; object is not a string or byte array: {}", msg.getClass());
-      return;
-    }
+    byte[] processed = getConnectionProcessor().encryptIfRequired(msg);
 
-    byte[] key = otpKey.get();
+    if (processed == null) return;
 
-    byte[] processed = (msg instanceof byte[]) ? (byte[]) msg : ((String) msg).getBytes();
+    ctx.write(processed, promise);
+  }
 
-    if (key == null) {
-      ctx.write(processed, promise);
-      return;
-    }
-
-    helper.incr(OTP_ENCRYPT_COUNTER);
-
-    byte[] converted = oneTimePad.convert(key, processed);
-
-    ctx.write(converted, promise);
+  @Autowired
+  public void setConnectionProcessor(OtpClearNettyProcessor connectionProcessor) {
+    super.setConnectionProcessor(connectionProcessor);
   }
 
 }

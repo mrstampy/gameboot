@@ -54,6 +54,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.context.annotation.Scope;
 
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
+import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyProcessor;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
@@ -99,6 +100,18 @@ public class OtpConfiguration {
   @Scope("prototype")
   public OtpClearNettyHandler clearNettyHandler() {
     return new OtpClearNettyHandler();
+  }
+
+  /**
+   * Clear netty processor.
+   *
+   * @return the otp clear netty processor
+   */
+  @Bean
+  @ConditionalOnMissingBean(OtpClearNettyProcessor.class)
+  @Scope("prototype")
+  public OtpClearNettyProcessor clearNettyProcessor() {
+    return new OtpClearNettyProcessor();
   }
 
   /**
