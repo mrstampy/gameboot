@@ -100,8 +100,8 @@ import io.netty.channel.ChannelPromise;
  * <br>
  * 
  * It is intended that full implementations of GameBoot will implement
- * subclasses of this class to restrict message type processing to a whitelist.
- * <br>
+ * subclasses of the {@link OtpClearNettyProcessor} class to restrict message
+ * type processing to a whitelist. <br>
  * <br>
  * 
  * Do not instantiate directly as this is a prototype Spring managed bean. Use

@@ -41,136 +41,32 @@
  */
 package com.github.mrstampy.gameboot.websocket;
 
-import java.lang.invoke.MethodHandles;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-
-import org.ehcache.internal.concurrent.ConcurrentHashMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.socket.BinaryMessage;
-import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.AbstractWebSocketHandler;
 
-import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
-import com.github.mrstampy.gameboot.exception.GameBootThrowable;
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
-import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
-import com.github.mrstampy.gameboot.messages.Response;
-import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
-import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
-import com.github.mrstampy.gameboot.metrics.MetricsHelper;
-import com.github.mrstampy.gameboot.util.GameBootUtils;
-import com.github.mrstampy.gameboot.util.RegistryCleaner;
+import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 
 /**
  * The Class AbstractGameBootWebSocketHandler is the superclass of
  * {@link WebSocketHandler}s which can handle either text or binary GameBoot web
  * socket messages. Messages are automatically processed and responses returned
  * as appropriate.
- * 
+ *
+ * @param <C>
+ *          the generic type
+ * @param <CP>
+ *          the generic type
  * @see GameBootMessageController
  */
-public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocketHandler
-    implements ResponseContextCodes {
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public abstract class AbstractGameBootWebSocketHandler<C, CP extends ConnectionProcessor<WebSocketSession>>
+    extends AbstractWebSocketHandler implements ResponseContextCodes {
 
-  private static final String MESSAGE_COUNTER = "GameBoot Web Socket Message Counter";
-
-  private static final String FAILED_MESSAGE_COUNTER = "GameBoot Web Socket Failed Message Counter";
-
-  @Autowired
-  private MetricsHelper helper;
-
-  @Autowired
-  private GameBootUtils utils;
-
-  @Autowired
-  private WebSocketSessionRegistry registry;
-
-  @Autowired
-  private GameBootMessageConverter converter;
-
-  @Autowired
-  private SystemId generator;
-
-  @Autowired
-  private RegistryCleaner cleaner;
-
-  @Autowired
-  private ResponseContextLookup lookup;
-
-  /** The system ids. */
-  protected Map<String, Long> systemIds = new ConcurrentHashMap<>();
-
-  /**
-   * Post construct created message counters if necessary. Subclasses will need
-   * to invoke this in an annotated {@link PostConstruct} method.
-   *
-   * @throws Exception
-   *           the exception
-   */
-  protected void postConstruct() throws Exception {
-    if (!helper.containsCounter(MESSAGE_COUNTER)) {
-      helper.counter(MESSAGE_COUNTER, getClass(), "inbound", "messages");
-    }
-
-    if (!helper.containsCounter(FAILED_MESSAGE_COUNTER)) {
-      helper.counter(FAILED_MESSAGE_COUNTER, getClass(), "failed", "messages");
-    }
-  }
-
-  /**
-   * Sets the {@link SystemId#next()} key and adds the WebSocketSession to the
-   * {@link WebSocketSessionRegistry}. Subclasses overriding must invoke super.
-   *
-   * @param session
-   *          the session
-   * @throws Exception
-   *           the exception
-   */
-  @Override
-  public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-    Long systemId = generator.next();
-    systemIds.put(session.getId(), systemId);
-    addToRegistry(session);
-  }
-
-  /**
-   * Removes this {@link WebSocketSession} from the registry. Subclasses
-   * overriding must invoke super.
-   *
-   * @param session
-   *          the session
-   * @param status
-   *          the status
-   * @throws Exception
-   *           the exception
-   */
-  @Override
-  public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-    String id = session.getId();
-
-    systemIds.remove(id);
-    cleaner.cleanup(getSystemId(id));
-
-    Set<Entry<Comparable<?>, WebSocketSession>> set = registry.getKeysForValue(session);
-
-    set.forEach(e -> registry.remove(e.getKey()));
-  }
+  private CP webSocketProcessor;
 
   /**
    * Handle text message.
@@ -183,11 +79,7 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *           the exception
    */
   protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
-    if (message.getPayloadLength() <= 0) return;
-
-    helper.incr(MESSAGE_COUNTER);
-
-    handleTextMessageImpl(session, message.getPayload());
+    webSocketProcessor.onMessage(session, message);
   }
 
   /**
@@ -201,425 +93,25 @@ public abstract class AbstractGameBootWebSocketHandler extends AbstractWebSocket
    *           the exception
    */
   protected void handleBinaryMessage(WebSocketSession session, BinaryMessage message) throws Exception {
-    if (message.getPayloadLength() <= 0) return;
-
-    helper.incr(MESSAGE_COUNTER);
-
-    handleBinaryMessageImpl(session, message.getPayload().array());
+    webSocketProcessor.onMessage(session, message);
   }
 
   /**
-   * Handle binary message impl.
+   * Gets the web socket processor.
    *
-   * @param session
-   *          the session
-   * @param message
-   *          the message
+   * @return the web socket processor
    */
-  protected abstract void handleBinaryMessageImpl(WebSocketSession session, byte[] message);
-
-  /**
-   * Process for binary should be invoked from
-   * {@link #handleBinaryMessageImpl(WebSocketSession, byte[])}. Responses are
-   * automatically sent. Override to intercept the response message.
-   *
-   * @param session
-   *          the session
-   * @param message
-   *          the message
-   * @throws Exception
-   *           the exception
-   */
-  protected void processForBinary(WebSocketSession session, byte[] message) throws Exception {
-    byte[] response = process(session, message);
-    if (response == null) return;
-
-    BinaryMessage m = new BinaryMessage(response);
-    session.sendMessage(m);
+  public CP getConnectionProcessor() {
+    return webSocketProcessor;
   }
 
   /**
-   * Handle text message impl.
+   * Sets the web socket processor.
    *
-   * @param session
-   *          the session
-   * @param message
-   *          the message
-   * @throws Exception
-   *           the exception
+   * @param webSocketProcessor
+   *          the new web socket processor
    */
-  protected abstract void handleTextMessageImpl(WebSocketSession session, String message) throws Exception;
-
-  /**
-   * Process for text should be invoked from
-   * {@link #handleTextMessageImpl(WebSocketSession, String)}. Responses are
-   * automatically sent. Override to intercept the response message.
-   *
-   * @param session
-   *          the session
-   * @param message
-   *          the message
-   * @throws Exception
-   *           the exception
-   */
-  protected void processForText(WebSocketSession session, String message) throws Exception {
-    String response = process(session, message);
-    if (response == null) return;
-
-    TextMessage m = new TextMessage(response.getBytes());
-    session.sendMessage(m);
-  }
-
-  /**
-   * Process.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param session
-   *          the session
-   * @param msg
-   *          the msg
-   * @return the string
-   * @throws Exception
-   *           the exception
-   */
-  protected <AGBM extends AbstractGameBootMessage> String process(WebSocketSession session, String msg)
-      throws Exception {
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
-    Response response = null;
-    AGBM agbm = null;
-    try {
-      agbm = converter.fromJson(msg);
-
-      if (!inspect(session, agbm)) return null;
-
-      response = process(session, controller, agbm);
-    } catch (GameBootException | GameBootRuntimeException e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(agbm, e);
-    } catch (Exception e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message {} on channel {}", msg, session.getRemoteAddress(), e);
-      response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
-    }
-
-    postProcess(session, agbm, response);
-
-    return response == null ? null : converter.toJson(response);
-  }
-
-  /**
-   * Process.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param session
-   *          the session
-   * @param msg
-   *          the msg
-   * @return the byte[]
-   * @throws Exception
-   *           the exception
-   */
-  protected <AGBM extends AbstractGameBootMessage> byte[] process(WebSocketSession session, byte[] msg)
-      throws Exception {
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
-    Response response = null;
-    AGBM agbm = null;
-    try {
-      agbm = converter.fromJson(msg);
-
-      if (!inspect(session, agbm)) return null;
-
-      response = process(session, controller, agbm);
-    } catch (GameBootException | GameBootRuntimeException e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(agbm, e);
-    } catch (Exception e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message {} on channel {}", msg, session.getRemoteAddress(), e);
-      response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
-    }
-
-    postProcess(session, agbm, response);
-
-    return response == null ? null : converter.toJsonArray(response);
-  }
-
-  /**
-   * Process, can be invoked in lieu of
-   * {@link #process(WebSocketSession, String)} should the message have been
-   * {@link GameBootMessageConverter}'ed for inspection in an override of
-   * {@link #handleTextMessageImpl(WebSocketSession, String)} or
-   * {@link #handleBinaryMessageImpl(WebSocketSession, byte[])}. If invoking
-   * this method directly ensure that the instance of
-   * {@link GameBootMessageController} is obtained via
-   * {@link GameBootUtils#getBean(Class)}.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param session
-   *          the session
-   * @param controller
-   *          the controller
-   * @param agbm
-   *          the agbm
-   * @return the response
-   * @throws Exception
-   *           the exception
-   */
-  protected <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session,
-      GameBootMessageController controller, AGBM agbm) throws Exception {
-    if (agbm.getSystemId() == null) agbm.setSystemId(getSystemId(session));
-    agbm.setTransport(Transport.WEB_SOCKET);
-    agbm.setLocal(session.getLocalAddress());
-    agbm.setRemote(session.getRemoteAddress());
-
-    Response r = controller.process(agbm);
-    processMappingKeys(r, session);
-    r.setSystemId(agbm.getSystemId());
-    return r;
-  }
-
-  private void processMappingKeys(Response r, WebSocketSession session) {
-    Comparable<?>[] keys = r.getMappingKeys();
-    if (keys == null || keys.length == 0) return;
-
-    for (int i = 0; i < keys.length; i++) {
-      registry.put(keys[i], session);
-    }
-  }
-
-  /**
-   * Investigate the message prior to processing. Overrides which fail
-   * inspection are responsible for sending any failure messages to the client
-   * prior to returning false.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param session
-   *          the session
-   * @param agbm
-   *          the agbm
-   * @return true, if successful
-   * @throws Exception
-   *           the exception
-   */
-  protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm)
-      throws Exception {
-    return true;
-  }
-
-  /**
-   * Post process the request and response. Empty implementation; override as
-   * appropriate.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param session
-   *          the session
-   * @param agbm
-   *          the agbm
-   * @param response
-   *          the response
-   */
-  protected <AGBM extends AbstractGameBootMessage> void postProcess(WebSocketSession session, AGBM agbm,
-      Response response) {
-  }
-
-  /**
-   * Adds the to registry.
-   *
-   * @param session
-   *          the session
-   */
-  protected void addToRegistry(WebSocketSession session) {
-    Long systemId = getSystemId(session);
-    if (!registry.contains(systemId)) registry.put(systemId, session);
-  }
-
-  /**
-   * Gets the key in {@link #afterConnectionEstablished(WebSocketSession)} from
-   * {@link SystemId#next()}.
-   *
-   * @param session
-   *          the session
-   * @return the key
-   */
-  public Long getSystemId(WebSocketSession session) {
-    String id = session.getId();
-    return getSystemId(id);
-  }
-
-  /**
-   * Gets the system id.
-   *
-   * @param sessionId
-   *          the {@link WebSocketSession} session id
-   * @return the system id
-   */
-  public Long getSystemId(String sessionId) {
-    return systemIds.get(sessionId);
-  }
-
-  /**
-   * Send unexpected failure.
-   *
-   * @param session
-   *          the session
-   */
-  protected void sendUnexpectedError(WebSocketSession session) {
-    sendError(null, session, "An unexpected error has occurred");
-  }
-
-  /**
-   * Send unexpected failure binary.
-   *
-   * @param session
-   *          the session
-   */
-  protected void sendUnexpectedErrorBinary(WebSocketSession session) {
-    sendErrorBinary(null, session, "An unexpected error has occurred");
-  }
-
-  /**
-   * Send failure.
-   *
-   * @param messageId
-   *          the message id
-   * @param session
-   *          the session
-   * @param msg
-   *          the msg
-   */
-  protected void sendError(Integer messageId, WebSocketSession session, String msg) {
-    try {
-      Response r = fail(UNEXPECTED_ERROR, msg);
-      r.setId(messageId);
-      TextMessage fail = new TextMessage(converter.toJsonArray(r));
-      session.sendMessage(fail);
-    } catch (Exception e) {
-      log.error("Unexpected exception sending failure {} for {}", msg, getSystemId(session), e);
-    }
-  }
-
-  /**
-   * Send failure.
-   *
-   * @param session
-   *          the session
-   * @param e
-   *          the e
-   */
-  protected void sendError(WebSocketSession session, GameBootThrowable e) {
-    try {
-      Response r = fail(null, e);
-      TextMessage fail = new TextMessage(converter.toJsonArray(r));
-      session.sendMessage(fail);
-    } catch (Exception f) {
-      log.error("Unexpected exception sending failure {} for {}, systemId {}",
-          e.getMessage(),
-          session,
-          getSystemId(session),
-          f);
-    }
-  }
-
-  /**
-   * Send failure binary.
-   *
-   * @param messageId
-   *          the message id
-   * @param session
-   *          the session
-   * @param msg
-   *          the msg
-   */
-  protected void sendErrorBinary(Integer messageId, WebSocketSession session, String msg) {
-    try {
-      Response r = fail(UNEXPECTED_ERROR, msg);
-      r.setId(messageId);
-      BinaryMessage fail = new BinaryMessage(converter.toJsonArray(r));
-      session.sendMessage(fail);
-    } catch (Exception e) {
-      log.error("Unexpected exception sending failure {} for {}", msg, getSystemId(session), e);
-    }
-  }
-
-  /**
-   * Send failure binary.
-   *
-   * @param session
-   *          the session
-   * @param e
-   *          the e
-   */
-  protected void sendErrorBinary(WebSocketSession session, GameBootThrowable e) {
-    try {
-      Response r = fail(null, e);
-      BinaryMessage fail = new BinaryMessage(converter.toJsonArray(r));
-      session.sendMessage(fail);
-    } catch (Exception f) {
-      log.error("Unexpected exception sending failure {} for {}, systemId {}",
-          e.getMessage(),
-          session,
-          getSystemId(session),
-          f);
-    }
-  }
-
-  /**
-   * Fail.
-   *
-   * @param message
-   *          the message
-   * @param e
-   *          the e
-   * @return the response
-   */
-  protected Response fail(AbstractGameBootMessage message, GameBootThrowable e) {
-    ResponseContext error = e.getError();
-    Object[] payload = e.getPayload();
-
-    Response r = new Response(message, ResponseCode.FAILURE, payload);
-    r.setContext(error);
-
-    return r;
-  }
-
-  /**
-   * Returns a fail message.
-   *
-   * @param code
-   *          the code
-   * @param message
-   *          the message
-   * @return the string
-   */
-  protected Response fail(int code, String message) {
-    Response r = new Response(ResponseCode.FAILURE, message);
-    r.setContext(lookup.lookup(code));
-
-    return r;
-  }
-
-  /**
-   * Returns a fail message.
-   *
-   * @param code
-   *          the code
-   * @param message
-   *          the message
-   * @param payload
-   *          the payload
-   * @return the string
-   */
-  protected Response fail(int code, AbstractGameBootMessage message, String payload) {
-    Response r = new Response(message, ResponseCode.FAILURE, payload);
-    r.setContext(lookup.lookup(code));
-
-    return r;
+  public void setConnectionProcessor(CP webSocketProcessor) {
+    this.webSocketProcessor = webSocketProcessor;
   }
 }

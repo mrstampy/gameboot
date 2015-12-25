@@ -56,6 +56,7 @@ import org.springframework.context.annotation.Scope;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyProcessor;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
+import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketProcessor;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 /**
@@ -123,6 +124,17 @@ public class OtpConfiguration {
   @ConditionalOnMissingBean(OtpClearWebSocketHandler.class)
   public OtpClearWebSocketHandler clearWebSocketHandler() {
     return new OtpClearWebSocketHandler();
+  }
+
+  /**
+   * Clear web socket processor.
+   *
+   * @return the otp clear web socket processor
+   */
+  @Bean
+  @ConditionalOnMissingBean(OtpClearWebSocketProcessor.class)
+  public OtpClearWebSocketProcessor clearWebSocketProcessor() {
+    return new OtpClearWebSocketProcessor();
   }
 
   /**

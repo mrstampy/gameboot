@@ -39,16 +39,25 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.netty;
+package com.github.mrstampy.gameboot.websocket;
 
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
+import org.ehcache.internal.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketMessage;
+import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
@@ -66,28 +75,21 @@ import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.RegistryCleaner;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.concurrent.Future;
-
 /**
  * Superclass for Netty {@link ConnectionProcessor}s.
  */
-public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor<ChannelHandlerContext> {
+public abstract class AbstractWebSocketProcessor extends AbstractConnectionProcessor<WebSocketSession> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  /** The Constant MESSAGE_COUNTER. */
-  protected static final String MESSAGE_COUNTER = "Netty Message Counter";
+  private static final String MESSAGE_COUNTER = "GameBoot Web Socket Message Counter";
 
-  /** The Constant FAILED_MESSAGE_COUNTER. */
-  protected static final String FAILED_MESSAGE_COUNTER = "Netty Failed Message Counter";
+  private static final String FAILED_MESSAGE_COUNTER = "GameBoot Web Socket Failed Message Counter";
 
   @Autowired
   private MetricsHelper helper;
 
   @Autowired
-  private NettyConnectionRegistry registry;
+  private WebSocketSessionRegistry registry;
 
   @Autowired
   private SystemId generator;
@@ -100,6 +102,9 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
 
   @Autowired
   private GameBootUtils utils;
+
+  /** The system ids. */
+  protected Map<String, Long> systemIds = new ConcurrentHashMap<>();
 
   /**
    * Post construct, invoke from {@link PostConstruct}-annotated subclass
@@ -123,16 +128,18 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * 
    * @see
    * com.github.mrstampy.gameboot.netty.ConnectionProcessor#onConnection(io.
-   * netty.channel.ChannelHandlerContext)
+   * netty.channel.WebSocketSession)
    */
   @Override
-  public void onConnection(ChannelHandlerContext ctx) throws Exception {
-    setSystemId(ctx, generator.next());
+  public void onConnection(WebSocketSession session) throws Exception {
+    setSystemId(session, generator.next());
 
-    log.info("Connected to {}, adding to registry with key {}", ctx.channel(), getSystemId());
+    addToRegistry(session);
+  }
 
-    registry.putInGroup(NettyConnectionRegistry.ALL, ctx.channel());
-    registry.put(getSystemId(), ctx.channel());
+  protected void addToRegistry(WebSocketSession session) {
+    Long systemId = getSystemId(session);
+    if (!registry.contains(systemId)) registry.put(systemId, session);
   }
 
   /*
@@ -140,13 +147,18 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * 
    * @see
    * com.github.mrstampy.gameboot.netty.ConnectionProcessor#onDisconnection(io.
-   * netty.channel.ChannelHandlerContext)
+   * netty.channel.WebSocketSession)
    */
   @Override
-  public void onDisconnection(ChannelHandlerContext ctx) throws Exception {
-    log.info("Disconnected from {}", ctx.channel());
+  public void onDisconnection(WebSocketSession session) throws Exception {
+    String id = session.getId();
 
-    cleaner.cleanup(getSystemId());
+    Long systemId = systemIds.remove(id);
+    cleaner.cleanup(systemId);
+
+    Set<Entry<Comparable<?>, WebSocketSession>> set = registry.getKeysForValue(session);
+
+    set.forEach(e -> registry.remove(e.getKey()));
   }
 
   /*
@@ -154,49 +166,60 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * 
    * @see
    * com.github.mrstampy.gameboot.netty.ConnectionProcessor#onMessage(io.netty.
-   * channel.ChannelHandlerContext, java.lang.Object)
+   * channel.WebSocketSession, java.lang.Object)
    */
   @Override
-  public void onMessage(ChannelHandlerContext ctx, Object msg) throws Exception {
+  public void onMessage(WebSocketSession session, Object msg) throws Exception {
+    if (!(msg instanceof WebSocketMessage<?>)) throw new IllegalArgumentException("Must be a WebSocketMessage");
+
     helper.incr(MESSAGE_COUNTER);
+    Object payload = extractPayload(session, msg);
 
-    log.debug("Received message {} on {}", msg, ctx.channel());
-
-    if (msg instanceof String) {
-      onMessageImpl(ctx, (String) msg);
-    } else if (msg instanceof byte[]) {
-      onMessageImpl(ctx, (byte[]) msg);
-    } else {
-      log.error("Only strings or byte arrays: {} from {}. Disconnecting", msg.getClass(), ctx.channel());
-      ctx.close();
+    if (payload instanceof String) {
+      onMessageImpl(session, (String) payload);
+    } else if (payload instanceof byte[]) {
+      onMessageImpl(session, (byte[]) payload);
     }
+  }
+
+  protected Object extractPayload(WebSocketSession session, Object msg) throws IOException {
+    if (msg instanceof BinaryMessage) {
+      return ((BinaryMessage) msg).getPayload().array();
+    } else if (msg instanceof TextMessage) {
+      return ((TextMessage) msg).getPayload();
+    }
+
+    log.error("Only strings or byte arrays: {} from {}. Disconnecting", msg.getClass(), session);
+    session.close();
+
+    return null;
   }
 
   /**
    * On message impl, implement processing the message using one of the
    * executors in {@link GameBootConcurrentConfiguration}.
    *
-   * @param ctx
-   *          the ctx
+   * @param session
+   *          the session
    * @param msg
    *          the msg
    * @throws Exception
    *           the exception
    */
-  protected abstract void onMessageImpl(ChannelHandlerContext ctx, byte[] msg) throws Exception;
+  protected abstract void onMessageImpl(WebSocketSession session, byte[] msg) throws Exception;
 
   /**
    * On message impl, implement processing the message using one of the
    * executors in {@link GameBootConcurrentConfiguration}.
    *
-   * @param ctx
-   *          the ctx
+   * @param session
+   *          the session
    * @param msg
    *          the msg
    * @throws Exception
    *           the exception
    */
-  protected abstract void onMessageImpl(ChannelHandlerContext ctx, String msg) throws Exception;
+  protected abstract void onMessageImpl(WebSocketSession session, String msg) throws Exception;
 
   /*
    * (non-Javadoc)
@@ -205,11 +228,11 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * sendError(java.lang.Object,
    * com.github.mrstampy.gameboot.exception.GameBootThrowable)
    */
-  public void sendError(ChannelHandlerContext ctx, GameBootThrowable e) {
+  public void sendError(WebSocketSession session, GameBootThrowable e) {
     Response r = fail(null, e);
 
     try {
-      sendMessage(ctx, converter.toJsonArray(r), r);
+      sendMessage(session, converter.toJsonArray(r), r);
     } catch (Exception e1) {
       log.error("Unexpected exception", e1);
     }
@@ -221,11 +244,11 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * @see com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor#
    * sendError(int, java.lang.Object, java.lang.String)
    */
-  public void sendError(int code, ChannelHandlerContext ctx, String message) {
+  public void sendError(int code, WebSocketSession session, String message) {
     Response r = fail(code, null, message);
 
     try {
-      sendMessage(ctx, converter.toJsonArray(r), r);
+      sendMessage(session, converter.toJsonArray(r), r);
     } catch (Exception e) {
       log.error("Unexpected exception", e);
     }
@@ -236,10 +259,10 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * 
    * @see
    * com.github.mrstampy.gameboot.netty.ConnectionProcessor#process(io.netty.
-   * channel.ChannelHandlerContext, java.lang.String)
+   * channel.WebSocketSession, java.lang.String)
    */
   @Override
-  public <AGBM extends AbstractGameBootMessage> void process(ChannelHandlerContext ctx, String msg) throws Exception {
+  public <AGBM extends AbstractGameBootMessage> void process(WebSocketSession session, String msg) throws Exception {
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
 
     Response response = null;
@@ -247,25 +270,25 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
     try {
       agbm = converter.fromJson(msg);
 
-      if (!preProcess(ctx, agbm)) return;
+      if (!preProcess(session, agbm)) return;
 
-      response = process(ctx, controller, agbm);
+      response = process(session, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       response = fail(agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message {} on channel {}", msg, ctx.channel(), e);
+      log.error("Unexpected exception processing message {} on channel {}", msg, session, e);
       response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
     }
 
-    postProcess(ctx, agbm, response);
+    postProcess(session, agbm, response);
 
     if (response == null) return;
 
     String r = converter.toJson(response);
 
-    sendMessage(ctx, r, response);
+    sendMessage(session, r, response);
   }
 
   /*
@@ -273,10 +296,10 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * 
    * @see
    * com.github.mrstampy.gameboot.netty.ConnectionProcessor#process(io.netty.
-   * channel.ChannelHandlerContext, byte[])
+   * channel.WebSocketSession, byte[])
    */
   @Override
-  public <AGBM extends AbstractGameBootMessage> void process(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+  public <AGBM extends AbstractGameBootMessage> void process(WebSocketSession session, byte[] msg) throws Exception {
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
 
     Response response = null;
@@ -284,25 +307,25 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
     try {
       agbm = converter.fromJson(msg);
 
-      if (!preProcess(ctx, agbm)) return;
+      if (!preProcess(session, agbm)) return;
 
-      response = process(ctx, controller, agbm);
+      response = process(session, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       response = fail(agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message {} on channel {}", msg, ctx.channel(), e);
+      log.error("Unexpected exception processing message {} on channel {}", msg, session, e);
       response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
     }
 
-    postProcess(ctx, agbm, response);
+    postProcess(session, agbm, response);
 
     if (response == null) return;
 
     byte[] r = converter.toJsonArray(response);
 
-    sendMessage(ctx, r, response);
+    sendMessage(session, r, response);
   }
 
   /*
@@ -310,19 +333,19 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * 
    * @see
    * com.github.mrstampy.gameboot.netty.ConnectionProcessor#process(io.netty.
-   * channel.ChannelHandlerContext,
+   * channel.WebSocketSession,
    * com.github.mrstampy.gameboot.controller.GameBootMessageController, AGBM)
    */
   @Override
-  public <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx,
+  public <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session,
       GameBootMessageController controller, AGBM agbm) throws Exception {
-    if (agbm.getSystemId() == null) agbm.setSystemId(getSystemId());
+    if (agbm.getSystemId() == null) agbm.setSystemId(getSystemId(session));
     agbm.setTransport(Transport.NETTY);
-    agbm.setLocal((InetSocketAddress) ctx.channel().localAddress());
-    agbm.setRemote((InetSocketAddress) ctx.channel().remoteAddress());
+    agbm.setLocal((InetSocketAddress) session.getLocalAddress());
+    agbm.setRemote((InetSocketAddress) session.getRemoteAddress());
 
     Response r = controller.process(agbm);
-    processMappingKeys(r, ctx.channel());
+    processMappingKeys(r, session);
     r.setSystemId(agbm.getSystemId());
 
     return r;
@@ -333,52 +356,64 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * 
    * @see
    * com.github.mrstampy.gameboot.netty.ConnectionProcessor#sendMessage(io.netty
-   * .channel.ChannelHandlerContext, java.lang.Object,
+   * .channel.WebSocketSession, java.lang.Object,
    * com.github.mrstampy.gameboot.messages.Response)
    */
   @Override
-  public void sendMessage(ChannelHandlerContext ctx, Object msg, Response response) throws Exception {
-    ChannelFuture f = sendMessage(ctx, msg);
-
-    f.addListener(e -> log(e, response, ctx));
+  public void sendMessage(WebSocketSession session, Object msg, Response response) throws Exception {
+    sendMessage(session, msg);
   }
 
   /**
    * Send message.
    *
-   * @param ctx
-   *          the ctx
+   * @param session
+   *          the session
    * @param msg
    *          the msg
    * @return the channel future
+   * @throws IOException
    */
-  public ChannelFuture sendMessage(ChannelHandlerContext ctx, Object msg) {
-    return ctx.channel().writeAndFlush(msg);
+  public void sendMessage(WebSocketSession session, Object msg) throws IOException {
+    WebSocketMessage<?> toGo = createMessage(msg);
+    session.sendMessage(toGo);
+  }
+
+  private WebSocketMessage<?> createMessage(Object msg) {
+    if (msg instanceof byte[]) return new BinaryMessage((byte[]) msg);
+
+    if (msg instanceof String) return new TextMessage(((String) msg).getBytes());
+
+    throw new IllegalArgumentException("Can only send strings or byte arrays: " + msg.getClass());
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor#
+   * getSystemId(java.lang.Object)
+   */
+  @Override
+  public Long getSystemId(WebSocketSession session) {
+    return systemIds.get(session.getId());
   }
 
   /**
-   * Gets the system id.
+   * Sets the system id.
    *
-   * @return the system id
+   * @param systemId
+   *          the new system id
    */
-  protected Long getSystemId() {
-    return getSystemId(null);
+  public void setSystemId(WebSocketSession session, Long systemId) {
+    systemIds.put(session.getId(), systemId);
   }
 
-  private void processMappingKeys(Response r, Channel channel) {
+  private void processMappingKeys(Response r, WebSocketSession session) {
     Comparable<?>[] keys = r.getMappingKeys();
     if (keys == null || keys.length == 0) return;
 
     for (int i = 0; i < keys.length; i++) {
-      registry.put(keys[i], channel);
-    }
-  }
-
-  private void log(Future<? super Void> f, Response response, ChannelHandlerContext ctx) {
-    if (f.isSuccess()) {
-      log.debug("Successfully sent {} to {}", response, ctx.channel());
-    } else {
-      log.error("Could not send {} for message {} to {}", response, ctx.channel(), f.cause());
+      registry.put(keys[i], session);
     }
   }
 }

@@ -51,7 +51,6 @@ import org.slf4j.LoggerFactory;
 import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
-import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
 import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 
 import io.netty.channel.ChannelDuplexHandler;
@@ -81,14 +80,8 @@ import io.netty.channel.ChannelHandlerContext;
  * @see GameBootMessageController
  */
 public abstract class AbstractGameBootNettyMessageHandler<C, CP extends ConnectionProcessor<ChannelHandlerContext>>
-    extends ChannelDuplexHandler implements ResponseContextCodes {
+    extends ChannelDuplexHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  /** The Constant MESSAGE_COUNTER. */
-  protected static final String MESSAGE_COUNTER = "Netty Message Counter";
-
-  /** The Constant FAILED_MESSAGE_COUNTER. */
-  protected static final String FAILED_MESSAGE_COUNTER = "Netty Failed Message Counter";
 
   private CP connectionProcessor;
 

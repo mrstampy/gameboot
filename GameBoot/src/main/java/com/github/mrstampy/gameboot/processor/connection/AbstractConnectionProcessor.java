@@ -125,7 +125,7 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
    * @param systemId
    *          the new system id
    */
-  public void setSystemId(Long systemId) {
+  public void setSystemId(C ctx, Long systemId) {
     this.systemId = systemId;
   }
 

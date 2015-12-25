@@ -42,24 +42,17 @@
 package com.github.mrstampy.gameboot.otp.websocket;
 
 import java.io.IOException;
-import java.lang.invoke.MethodHandles;
 import java.util.concurrent.ExecutorService;
 
-import javax.annotation.PostConstruct;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
+import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
@@ -69,10 +62,7 @@ import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
-import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRegistry;
-import com.github.mrstampy.gameboot.util.concurrent.MDCRunnable;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
@@ -112,8 +102,8 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * Should any failures occur the old key, should it exist, is considered active.
  * 
  * It is intended that full implementations of GameBoot will implement
- * subclasses of this class to restrict message type processing to a whitelist.
- * <br>
+ * subclasses of the {@link OtpClearWebSocketProcessor} class to restrict
+ * message type processing to a whitelist. <br>
  * <br>
  * 
  * @see KeyRegistry
@@ -124,15 +114,8 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  */
 @Component
 @Profile(OtpConfiguration.OTP_PROFILE)
-public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
-
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  @Autowired
-  private KeyRegistry keyRegistry;
-
-  @Autowired
-  private OneTimePad pad;
+public class OtpClearWebSocketHandler
+    extends AbstractGameBootWebSocketHandler<WebSocketSession, OtpClearWebSocketProcessor> {
 
   @Autowired
   @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
@@ -140,20 +123,6 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
 
   @Autowired
   private GameBootMessageConverter converter;
-
-  @Autowired
-  private OtpNewKeyRegistry newKeyRegistry;
-
-  /**
-   * Post construct.
-   *
-   * @throws Exception
-   *           the exception
-   */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    super.postConstruct();
-  }
 
   /**
    * After connection established.
@@ -165,176 +134,38 @@ public class OtpClearWebSocketHandler extends AbstractGameBootWebSocketHandler {
    */
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-    super.afterConnectionEstablished(session);
+    OtpClearWebSocketProcessor webSocketProcessor = getConnectionProcessor();
+
+    webSocketProcessor.onConnection(session);
 
     Response r = new Response(ResponseCode.INFO);
-    r.setSystemId(getSystemId(session));
+    r.setSystemId(webSocketProcessor.getSystemId(session));
 
-    BinaryMessage bm = new BinaryMessage(converter.toJsonArray(r));
-
-    session.sendMessage(bm);
+    webSocketProcessor.sendMessage(session, converter.toJsonArray(r));
   }
 
-  /**
-   * Handle binary message impl.
-   *
-   * @param session
-   *          the session
-   * @param message
-   *          the message
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * setConnectionProcessor(com.github.mrstampy.gameboot.processor.connection.
+   * ConnectionProcessor)
    */
-  @Override
-  protected void handleBinaryMessageImpl(WebSocketSession session, byte[] message) {
-    svc.execute(new MDCRunnable() {
-
-      @Override
-      protected void runImpl() {
-        try {
-          processForBinary(session, message);
-        } catch (GameBootException | GameBootRuntimeException e) {
-          sendErrorBinary(session, e);
-        } catch (Exception e) {
-          log.error("Unexpected exception", e);
-          sendUnexpectedErrorBinary(session);
-        }
-      }
-    });
+  @Autowired
+  public void setConnectionProcessor(OtpClearWebSocketProcessor connectionProcessor) {
+    super.setConnectionProcessor(connectionProcessor);
   }
 
-  /**
-   * Inspect.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param session
-   *          the session
-   * @param agbm
-   *          the agbm
-   * @return true, if successful
-   * @throws Exception
-   *           the exception
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * handleTextMessage(org.springframework.web.socket.WebSocketSession,
+   * org.springframework.web.socket.TextMessage)
    */
-  protected <AGBM extends AbstractGameBootMessage> boolean inspect(WebSocketSession session, AGBM agbm)
-      throws Exception {
-    boolean ok = true;
-
-    switch (agbm.getType()) {
-    case OtpKeyRequest.TYPE:
-      ok = isDeleteRequest(session, (OtpKeyRequest) agbm);
-      if (!ok) {
-        Response fail = fail(UNEXPECTED_MESSAGE, agbm, null);
-        session.sendMessage(new BinaryMessage(converter.toJsonArray(fail)));
-      }
-    case OtpNewKeyAck.TYPE:
-      ((OtpMessage) agbm).setProcessorKey(getSystemId(session));
-      break;
-    default:
-      ok = isValidType(session, agbm);
-    }
-
-    return ok;
-  }
-
-  /**
-   * Checks if is valid type.
-   *
-   * @param <AGBM>
-   *          the generic type
-   * @param session
-   *          the session
-   * @param agbm
-   *          the agbm
-   * @return true, if is valid type
-   */
-  protected <AGBM extends AbstractGameBootMessage> boolean isValidType(WebSocketSession session, AGBM agbm) {
-    return true;
-  }
-
-  private <AGBM extends AbstractGameBootMessage> boolean isDeleteRequest(WebSocketSession session, AGBM agbm) {
-    OtpKeyRequest keyRequest = (OtpKeyRequest) agbm;
-
-    boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
-
-    Long sysId = keyRequest.getSystemId();
-    Long thisSysId = getSystemId(session);
-    boolean ok = d && isEncrypting(thisSysId) && thisSysId.equals(sysId);
-
-    if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, session.getRemoteAddress(), thisSysId);
-
-    return ok;
-  }
-
-  /**
-   * Checks if is encrypting.
-   *
-   * @param systemId
-   *          the system id
-   * @return true, if is encrypting
-   */
-  protected boolean isEncrypting(Long systemId) {
-    return keyRegistry.contains(systemId);
-  }
-
-  /**
-   * Process for binary.
-   *
-   * @param session
-   *          the session
-   * @param message
-   *          the message
-   * @throws Exception
-   *           the exception
-   */
-  protected void processForBinary(WebSocketSession session, byte[] message) throws Exception {
-    byte[] key = keyRegistry.get(getSystemId(session));
-    byte[] msg = otp(key, session, message);
-
-    byte[] response = process(session, msg);
-    if (response == null) return;
-
-    byte[] r = otp(key, session, response);
-
-    BinaryMessage m = new BinaryMessage(r);
-    session.sendMessage(m);
-  }
-
-  private byte[] otp(byte[] key, WebSocketSession session, byte[] message) throws Exception {
-    byte[] b = evaluateForNewKeyAck(session, message);
-
-    return (b == message) ? (key == null ? b : pad.convert(key, b)) : b;
-  }
-
-  @SuppressWarnings("unused")
-  private byte[] evaluateForNewKeyAck(WebSocketSession session, byte[] msg) {
-    Long systemId = getSystemId(session);
-    if (!newKeyRegistry.contains(systemId)) return msg;
-
-    byte[] newKey = newKeyRegistry.get(systemId);
-
-    try {
-      byte[] converted = pad.convert(newKey, msg);
-      OtpNewKeyAck ack = converter.fromJson(converted);
-      return converted;
-    } catch (Exception e) {
-      String s = keyRegistry.contains(systemId) ? "old key" : "unencrypted";
-      log.warn("Awaiting new key ack, assuming {} for {}, system id {}.", s, session, systemId);
-    }
-
-    return msg;
-  }
-
-  /**
-   * Handle text message impl.
-   *
-   * @param session
-   *          the session
-   * @param message
-   *          the message
-   * @throws Exception
-   *           the exception
-   */
-  @Override
-  protected void handleTextMessageImpl(WebSocketSession session, String message) throws Exception {
+  protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
     try {
       session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Text messages not supported"));
     } catch (IOException e) {
