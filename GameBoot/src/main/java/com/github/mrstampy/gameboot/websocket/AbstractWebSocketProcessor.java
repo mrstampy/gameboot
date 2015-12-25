@@ -137,6 +137,12 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
     addToRegistry(session);
   }
 
+  /**
+   * Adds the to registry.
+   *
+   * @param session
+   *          the session
+   */
   protected void addToRegistry(WebSocketSession session) {
     Long systemId = getSystemId(session);
     if (!registry.contains(systemId)) registry.put(systemId, session);
@@ -182,6 +188,17 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
     }
   }
 
+  /**
+   * Extract payload.
+   *
+   * @param session
+   *          the session
+   * @param msg
+   *          the msg
+   * @return the object
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
+   */
   protected Object extractPayload(WebSocketSession session, Object msg) throws IOException {
     if (msg instanceof BinaryMessage) {
       return ((BinaryMessage) msg).getPayload().array();
@@ -401,6 +418,8 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   /**
    * Sets the system id.
    *
+   * @param session
+   *          the session
    * @param systemId
    *          the new system id
    */
