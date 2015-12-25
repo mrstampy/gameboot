@@ -43,6 +43,8 @@ package com.github.mrstampy.gameboot.netty;
 
 import java.lang.invoke.MethodHandles;
 import java.net.InetSocketAddress;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 
@@ -147,6 +149,10 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
     log.info("Disconnected from {}", ctx.channel());
 
     cleaner.cleanup(getSystemId());
+
+    Set<Entry<Comparable<?>, Channel>> set = registry.getKeysForValue(ctx.channel());
+
+    set.forEach(e -> registry.remove(e.getKey()));
   }
 
   /*
