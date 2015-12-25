@@ -164,21 +164,6 @@ public class OtpClearNettyHandler
   }
 
   /**
-   * Channel read.
-   *
-   * @param ctx
-   *          the ctx
-   * @param msg
-   *          the msg
-   * @throws Exception
-   *           the exception
-   */
-  @Override
-  public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-    getConnectionProcessor().onMessage(ctx, msg);
-  }
-
-  /**
    * Checks if is encrypting.
    *
    * @return true, if is encrypting
