@@ -55,7 +55,6 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
@@ -111,8 +110,6 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * @see KeyRegistry
  * @see OneTimePad
  * @see OtpConfiguration
- * @see #inspect(WebSocketSession, AbstractGameBootMessage)
- * @see #isValidType(WebSocketSession, AbstractGameBootMessage)
  */
 @Component
 @Profile(OtpConfiguration.OTP_PROFILE)

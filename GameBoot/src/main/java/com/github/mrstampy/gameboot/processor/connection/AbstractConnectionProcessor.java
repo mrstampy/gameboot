@@ -122,6 +122,8 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
   /**
    * Sets the system id.
    *
+   * @param ctx
+   *          the ctx
    * @param systemId
    *          the new system id
    */

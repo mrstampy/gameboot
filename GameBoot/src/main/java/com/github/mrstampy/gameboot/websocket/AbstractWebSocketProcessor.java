@@ -365,14 +365,14 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   }
 
   /**
-   * Send message.
+   * Send message, must be a byte array or a string.
    *
    * @param session
    *          the session
    * @param msg
    *          the msg
-   * @return the channel future
    * @throws IOException
+   *           if message cannot be sent.
    */
   public void sendMessage(WebSocketSession session, Object msg) throws IOException {
     WebSocketMessage<?> toGo = createMessage(msg);
