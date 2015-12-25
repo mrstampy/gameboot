@@ -41,6 +41,8 @@
  */
 package com.github.mrstampy.gameboot.messages.context;
 
+import java.util.Locale;
+
 /**
  * The Interface ErrorLookup.
  */
@@ -54,4 +56,15 @@ public interface ResponseContextLookup {
    * @return the error
    */
   ResponseContext lookup(Integer code);
+
+  /**
+   * Lookup based on locale.
+   *
+   * @param code
+   *          the code
+   * @param locale
+   *          the locale
+   * @return the response context
+   */
+  ResponseContext lookup(Integer code, Locale locale);
 }

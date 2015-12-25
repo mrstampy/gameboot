@@ -42,6 +42,7 @@
 package com.github.mrstampy.gameboot.messages.context;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -96,6 +97,14 @@ public class GameBootContextLookup implements ResponseContextLookup {
     if (error == null) log.warn("No error for code {}", code);
 
     return error;
+  }
+
+  /**
+   * Default implementation not internationalized.
+   */
+  @Override
+  public ResponseContext lookup(Integer code, Locale locale) {
+    return lookup(code);
   }
 
 }
