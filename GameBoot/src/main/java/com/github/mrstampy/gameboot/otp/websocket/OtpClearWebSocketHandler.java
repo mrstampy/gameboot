@@ -44,6 +44,8 @@ package com.github.mrstampy.gameboot.otp.websocket;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
@@ -124,6 +126,18 @@ public class OtpClearWebSocketHandler
   @Autowired
   private GameBootMessageConverter converter;
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler#
+   * postConstruct()
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    super.postConstruct();
+  }
+
   /**
    * After connection established.
    *
@@ -134,9 +148,9 @@ public class OtpClearWebSocketHandler
    */
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-    OtpClearWebSocketProcessor webSocketProcessor = getConnectionProcessor();
+    super.afterConnectionEstablished(session);
 
-    webSocketProcessor.onConnection(session);
+    OtpClearWebSocketProcessor webSocketProcessor = getConnectionProcessor();
 
     Response r = new Response(ResponseCode.INFO);
     r.setSystemId(webSocketProcessor.getSystemId(session));

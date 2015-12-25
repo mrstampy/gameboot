@@ -41,7 +41,10 @@
  */
 package com.github.mrstampy.gameboot.websocket;
 
+import javax.annotation.PostConstruct;
+
 import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
@@ -67,6 +70,40 @@ public abstract class AbstractGameBootWebSocketHandler<C, CP extends ConnectionP
     extends AbstractWebSocketHandler implements ResponseContextCodes {
 
   private CP webSocketProcessor;
+
+  /**
+   * Post construct created message counters if necessary. Subclasses will need
+   * to invoke this in an annotated {@link PostConstruct} method.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  protected void postConstruct() throws Exception {
+    if (webSocketProcessor == null) throw new IllegalStateException("Web Socket Connection Processor not set");
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
+   * afterConnectionClosed(org.springframework.web.socket.WebSocketSession,
+   * org.springframework.web.socket.CloseStatus)
+   */
+  @Override
+  public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
+    webSocketProcessor.onConnection(session);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see org.springframework.web.socket.handler.AbstractWebSocketHandler#
+   * afterConnectionEstablished(org.springframework.web.socket.WebSocketSession)
+   */
+  @Override
+  public void afterConnectionEstablished(WebSocketSession session) throws Exception {
+    webSocketProcessor.onDisconnection(session);
+  }
 
   /**
    * Handle text message.
