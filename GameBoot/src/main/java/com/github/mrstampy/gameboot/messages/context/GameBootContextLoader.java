@@ -41,9 +41,12 @@
  */
 package com.github.mrstampy.gameboot.messages.context;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
+import java.io.IOException;
 import java.lang.invoke.MethodHandles;
-import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -78,13 +81,61 @@ public class GameBootContextLoader implements ApplicationContextAware, ResponseC
    * )
    */
   @Override
-  @SuppressWarnings("unchecked")
-  public Map<Integer, ResponseContext> getErrorProperties() throws Exception {
-    Resource r = getOverridableErrorResource();
+  public Map<String, Map<Integer, ResponseContext>> getErrorProperties() throws Exception {
+    Map<String, Map<Integer, ResponseContext>> map = new ConcurrentHashMap<>();
+
+    Locale[] locales = Locale.getAvailableLocales();
+
+    for (Locale locale : locales) {
+      if (isNotEmpty(locale.getCountry())) {
+        String suffix = "_" + locale.getLanguage() + "_" + locale.getCountry();
+        addToMap(map, suffix);
+      }
+
+      String suffix = "_" + locale.getLanguage();
+      addToMap(map, suffix);
+    }
+
+    Map<Integer, ResponseContext> root = getForLocale(GameBootContextLookup.ROOT);
+    if (root == null) throw new IllegalStateException("No error.properties file");
+
+    map.put(GameBootContextLookup.ROOT, root);
+
+    return map;
+  }
+
+  /**
+   * Adds the to map.
+   *
+   * @param map
+   *          the map
+   * @param suffix
+   *          the suffix
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
+   */
+  public void addToMap(Map<String, Map<Integer, ResponseContext>> map, String suffix) throws IOException {
+    if (!map.containsKey(suffix)) {
+      Map<Integer, ResponseContext> full = getForLocale(suffix);
+      if (full != null) map.put(suffix, full);
+    }
+  }
+
+  /**
+   * Gets the for locale.
+   *
+   * @param suffix
+   *          the suffix
+   * @return the for locale
+   * @throws IOException
+   *           Signals that an I/O exception has occurred.
+   */
+  public Map<Integer, ResponseContext> getForLocale(String suffix) throws IOException {
+    Resource r = getOverridableErrorResource(suffix);
 
     if (r == null || !r.exists()) {
-      log.error("No error.properties");
-      return Collections.EMPTY_MAP;
+      log.trace("No error.properties for {}", suffix);
+      return null;
     }
 
     Properties p = new Properties();
@@ -95,18 +146,17 @@ public class GameBootContextLoader implements ApplicationContextAware, ResponseC
     Map<Integer, ResponseContext> map = new ConcurrentHashMap<>();
 
     codes.forEach(c -> createError(c, p, map));
-
-    return Collections.unmodifiableMap(map);
+    return map;
   }
 
-  private Resource getOverridableErrorResource() {
-    Resource r = getResource("file:error.properties");
+  private Resource getOverridableErrorResource(String suffix) {
+    Resource r = getResource("file:error" + suffix + ".properties");
     if (r != null) return r;
 
-    r = getResource("classpath:" + AbstractFallbackResourceCondition.EXT_CLASSPATH + "error.properties");
+    r = getResource("classpath:" + AbstractFallbackResourceCondition.EXT_CLASSPATH + "error" + suffix + ".properties");
     if (r != null) return r;
 
-    return getResource("classpath:error.properties");
+    return getResource("classpath:error" + suffix + ".properties");
   }
 
   private Resource getResource(String resource) {

@@ -55,6 +55,6 @@ public interface ResponseContextLoader {
    * @throws Exception
    *           the exception
    */
-  Map<Integer, ResponseContext> getErrorProperties() throws Exception;
+  Map<String, Map<Integer, ResponseContext>> getErrorProperties() throws Exception;
 
 }

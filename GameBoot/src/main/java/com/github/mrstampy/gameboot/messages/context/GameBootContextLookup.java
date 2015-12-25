@@ -41,6 +41,8 @@
  */
 package com.github.mrstampy.gameboot.messages.context;
 
+import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+
 import java.lang.invoke.MethodHandles;
 import java.util.Locale;
 import java.util.Map;
@@ -57,9 +59,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class GameBootContextLookup implements ResponseContextLookup {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  /** The Constant ROOT. */
+  public static final String ROOT = "";
+
   private ResponseContextLoader loader;
 
-  private Map<Integer, ResponseContext> errors;
+  private Map<String, Map<Integer, ResponseContext>> errors;
 
   /**
    * Sets the error loader.
@@ -92,19 +97,49 @@ public class GameBootContextLookup implements ResponseContextLookup {
    */
   @Override
   public ResponseContext lookup(Integer code) {
-    ResponseContext error = errors.get(code);
+    Map<Integer, ResponseContext> map = getForLocale(ROOT);
+    ResponseContext error = map.get(code);
 
     if (error == null) log.warn("No error for code {}", code);
 
     return error;
   }
 
-  /**
-   * Default implementation not internationalized.
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.messages.context.ResponseContextLookup#lookup(
+   * java.lang.Integer, java.util.Locale)
    */
   @Override
   public ResponseContext lookup(Integer code, Locale locale) {
+    if (locale == null) {
+      log.warn("Null locale, using root");
+      return lookup(code);
+    }
+
+    if (isNotEmpty(locale.getCountry())) {
+      String suffix = "_" + locale.getLanguage() + "_" + locale.getCountry();
+      Map<Integer, ResponseContext> map = getForLocale(suffix);
+      if (map != null && map.containsKey(code)) {
+        log.trace("Returning ResponseContext {} from locale {}", code, suffix);
+        return map.get(code);
+      }
+    }
+
+    String suffix = "_" + locale.getLanguage();
+    Map<Integer, ResponseContext> map = getForLocale(suffix);
+    if (map != null && map.containsKey(code)) {
+      log.trace("Returning ResponseContext {} from locale {}", code, suffix);
+      return map.get(code);
+    }
+
     return lookup(code);
+  }
+
+  private Map<Integer, ResponseContext> getForLocale(String suffix) {
+    return errors.get(suffix);
   }
 
 }
