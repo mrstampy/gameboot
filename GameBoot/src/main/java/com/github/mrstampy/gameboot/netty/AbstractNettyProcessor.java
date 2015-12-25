@@ -101,6 +101,8 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   @Autowired
   private GameBootUtils utils;
 
+  private Long systemId;
+
   /**
    * Post construct, invoke from {@link PostConstruct}-annotated subclass
    * methods.
@@ -127,7 +129,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    */
   @Override
   public void onConnection(ChannelHandlerContext ctx) throws Exception {
-    setSystemId(ctx, generator.next());
+    setSystemId(generator.next());
 
     log.info("Connected to {}, adding to registry with key {}", ctx.channel(), getSystemId());
 
@@ -356,15 +358,6 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
     return ctx.channel().writeAndFlush(msg);
   }
 
-  /**
-   * Gets the system id.
-   *
-   * @return the system id
-   */
-  protected Long getSystemId() {
-    return getSystemId(null);
-  }
-
   private void processMappingKeys(Response r, Channel channel) {
     Comparable<?>[] keys = r.getMappingKeys();
     if (keys == null || keys.length == 0) return;
@@ -380,5 +373,35 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
     } else {
       log.error("Could not send {} for message {} to {}", response, ctx.channel(), f.cause());
     }
+  }
+
+  /**
+   * Sets the system id.
+   *
+   * @param systemId
+   *          the new system id
+   */
+  public void setSystemId(Long systemId) {
+    this.systemId = systemId;
+  }
+
+  /**
+   * Context unused; use {@link #getSystemId()}.
+   *
+   * @param ctx
+   *          the ctx
+   * @return the system id
+   */
+  public Long getSystemId(ChannelHandlerContext ctx) {
+    return systemId;
+  }
+
+  /**
+   * Gets the system id.
+   *
+   * @return the system id
+   */
+  public Long getSystemId() {
+    return systemId;
   }
 }

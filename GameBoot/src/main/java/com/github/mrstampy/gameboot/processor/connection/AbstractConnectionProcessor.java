@@ -61,8 +61,6 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
   @Autowired
   private ResponseContextLookup lookup;
 
-  private Long systemId;
-
   /*
    * (non-Javadoc)
    * 
@@ -106,29 +104,6 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
    */
   public void sendUnexpectedError(C ctx) {
     sendError(UNEXPECTED_ERROR, ctx, "An unexpected error has occurred");
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor#
-   * getSystemId(java.lang.Object)
-   */
-  @Override
-  public Long getSystemId(C ctx) {
-    return systemId;
-  }
-
-  /**
-   * Sets the system id.
-   *
-   * @param ctx
-   *          the ctx
-   * @param systemId
-   *          the new system id
-   */
-  public void setSystemId(C ctx, Long systemId) {
-    this.systemId = systemId;
   }
 
 }
