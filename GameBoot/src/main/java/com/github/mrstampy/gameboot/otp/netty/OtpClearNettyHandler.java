@@ -193,6 +193,14 @@ public class OtpClearNettyHandler
     ctx.write(processed, promise);
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler#
+   * setConnectionProcessor(com.github.mrstampy.gameboot.processor.connection.
+   * ConnectionProcessor)
+   */
   @Autowired
   public void setConnectionProcessor(OtpClearNettyProcessor connectionProcessor) {
     super.setConnectionProcessor(connectionProcessor);
