@@ -1,3 +1,44 @@
+/*
+ *              ______                        ____              __ 
+ *             / ____/___ _____ ___  ___     / __ )____  ____  / /_
+ *            / / __/ __ `/ __ `__ \/ _ \   / __  / __ \/ __ \/ __/
+ *           / /_/ / /_/ / / / / / /  __/  / /_/ / /_/ / /_/ / /_  
+ *           \____/\__,_/_/ /_/ /_/\___/  /_____/\____/\____/\__/  
+ *                                                 
+ *                                 .-'\
+ *                              .-'  `/\
+ *                           .-'      `/\
+ *                           \         `/\
+ *                            \         `/\
+ *                             \    _-   `/\       _.--.
+ *                              \    _-   `/`-..--\     )
+ *                               \    _-   `,','  /    ,')
+ *                                `-_   -   ` -- ~   ,','
+ *                                 `-              ,','
+ *                                  \,--.    ____==-~
+ *                                   \   \_-~\
+ *                                    `_-~_.-'
+ *                                     \-~
+ * 
+ *                       http://mrstampy.github.io/gameboot/
+ *
+ * Copyright (C) 2015 Burton Alexander
+ * 
+ * This program is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU General Public License as published by the Free Software
+ * Foundation; either version 2 of the License, or (at your option) any later
+ * version.
+ * 
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+ * details.
+ * 
+ * You should have received a copy of the GNU General Public License along with
+ * this program; if not, write to the Free Software Foundation, Inc., 51
+ * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+ * 
+ */
 package com.github.mrstampy.gameboot.locale.processor;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -17,6 +58,9 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 
+/**
+ * The Class LocaleProcessor.
+ */
 @Component
 public class LocaleProcessor extends AbstractGameBootProcessor<LocaleMessage> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -24,16 +68,34 @@ public class LocaleProcessor extends AbstractGameBootProcessor<LocaleMessage> {
   @Autowired
   private LocaleRegistry registry;
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.processor.GameBootProcessor#getType()
+   */
   @Override
   public String getType() {
     return LocaleMessage.TYPE;
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#validate(
+   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+   */
   @Override
   protected void validate(LocaleMessage message) throws Exception {
     if (isEmpty(message.getLanguageCode())) fail(LANG_CODE_MISSING, "Missing lang code");
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#
+   * processImpl(com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+   */
   @Override
   protected Response processImpl(LocaleMessage message) throws Exception {
     Long systemId = message.getSystemId();
