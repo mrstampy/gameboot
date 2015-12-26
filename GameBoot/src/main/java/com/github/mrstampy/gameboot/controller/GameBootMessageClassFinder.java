@@ -46,6 +46,7 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.mrstampy.gameboot.locale.messages.LocaleMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
@@ -74,6 +75,8 @@ public class GameBootMessageClassFinder implements MessageClassFinder {
       return OtpKeyRequest.class;
     case OtpNewKeyAck.TYPE:
       return OtpNewKeyAck.class;
+    case LocaleMessage.TYPE:
+      return LocaleMessage.class;
     default:
       log.error("No class defined for type {}", type);
       return null;
