@@ -42,6 +42,7 @@
 package com.github.mrstampy.gameboot.processor;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Locale;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.github.mrstampy.gameboot.exception.GameBootException;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.exception.GameBootThrowable;
+import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
@@ -68,6 +70,9 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private ResponseContextLookup lookup;
+
+  @Autowired
+  private LocaleRegistry localeRegistry;
 
   /**
    * Sets the error lookup.
@@ -182,7 +187,14 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    * @return the response
    */
   protected Response failure(int code, M message, Object... response) {
-    return new Response(message, ResponseCode.FAILURE, lookup.lookup(code), response);
+    Locale locale = null;
+    if (message.getSystemId() != null) {
+      locale = localeRegistry.get(message.getSystemId());
+    } else {
+      locale = Locale.getDefault();
+    }
+
+    return new Response(message, ResponseCode.FAILURE, lookup.lookup(code, locale), response);
   }
 
   /**

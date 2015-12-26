@@ -114,4 +114,7 @@ public interface ResponseContextCodes {
 
   /** The Constant UNEXPECTED_MESSAGE. */
   public static final Integer UNEXPECTED_MESSAGE = -77;
+
+  /** The Constant LANG_CODE_MISSING. */
+  public static final Integer LANG_CODE_MISSING = -76;
 }

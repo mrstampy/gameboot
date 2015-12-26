@@ -41,9 +41,12 @@
  */
 package com.github.mrstampy.gameboot.processor.connection;
 
+import java.util.Locale;
+
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.mrstampy.gameboot.exception.GameBootThrowable;
+import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
@@ -60,6 +63,9 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
 
   @Autowired
   private ResponseContextLookup lookup;
+
+  @Autowired
+  private LocaleRegistry localeRegistry;
 
   /*
    * (non-Javadoc)
@@ -91,7 +97,15 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
   @Override
   public Response fail(int code, AbstractGameBootMessage message, Object... payload) {
     Response r = new Response(message, ResponseCode.FAILURE, payload);
-    r.setContext(lookup.lookup(code));
+
+    Locale locale = null;
+    if (message.getSystemId() != null) {
+      locale = localeRegistry.get(message.getSystemId());
+    } else {
+      locale = Locale.getDefault();
+    }
+
+    r.setContext(lookup.lookup(code, locale));
 
     return r;
   }
@@ -104,6 +118,18 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
    */
   public void sendUnexpectedError(C ctx) {
     sendError(UNEXPECTED_ERROR, ctx, "An unexpected error has occurred");
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor#
+   * getLocale()
+   */
+  public Locale getLocale(C ctx) {
+    Long systemId = getSystemId(ctx);
+    if (!localeRegistry.contains(systemId)) localeRegistry.put(systemId, Locale.getDefault());
+    return localeRegistry.get(systemId);
   }
 
 }

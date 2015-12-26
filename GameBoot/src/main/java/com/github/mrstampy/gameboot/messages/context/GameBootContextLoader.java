@@ -65,11 +65,11 @@ import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondit
 
 /**
  * The Class GameBootErrorLoader. {@link Locale} driven, the file
- * 'errors.properties' must exist as the root file. {@link Locale} specific
- * files are named as per property {@link ResourceBundle}s ie.
- * 'errors_en_CA.properties' or 'errors_fr.properties'. Lookups are performed
- * from specific -> general, '_[lang code]_[country code]' first, then '_[lang
- * code]', then the root 'errors.properties'.
+ * 'error.properties' must exist as the root file. {@link Locale} specific files
+ * are named as per property {@link ResourceBundle}s ie.
+ * 'error_en_CA.properties' or 'error_fr.properties'. Lookups are performed from
+ * specific -> general, '_[lang code]_[country code]' first, then '_[lang
+ * code]', then the root 'error.properties'.
  */
 public class GameBootContextLoader implements ApplicationContextAware, ResponseContextLoader {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
@@ -152,7 +152,7 @@ public class GameBootContextLoader implements ApplicationContextAware, ResponseC
     Resource r = getOverridableErrorResource(suffix);
 
     if (r == null || !r.exists()) {
-      log.debug("No error.properties for {}", suffix);
+      log.trace("No error.properties for {}", suffix);
       return null;
     }
 

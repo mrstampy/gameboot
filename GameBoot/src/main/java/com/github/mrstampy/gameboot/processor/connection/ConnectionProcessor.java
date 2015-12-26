@@ -41,11 +41,14 @@
  */
 package com.github.mrstampy.gameboot.processor.connection;
 
+import java.util.Locale;
+
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootThrowable;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextLoader;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 
 /**
@@ -243,5 +246,16 @@ public interface ConnectionProcessor<C> extends ResponseContextCodes {
    * @return the system id
    */
   Long getSystemId(C ctx);
+
+  /**
+   * Gets the locale.
+   *
+   * @param ctx
+   *          the ctx
+   * @return the locale
+   * @see ResponseContextLookup
+   * @see ResponseContextLoader
+   */
+  Locale getLocale(C ctx);
 
 }

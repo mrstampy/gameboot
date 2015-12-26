@@ -45,6 +45,7 @@ import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.lang.invoke.MethodHandles;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -56,6 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
@@ -98,6 +100,9 @@ public class GameBootMessageController implements ResponseContextCodes {
 
   @Autowired
   private GameBootMessageConverter converter;
+
+  @Autowired
+  private LocaleRegistry localeRegistry;
 
   private ResponseContextLookup lookup;
 
@@ -170,10 +175,32 @@ public class GameBootMessageController implements ResponseContextCodes {
 
     if (processor == null) {
       log.error("No processor for {}", msg.getType());
-      fail(UNKNOWN_MESSAGE, "Unrecognized message");
+
+      fail(UNKNOWN_MESSAGE, "Unrecognized message", msg.getSystemId());
     }
 
     return processor.process(msg);
+  }
+
+  /**
+   * Fail.
+   *
+   * @param code
+   *          the code
+   * @param message
+   *          the message
+   * @param systemId
+   *          the system id
+   * @param payload
+   *          the payload
+   * @throws GameBootRuntimeException
+   *           the game boot runtime exception
+   */
+  protected void fail(int code, String message, Long systemId, Object... payload) throws GameBootRuntimeException {
+    if (systemId == null) fail(code, message, payload);
+
+    Locale locale = localeRegistry.get(systemId);
+    throw new GameBootRuntimeException("", lookup.lookup(UNKNOWN_MESSAGE, locale));
   }
 
   /**
