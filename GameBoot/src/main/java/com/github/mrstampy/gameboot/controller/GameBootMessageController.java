@@ -61,6 +61,7 @@ import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
@@ -148,7 +149,7 @@ public class GameBootMessageController implements ResponseContextCodes {
   public <AGBM extends AbstractGameBootMessage> String process(String request) throws Exception {
     helper.incr(MESSAGE_COUNTER);
 
-    if (isEmpty(request)) fail(NO_MESSAGE, "Empty message");
+    if (isEmpty(request)) fail(getResponseContext(NO_MESSAGE), "Empty message");
 
     AGBM msg = converter.fromJson(request);
 
@@ -176,39 +177,47 @@ public class GameBootMessageController implements ResponseContextCodes {
     if (processor == null) {
       log.error("No processor for {}", msg.getType());
 
-      fail(UNKNOWN_MESSAGE, "Unrecognized message", msg.getSystemId());
+      fail(getResponseContext(UNKNOWN_MESSAGE, msg.getSystemId()), "Unrecognized message");
     }
 
     return processor.process(msg);
   }
 
   /**
-   * Fail.
+   * Gets the response context.
    *
    * @param code
    *          the code
-   * @param message
-   *          the message
+   * @param parameters
+   *          the parameters
+   * @return the response context
+   */
+  protected ResponseContext getResponseContext(Integer code, Object... parameters) {
+    return getResponseContext(code, null, parameters);
+  }
+
+  /**
+   * Gets the response context.
+   *
+   * @param code
+   *          the code
    * @param systemId
    *          the system id
-   * @param payload
-   *          the payload
-   * @throws GameBootRuntimeException
-   *           the game boot runtime exception
+   * @param parameters
+   *          the parameters
+   * @return the response context
    */
-  protected void fail(int code, String message, Long systemId, Object... payload) throws GameBootRuntimeException {
-    if (systemId == null) fail(code, message, payload);
-
-    Locale locale = localeRegistry.get(systemId);
-    throw new GameBootRuntimeException("", lookup.lookup(UNKNOWN_MESSAGE, locale));
+  protected ResponseContext getResponseContext(Integer code, Long systemId, Object... parameters) {
+    Locale locale = systemId == null ? Locale.getDefault() : localeRegistry.get(systemId);
+    return lookup.lookup(code, locale, parameters);
   }
 
   /**
    * Fail, throwing a {@link GameBootRuntimeException} with the specified
    * message.
    *
-   * @param code
-   *          the code
+   * @param rc
+   *          the rc
    * @param message
    *          the message
    * @param payload
@@ -216,7 +225,7 @@ public class GameBootMessageController implements ResponseContextCodes {
    * @throws GameBootRuntimeException
    *           the game boot runtime exception
    */
-  protected void fail(int code, String message, Object... payload) throws GameBootRuntimeException {
-    throw new GameBootRuntimeException(message, lookup.lookup(code), payload);
+  protected void fail(ResponseContext rc, String message, Object... payload) throws GameBootRuntimeException {
+    throw new GameBootRuntimeException(message, rc, payload);
   }
 }

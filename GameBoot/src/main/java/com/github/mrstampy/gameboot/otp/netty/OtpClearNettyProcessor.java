@@ -141,7 +141,7 @@ public class OtpClearNettyProcessor extends AbstractNettyProcessor {
    */
   public void onMessage(ChannelHandlerContext ctx, Object msg) throws Exception {
     if (!(msg instanceof byte[])) {
-      sendError(NOT_BYTE_ARRAY, ctx, "Message must be a byte array");
+      sendError(getResponseContext(NOT_BYTE_ARRAY, ctx), ctx, "Message must be a byte array");
       return;
     }
 
@@ -224,7 +224,7 @@ public class OtpClearNettyProcessor extends AbstractNettyProcessor {
       if (ok) {
         pendingKeyChange(agbm);
       } else {
-        Response fail = fail(UNEXPECTED_MESSAGE, agbm);
+        Response fail = fail(getResponseContext(UNEXPECTED_MESSAGE, ctx), agbm);
         sendMessage(ctx, converter.toJsonArray(agbm), fail);
       }
       break;

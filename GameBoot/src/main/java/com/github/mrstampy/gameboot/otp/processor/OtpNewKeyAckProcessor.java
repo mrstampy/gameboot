@@ -102,9 +102,11 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
   @Override
   protected void validate(OtpNewKeyAck message) throws Exception {
     Long systemId = message.getSystemId();
-    if (systemId == null) fail(NO_SYSTEM_ID, "No systemId");
+    if (systemId == null) fail(getResponseContext(NO_SYSTEM_ID), "No systemId");
 
-    if (!systemId.equals(message.getProcessorKey())) fail(SYSTEM_ID_MISMATCH, "systemId does not match processor id");
+    if (!systemId.equals(message.getProcessorKey())) {
+      fail(getResponseContext(SYSTEM_ID_MISMATCH), "systemId does not match processor id");
+    }
   }
 
   /*
@@ -119,7 +121,7 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
 
     byte[] newKey = newKeyRegistry.remove(systemId);
 
-    if (newKey == null) fail(NEW_KEY_ACTIVATION_FAIL, "New OTP key generation failed");
+    if (newKey == null) fail(getResponseContext(NEW_KEY_ACTIVATION_FAIL, systemId), "New OTP key generation failed");
 
     log.debug("Activating new OTP key for {}", systemId);
 

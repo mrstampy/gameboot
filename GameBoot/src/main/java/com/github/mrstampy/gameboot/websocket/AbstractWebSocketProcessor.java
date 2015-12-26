@@ -69,6 +69,7 @@ import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.connection.AbstractConnectionProcessor;
 import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
@@ -261,8 +262,8 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
    * @see com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor#
    * sendError(int, java.lang.Object, java.lang.String)
    */
-  public void sendError(int code, WebSocketSession session, String message) {
-    Response r = fail(code, null, message);
+  public void sendError(ResponseContext rc, WebSocketSession session, String message) {
+    Response r = fail(rc, null, message);
 
     try {
       sendMessage(session, converter.toJsonArray(r), r);
@@ -296,7 +297,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       log.error("Unexpected exception processing message {} on channel {}", msg, session, e);
-      response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
+      response = fail(getResponseContext(UNEXPECTED_ERROR, session), agbm, "An unexpected error has occurred");
     }
 
     postProcess(session, agbm, response);
@@ -333,7 +334,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       log.error("Unexpected exception processing message {} on channel {}", msg, session, e);
-      response = fail(UNEXPECTED_ERROR, agbm, "An unexpected error has occurred");
+      response = fail(getResponseContext(UNEXPECTED_ERROR, session), agbm, "An unexpected error has occurred");
     }
 
     postProcess(session, agbm, response);

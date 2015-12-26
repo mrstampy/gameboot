@@ -47,6 +47,7 @@ import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.exception.GameBootThrowable;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLoader;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
@@ -197,15 +198,15 @@ public interface ConnectionProcessor<C> extends ResponseContextCodes {
    * Invoke on error supplying the code for the {@link ResponseContextLookup},
    * the message causing the error and any qualifying messages if required.
    *
-   * @param code
-   *          the code
+   * @param rc
+   *          the rc
    * @param message
    *          the message
    * @param payload
    *          the payload
    * @return the response
    */
-  Response fail(int code, AbstractGameBootMessage message, Object... payload);
+  Response fail(ResponseContext rc, AbstractGameBootMessage message, Object... payload);
 
   /**
    * Send the unexpected error message.
@@ -229,14 +230,14 @@ public interface ConnectionProcessor<C> extends ResponseContextCodes {
    * Send supplying the code for the {@link ResponseContextLookup} and the
    * String representation of the message causing the error.
    *
-   * @param code
-   *          the code
+   * @param rc
+   *          the rc
    * @param ctx
    *          the ctx
    * @param message
    *          the message
    */
-  void sendError(int code, C ctx, String message);
+  void sendError(ResponseContext rc, C ctx, String message);
 
   /**
    * Gets the system id.

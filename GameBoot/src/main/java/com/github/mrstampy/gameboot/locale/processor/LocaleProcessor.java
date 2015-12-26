@@ -87,9 +87,13 @@ public class LocaleProcessor extends AbstractGameBootProcessor<LocaleMessage> {
    */
   @Override
   protected void validate(LocaleMessage message) throws Exception {
-    if (isEmpty(message.getLanguageCode())) fail(LANG_CODE_MISSING, "Missing lang code");
-    
-    if (message.getSystemId() == null) fail(NO_SYSTEM_ID, "Missing system id");
+    if (isEmpty(message.getLanguageCode())) {
+      fail(getResponseContext(LANG_CODE_MISSING, message.getSystemId()), "Missing lang code");
+    }
+
+    if (message.getSystemId() == null) {
+      fail(getResponseContext(NO_SYSTEM_ID, message.getSystemId()), "Missing system id");
+    }
   }
 
   /*

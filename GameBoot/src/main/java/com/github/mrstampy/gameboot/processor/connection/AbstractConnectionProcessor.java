@@ -95,19 +95,29 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
    * java.lang.Object[])
    */
   @Override
-  public Response fail(int code, AbstractGameBootMessage message, Object... payload) {
+  public Response fail(ResponseContext rc, AbstractGameBootMessage message, Object... payload) {
     Response r = new Response(message, ResponseCode.FAILURE, payload);
 
-    Locale locale = null;
-    if (message.getSystemId() != null) {
-      locale = localeRegistry.get(message.getSystemId());
-    } else {
-      locale = Locale.getDefault();
-    }
-
-    r.setContext(lookup.lookup(code, locale));
+    r.setContext(rc);
 
     return r;
+  }
+
+  /**
+   * Gets the response context.
+   *
+   * @param code
+   *          the code
+   * @param ctx
+   *          the ctx
+   * @param parameters
+   *          the parameters
+   * @return the response context
+   */
+  protected ResponseContext getResponseContext(Integer code, C ctx, Object... parameters) {
+    Long systemId = getSystemId(ctx);
+    Locale locale = systemId == null ? Locale.getDefault() : localeRegistry.get(systemId);
+    return lookup.lookup(code, locale, parameters);
   }
 
   /*
@@ -117,7 +127,7 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
    * sendUnexpectedError(java.lang.Object)
    */
   public void sendUnexpectedError(C ctx) {
-    sendError(UNEXPECTED_ERROR, ctx, "An unexpected error has occurred");
+    sendError(getResponseContext(UNEXPECTED_ERROR, ctx), ctx, "An unexpected error has occurred");
   }
 
   /*

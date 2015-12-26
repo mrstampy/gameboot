@@ -129,7 +129,7 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
    */
   public void onMessage(WebSocketSession session, Object msg) throws Exception {
     if (!(msg instanceof byte[])) {
-      sendError(NOT_BYTE_ARRAY, session, "Message must be a byte array");
+      sendError(getResponseContext(NOT_BYTE_ARRAY, session), session, "Message must be a byte array");
       return;
     }
 
@@ -209,7 +209,7 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
     case OtpKeyRequest.TYPE:
       ok = isDeleteRequest(session, (OtpKeyRequest) agbm);
       if (!ok) {
-        Response fail = fail(UNEXPECTED_MESSAGE, agbm);
+        Response fail = fail(getResponseContext(UNEXPECTED_MESSAGE, session), agbm);
         sendMessage(session, converter.toJsonArray(fail));
       }
     case OtpNewKeyAck.TYPE:

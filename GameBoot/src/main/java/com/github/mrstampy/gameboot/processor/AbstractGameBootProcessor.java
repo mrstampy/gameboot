@@ -96,7 +96,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
   public Response process(M message) throws Exception {
     log.debug("Processing message {}", message);
 
-    if (message == null) fail(NO_MESSAGE, "Null message");
+    if (message == null) fail(getResponseContext(NO_MESSAGE), "Null message");
 
     try {
       validate(message);
@@ -113,7 +113,9 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
     } catch (Exception e) {
       log.error("Error in processing {}", message.getType(), e);
 
-      Response r = failure(UNEXPECTED_ERROR, message, "An unexpected error has occurred");
+      Response r = failure(getResponseContext(UNEXPECTED_ERROR, message.getSystemId()),
+          message,
+          "An unexpected error has occurred");
       r.setId(message.getId());
 
       return r;
@@ -144,13 +146,42 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
   }
 
   /**
+   * Gets the response context.
+   *
+   * @param code
+   *          the code
+   * @param parameters
+   *          the parameters
+   * @return the response context
+   */
+  protected ResponseContext getResponseContext(Integer code, Object... parameters) {
+    return getResponseContext(code, null, parameters);
+  }
+
+  /**
+   * Gets the response context.
+   *
+   * @param code
+   *          the code
+   * @param systemId
+   *          the system id
+   * @param parameters
+   *          the parameters
+   * @return the response context
+   */
+  protected ResponseContext getResponseContext(Integer code, Long systemId, Object... parameters) {
+    Locale locale = systemId == null ? Locale.getDefault() : localeRegistry.get(systemId);
+    return lookup.lookup(code, locale, parameters);
+  }
+
+  /**
    * Fail, throwing a {@link GameBootRuntimeException} with the specified
    * message. The exception is caught by the
    * {@link #process(AbstractGameBootMessage)} implementation which after
    * logging returns a failure response.
    *
-   * @param code
-   *          the code
+   * @param rc
+   *          the rc
    * @param message
    *          the message
    * @param payload
@@ -158,8 +189,8 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    * @throws GameBootRuntimeException
    *           the game boot runtime exception
    */
-  protected void fail(int code, String message, Object... payload) throws GameBootRuntimeException {
-    throw new GameBootRuntimeException(message, lookup.lookup(code), payload);
+  protected void fail(ResponseContext rc, String message, Object... payload) throws GameBootRuntimeException {
+    throw new GameBootRuntimeException(message, rc, payload);
   }
 
   /**
@@ -178,23 +209,16 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
   /**
    * Returns an initialized failure {@link Response}.
    *
-   * @param code
-   *          the code
+   * @param rc
+   *          the rc
    * @param message
    *          the message
    * @param response
    *          the response
    * @return the response
    */
-  protected Response failure(int code, M message, Object... response) {
-    Locale locale = null;
-    if (message.getSystemId() != null) {
-      locale = localeRegistry.get(message.getSystemId());
-    } else {
-      locale = Locale.getDefault();
-    }
-
-    return new Response(message, ResponseCode.FAILURE, lookup.lookup(code, locale), response);
+  protected Response failure(ResponseContext rc, M message, Object... response) {
+    return new Response(message, ResponseCode.FAILURE, rc, response);
   }
 
   /**

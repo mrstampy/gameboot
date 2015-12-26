@@ -136,24 +136,31 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
    */
   @Override
   protected void validate(OtpKeyRequest message) throws Exception {
-    if (message.getKeyFunction() == null) fail(INVALID_KEY_FUNCTION, "keyFunction one of NEW, DELETE");
+    Long id = message.getSystemId();
+    if (message.getKeyFunction() == null) {
+      fail(getResponseContext(INVALID_KEY_FUNCTION, id), "keyFunction one of NEW, DELETE");
+    }
 
-    Long systemId = message.getSystemId();
-    if (systemId == null) fail(NO_SYSTEM_ID, "No systemId");
+    if (id == null) fail(getResponseContext(NO_SYSTEM_ID), "No systemId");
 
     switch (message.getKeyFunction()) {
     case DELETE:
-      if (!systemId.equals(message.getProcessorKey())) fail(SYSTEM_ID_MISMATCH, "systemId does not match processor id");
+      if (!id.equals(message.getProcessorKey())) {
+        fail(getResponseContext(SYSTEM_ID_MISMATCH, id), "systemId does not match processor id");
+      }
       break;
     default:
       break;
     }
 
     Integer size = message.getKeySize();
-    if (size != null && !utils.isPowerOf2(size)) fail(INVALID_KEY_SIZE, "Invalid key size, expecting powers of 2");
+    if (size != null && !utils.isPowerOf2(size)) {
+      fail(getResponseContext(INVALID_KEY_SIZE, id), "Invalid key size, expecting powers of 2");
+    }
 
-    if (size != null && size > maxKeySize)
-      fail(INVALID_KEY_SIZE, "Size " + size + " is greater than the maximum " + maxKeySize);
+    if (size != null && size > maxKeySize) {
+      fail(getResponseContext(INVALID_KEY_SIZE, id), "Size " + size + " is greater than the maximum " + maxKeySize);
+    }
   }
 
   /**
@@ -173,7 +180,9 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     case NEW:
       return newKey(message);
     default:
-      return failure(UNEXPECTED_ERROR, message, "Implementation error: " + message.getKeyFunction());
+      return failure(getResponseContext(UNEXPECTED_ERROR, message.getSystemId()),
+          message,
+          "Implementation error: " + message.getKeyFunction());
     }
   }
 

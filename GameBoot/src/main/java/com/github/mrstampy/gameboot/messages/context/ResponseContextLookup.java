@@ -53,9 +53,11 @@ public interface ResponseContextLookup {
    *
    * @param code
    *          the code
+   * @param parameters
+   *          the {@link ResponseContext#getDescription()} parameters
    * @return the error
    */
-  ResponseContext lookup(Integer code);
+  ResponseContext lookup(Integer code, Object... parameters);
 
   /**
    * Lookup based on locale.
@@ -64,7 +66,9 @@ public interface ResponseContextLookup {
    *          the code
    * @param locale
    *          the locale
+   * @param parameters
+   *          the {@link ResponseContext#getDescription()} parameters
    * @return the response context
    */
-  ResponseContext lookup(Integer code, Locale locale);
+  ResponseContext lookup(Integer code, Locale locale, Object... parameters);
 }

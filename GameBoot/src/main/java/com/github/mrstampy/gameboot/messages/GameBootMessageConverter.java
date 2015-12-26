@@ -58,6 +58,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.controller.MessageClassFinder;
 import com.github.mrstampy.gameboot.exception.GameBootException;
+import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 
@@ -93,7 +94,7 @@ public class GameBootMessageConverter implements ResponseContextCodes {
    *           the game boot exception
    */
   public <AGBM extends AbstractGameBootMessage> AGBM fromJson(String message) throws IOException, GameBootException {
-    if (isEmpty(message)) fail(NO_MESSAGE, "No message");
+    if (isEmpty(message)) fail(getResponseContext(NO_MESSAGE), "No message");
 
     JsonNode node = mapper.readTree(message);
 
@@ -114,7 +115,7 @@ public class GameBootMessageConverter implements ResponseContextCodes {
    *           the game boot exception
    */
   public <AGBM extends AbstractGameBootMessage> AGBM fromJson(byte[] message) throws IOException, GameBootException {
-    if (message == null || message.length == 0) fail(NO_MESSAGE, "No message");
+    if (message == null || message.length == 0) fail(getResponseContext(NO_MESSAGE), "No message");
 
     JsonNode node = mapper.readTree(message);
 
@@ -126,17 +127,17 @@ public class GameBootMessageConverter implements ResponseContextCodes {
       throws GameBootException, IOException, JsonParseException, JsonMappingException {
     JsonNode typeNode = node.get(TYPE_NODE_NAME);
 
-    if (typeNode == null) fail(NO_TYPE, "No type specified");
+    if (typeNode == null) fail(getResponseContext(NO_TYPE), "No type specified");
 
     String type = typeNode.asText();
 
-    if (isEmpty(type)) fail(NO_TYPE, "No type specified");
+    if (isEmpty(type)) fail(getResponseContext(NO_TYPE), "No type specified");
 
     Class<?> clz = finder.findClass(type);
 
     if (clz == null) {
       log.error("Unknown message type {} for message {}", type, message);
-      fail(UNKNOWN_MESSAGE, "Unrecognized message");
+      fail(getResponseContext(UNKNOWN_MESSAGE), "Unrecognized message");
     }
 
     return (AGBM) mapper.readValue(message, clz);
@@ -157,7 +158,7 @@ public class GameBootMessageConverter implements ResponseContextCodes {
    */
   public <AGBM extends AbstractGameBootMessage> String toJson(AGBM msg)
       throws JsonProcessingException, GameBootException {
-    if (msg == null) fail(NO_MESSAGE, "No message");
+    if (msg == null) fail(getResponseContext(NO_MESSAGE), "No message");
 
     return mapper.writeValueAsString(msg);
   }
@@ -177,12 +178,16 @@ public class GameBootMessageConverter implements ResponseContextCodes {
    */
   public <AGBM extends AbstractGameBootMessage> byte[] toJsonArray(AGBM msg)
       throws JsonProcessingException, GameBootException {
-    if (msg == null) fail(NO_MESSAGE, "No message");
+    if (msg == null) fail(getResponseContext(NO_MESSAGE), "No message");
 
     return mapper.writeValueAsBytes(msg);
   }
 
-  private void fail(int code, String msg, Object... payload) throws GameBootException {
-    throw new GameBootException(msg, lookup.lookup(code), payload);
+  private ResponseContext getResponseContext(Integer code, Object... parameters) {
+    return lookup.lookup(code, parameters);
+  }
+
+  private void fail(ResponseContext rc, String msg, Object... payload) throws GameBootException {
+    throw new GameBootException(msg, rc, payload);
   }
 }

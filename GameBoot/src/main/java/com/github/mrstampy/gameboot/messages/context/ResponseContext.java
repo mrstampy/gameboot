@@ -77,6 +77,16 @@ public class ResponseContext {
   }
 
   /**
+   * Instantiates a new response context.
+   *
+   * @param base
+   *          the base
+   */
+  public ResponseContext(ResponseContext base) {
+    this(base.getCode(), base.getFunction(), base.getDescription());
+  }
+
+  /**
    * Gets the code.
    *
    * @return the code
