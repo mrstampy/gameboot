@@ -76,14 +76,21 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
    * com.github.mrstampy.gameboot.exception.GameBootThrowable)
    */
   @Override
-  public Response fail(AbstractGameBootMessage message, GameBootThrowable e) {
-    ResponseContext error = e.getError();
-    Object[] payload = e.getPayload();
+  public Response fail(C ctx, AbstractGameBootMessage message, GameBootThrowable e) {
+    ResponseContext error = getError(ctx, e);
+    Object[] payload = e.getError() == null ? null : e.getPayload();
 
     Response r = new Response(message, ResponseCode.FAILURE, payload);
     r.setContext(error);
 
     return r;
+  }
+
+  private ResponseContext getError(C ctx, GameBootThrowable e) {
+    if (e.getError() != null) return e.getError();
+    if (e.getErrorCode() == null) return null;
+
+    return getResponseContext(e.getErrorCode(), ctx, e.getPayload());
   }
 
   /*

@@ -209,7 +209,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * com.github.mrstampy.gameboot.exception.GameBootThrowable)
    */
   public void sendError(ChannelHandlerContext ctx, GameBootThrowable e) {
-    Response r = fail(null, e);
+    Response r = fail(ctx, null, e);
 
     try {
       sendMessage(ctx, converter.toJsonArray(r), r);
@@ -255,7 +255,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
       response = process(ctx, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(agbm, e);
+      response = fail(ctx, agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       log.error("Unexpected exception processing message {} on channel {}", msg, ctx.channel(), e);
@@ -292,7 +292,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
       response = process(ctx, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(agbm, e);
+      response = fail(ctx, agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       log.error("Unexpected exception processing message {} on channel {}", msg, ctx.channel(), e);

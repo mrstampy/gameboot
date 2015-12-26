@@ -54,6 +54,8 @@ public class GameBootException extends Exception implements GameBootThrowable {
 
   private ResponseContext error;
 
+  private Integer errorCode;
+
   /**
    * Instantiates a new game boot exception.
    *
@@ -87,17 +89,15 @@ public class GameBootException extends Exception implements GameBootThrowable {
   /**
    * Instantiates a new game boot exception.
    *
-   * @param cause
-   *          the cause
-   * @param error
-   *          the error
+   * @param errorCode
+   *          the error code
    * @param payload
    *          the payload
    */
-  public GameBootException(Throwable cause, ResponseContext error, Object... payload) {
-    super(cause);
+  public GameBootException(Integer errorCode, Object... payload) {
+    super();
+    setErrorCode(errorCode);
     setPayload(payload);
-    setError(error);
   }
 
   /**
@@ -105,46 +105,26 @@ public class GameBootException extends Exception implements GameBootThrowable {
    *
    * @param message
    *          the message
-   * @param cause
-   *          the cause
-   * @param error
-   *          the error
+   * @param errorCode
+   *          the error code
    * @param payload
    *          the payload
    */
-  public GameBootException(String message, Throwable cause, ResponseContext error, Object... payload) {
-    super(message, cause);
+  public GameBootException(String message, Integer errorCode, Object... payload) {
+    super(message);
+    setErrorCode(errorCode);
     setPayload(payload);
-    setError(error);
-  }
-
-  /**
-   * Instantiates a new game boot exception.
-   *
-   * @param message
-   *          the message
-   * @param cause
-   *          the cause
-   * @param error
-   *          the error
-   * @param enableSuppression
-   *          the enable suppression
-   * @param writableStackTrace
-   *          the writable stack trace
-   * @param payload
-   *          the payload
-   */
-  public GameBootException(String message, Throwable cause, ResponseContext error, boolean enableSuppression,
-      boolean writableStackTrace, Object... payload) {
-    super(message, cause, enableSuppression, writableStackTrace);
-    setPayload(payload);
-    setError(error);
   }
 
   /*
    * (non-Javadoc)
    * 
    * @see com.github.mrstampy.gameboot.exception.GameBootThrowable#hasPayload()
+   */
+  /**
+   * Checks for payload.
+   *
+   * @return true, if successful
    */
   @Override
   public boolean hasPayload() {
@@ -155,6 +135,11 @@ public class GameBootException extends Exception implements GameBootThrowable {
    * (non-Javadoc)
    * 
    * @see com.github.mrstampy.gameboot.exception.GameBootThrowable#getPayload()
+   */
+  /**
+   * Gets the payload.
+   *
+   * @return the payload
    */
   @Override
   public Object[] getPayload() {
@@ -168,6 +153,12 @@ public class GameBootException extends Exception implements GameBootThrowable {
    * com.github.mrstampy.gameboot.exception.GameBootThrowable#setPayload(java.
    * lang.Object[])
    */
+  /**
+   * Sets the payload.
+   *
+   * @param payload
+   *          the new payload
+   */
   @Override
   public void setPayload(Object[] payload) {
     if (payload != null && payload.length == 0) payload = null;
@@ -178,6 +169,11 @@ public class GameBootException extends Exception implements GameBootThrowable {
    * (non-Javadoc)
    * 
    * @see com.github.mrstampy.gameboot.exception.GameBootThrowable#getError()
+   */
+  /**
+   * Gets the error.
+   *
+   * @return the error
    */
   @Override
   public ResponseContext getError() {
@@ -190,9 +186,47 @@ public class GameBootException extends Exception implements GameBootThrowable {
    * @see com.github.mrstampy.gameboot.exception.GameBootThrowable#setError(com.
    * github.mrstampy.gameboot.messages.error.Error)
    */
+  /**
+   * Sets the error.
+   *
+   * @param error
+   *          the new error
+   */
   @Override
   public void setError(ResponseContext error) {
     this.error = error;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.exception.GameBootThrowable#getErrorCode()
+   */
+  /**
+   * Gets the error code.
+   *
+   * @return the error code
+   */
+  public Integer getErrorCode() {
+    return errorCode;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.exception.GameBootThrowable#setErrorCode(java.
+   * lang.Integer)
+   */
+  /**
+   * Sets the error code.
+   *
+   * @param errorCode
+   *          the new error code
+   */
+  public void setErrorCode(Integer errorCode) {
+    this.errorCode = errorCode;
   }
 
 }

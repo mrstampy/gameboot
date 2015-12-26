@@ -92,4 +92,19 @@ public interface GameBootThrowable {
    */
   String getMessage();
 
+  /**
+   * Gets the error code.
+   *
+   * @return the error code
+   */
+  Integer getErrorCode();
+
+  /**
+   * Sets the error code.
+   *
+   * @param code
+   *          the new error code
+   */
+  void setErrorCode(Integer code);
+
 }

@@ -247,7 +247,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
    * com.github.mrstampy.gameboot.exception.GameBootThrowable)
    */
   public void sendError(WebSocketSession session, GameBootThrowable e) {
-    Response r = fail(null, e);
+    Response r = fail(session, null, e);
 
     try {
       sendMessage(session, converter.toJsonArray(r), r);
@@ -293,7 +293,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
       response = process(session, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(agbm, e);
+      response = fail(session, agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       log.error("Unexpected exception processing message {} on channel {}", msg, session, e);
@@ -330,7 +330,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
       response = process(session, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(agbm, e);
+      response = fail(session, agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
       log.error("Unexpected exception processing message {} on channel {}", msg, session, e);

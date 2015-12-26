@@ -186,13 +186,15 @@ public interface ConnectionProcessor<C> extends ResponseContextCodes {
    * Invoke to create a {@link Response} on catching a {@link GameBootThrowable}
    * .
    *
+   * @param ctx
+   *          the ctx
    * @param message
    *          the message
    * @param e
    *          the e
    * @return the response
    */
-  Response fail(AbstractGameBootMessage message, GameBootThrowable e);
+  Response fail(C ctx, AbstractGameBootMessage message, GameBootThrowable e);
 
   /**
    * Invoke on error supplying the code for the {@link ResponseContextLookup},

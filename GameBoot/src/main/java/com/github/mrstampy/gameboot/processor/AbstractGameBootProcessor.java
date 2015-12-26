@@ -132,17 +132,24 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    * @return the response
    */
   protected Response gameBootErrorResponse(M message, GameBootThrowable e) {
-    ResponseContext error = e.getError();
+    ResponseContext error = getError(message.getSystemId(), e);
 
     log.error("Error in processing {} : {}, {}", message.getType(), error, e.getMessage());
 
-    Object[] payload = e.getPayload();
+    Object[] payload = e.getError() == null ? null : e.getPayload();
 
     Response r = new Response(message, ResponseCode.FAILURE, error, payload);
     r.setId(message.getId());
     r.setContext(error);
 
     return r;
+  }
+
+  private ResponseContext getError(Long systemId, GameBootThrowable e) {
+    if (e.getError() != null) return e.getError();
+    if (e.getErrorCode() == null) return null;
+
+    return lookup.lookup(e.getErrorCode(), localeRegistry.get(systemId), e.getPayload());
   }
 
   /**

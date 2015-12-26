@@ -54,6 +54,8 @@ public class GameBootRuntimeException extends RuntimeException implements GameBo
 
   private ResponseContext error;
 
+  private Integer errorCode;
+
   /**
    * Instantiates a new game boot runtime exception.
    *
@@ -87,15 +89,14 @@ public class GameBootRuntimeException extends RuntimeException implements GameBo
   /**
    * Instantiates a new game boot runtime exception.
    *
-   * @param cause
-   *          the cause
-   * @param error
-   *          the error
+   * @param errorCode
+   *          the error code
    * @param payload
    *          the payload
    */
-  public GameBootRuntimeException(Throwable cause, ResponseContext error, Object... payload) {
-    super(cause);
+  public GameBootRuntimeException(Integer errorCode, Object... payload) {
+    super();
+    setErrorCode(errorCode);
     setPayload(payload);
   }
 
@@ -104,36 +105,15 @@ public class GameBootRuntimeException extends RuntimeException implements GameBo
    *
    * @param message
    *          the message
-   * @param cause
-   *          the cause
-   * @param error
-   *          the error
+   * @param errorCode
+   *          the error code
    * @param payload
    *          the payload
    */
-  public GameBootRuntimeException(String message, Throwable cause, ResponseContext error, Object... payload) {
-    super(message, cause);
+  public GameBootRuntimeException(String message, Integer errorCode, Object... payload) {
+    super(message);
+    setErrorCode(errorCode);
     setPayload(payload);
-    setError(error);
-  }
-
-  /**
-   * Instantiates a new game boot runtime exception.
-   *
-   * @param message
-   *          the message
-   * @param cause
-   *          the cause
-   * @param enableSuppression
-   *          the enable suppression
-   * @param writableStackTrace
-   *          the writable stack trace
-   */
-  public GameBootRuntimeException(String message, Throwable cause, boolean enableSuppression,
-      boolean writableStackTrace) {
-    super(message, cause, enableSuppression, writableStackTrace);
-    setPayload(payload);
-    setError(error);
   }
 
   /*
@@ -183,6 +163,27 @@ public class GameBootRuntimeException extends RuntimeException implements GameBo
    */
   public void setError(ResponseContext error) {
     this.error = error;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.exception.GameBootThrowable#getErrorCode()
+   */
+  public Integer getErrorCode() {
+    return errorCode;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.exception.GameBootThrowable#setErrorCode(java.
+   * lang.Integer)
+   */
+  public void setErrorCode(Integer errorCode) {
+    this.errorCode = errorCode;
   }
 
 }
