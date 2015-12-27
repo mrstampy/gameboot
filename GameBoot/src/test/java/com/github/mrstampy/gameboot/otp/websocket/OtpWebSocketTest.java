@@ -197,7 +197,7 @@ public class OtpWebSocketTest {
     assertFalse(encChannel.isActive());
     createEncryptedChannel();
 
-    newKey.setSystemId(clientHandler.getSystemId());
+    newKey.setOtpSystemId(clientHandler.getSystemId());
 
     sendMessage(newKey, encChannel);
 
@@ -211,7 +211,7 @@ public class OtpWebSocketTest {
     assertFalse(encChannel.isActive());
     createEncryptedChannel();
 
-    newKey.setSystemId(12345l);
+    newKey.setOtpSystemId(12345l);
     newKey.setKeyFunction(KeyFunction.NEW);
 
     sendMessage(newKey, encChannel);
@@ -241,7 +241,7 @@ public class OtpWebSocketTest {
 
     OtpKeyRequest del = new OtpKeyRequest();
     del.setId(99);
-    del.setSystemId(clientHandler.getSystemId());
+    del.setOtpSystemId(clientHandler.getSystemId());
     del.setKeyFunction(KeyFunction.DELETE);
 
     sendMessage(del, clearChannel);
@@ -257,7 +257,7 @@ public class OtpWebSocketTest {
   private void deleteOtpKey() throws Exception {
     OtpKeyRequest delKey = new OtpKeyRequest();
     delKey.setId(3);
-    delKey.setSystemId(clientHandler.getSystemId());
+    delKey.setOtpSystemId(clientHandler.getSystemId());
     delKey.setKeyFunction(KeyFunction.DELETE);
 
     sendMessage(delKey, clearChannel);
@@ -274,7 +274,7 @@ public class OtpWebSocketTest {
 
     OtpKeyRequest newKey = new OtpKeyRequest();
     newKey.setId(1);
-    newKey.setSystemId(clientHandler.getSystemId());
+    newKey.setOtpSystemId(clientHandler.getSystemId());
     newKey.setKeyFunction(KeyFunction.NEW);
 
     // send new key request on encrypted channel
@@ -288,7 +288,7 @@ public class OtpWebSocketTest {
     assertEquals(1, r.getId().intValue());
 
     OtpNewKeyAck ack = new OtpNewKeyAck();
-    ack.setSystemId(clientHandler.getSystemId());
+    ack.setOtpSystemId(clientHandler.getSystemId());
     ack.setId(2);
 
     // send new key ack on clear channel, will be encrypted

@@ -319,7 +319,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx,
       GameBootMessageController controller, AGBM agbm) throws Exception {
-    if (agbm.getSystemId() == null) agbm.setSystemId(getSystemId());
+    agbm.setSystemId(getSystemId());
     agbm.setTransport(Transport.NETTY);
     agbm.setLocal((InetSocketAddress) ctx.channel().localAddress());
     agbm.setRemote((InetSocketAddress) ctx.channel().remoteAddress());

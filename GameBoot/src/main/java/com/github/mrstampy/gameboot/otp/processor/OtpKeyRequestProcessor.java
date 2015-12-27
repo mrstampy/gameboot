@@ -70,7 +70,7 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
  * by the GameBoot property 'otp.default.key.size' will be used. If set the
  * value must be greater than 0 and must be a power of 2. Keys size must also be
  * a power of 2 and sizes must be greater than or equal to all message sizes
- * sent in the unencrypted channel. The {@link OtpKeyRequest#getSystemId()}
+ * sent in the unencrypted channel. The {@link OtpKeyRequest#getOtpSystemId()}
  * value will be the value obtained from the clear channel.
  * 
  * @see OtpClearNettyHandler
