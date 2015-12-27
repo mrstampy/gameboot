@@ -69,6 +69,10 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 @ActiveProfiles(LocaleProcessor.PROFILE)
 public class LocaleProcessorTest {
 
+  private static final String FRANCE_CODE = "FR";
+
+  private static final String FRENCH_CODE = "fr";
+
   @Autowired
   private LocaleProcessor processor;
 
@@ -90,11 +94,11 @@ public class LocaleProcessorTest {
 
     validationFailExpected(msg, "No lang or country codes");
 
-    msg.setCountryCode("FR");
+    msg.setCountryCode(FRANCE_CODE);
 
     validationFailExpected(msg, "No lang code");
 
-    msg.setLanguageCode("fr");
+    msg.setLanguageCode(FRENCH_CODE);
 
     processor.validate(msg);
   }
@@ -110,11 +114,10 @@ public class LocaleProcessorTest {
     assertEquals(0, registry.size());
 
     Long systemId = new Long(1);
-    String frenchCode = "fr";
 
     LocaleMessage msg = new LocaleMessage();
     msg.setSystemId(systemId);
-    msg.setLanguageCode(frenchCode);
+    msg.setLanguageCode(FRENCH_CODE);
 
     Response r = processor.process(msg);
 
@@ -124,7 +127,7 @@ public class LocaleProcessorTest {
 
     Locale locale = registry.get(systemId);
     assertNotNull(locale);
-    assertEquals(frenchCode, locale.getLanguage());
+    assertEquals(FRENCH_CODE, locale.getLanguage());
   }
 
   private void validationFailExpected(LocaleMessage msg, String desc) {
