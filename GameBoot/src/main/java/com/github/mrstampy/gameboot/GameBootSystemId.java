@@ -41,26 +41,67 @@
  */
 package com.github.mrstampy.gameboot;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.security.SecureRandom;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * Default implementation of the {@link SystemId} interface, using a backing
- * {@link AtomicLong}. GameBoot implementations using persistent storage will
- * want to add their own implementation in their {@link Configuration}.
- */
-public class GameBootSystemId implements SystemId {
+import com.github.mrstampy.gameboot.security.SecurityConfiguration;
+import com.github.mrstampy.gameboot.util.RegistryCleanerListener;
 
-  private static final AtomicLong ID = new AtomicLong(1);
+/**
+ * Default implementation of the {@link SystemId} interface, using the
+ * {@link SecurityConfiguration#secureRandom()} to generate greater-than-zero
+ * system unique ids. GameBoot implementations using persistent storage will want
+ * to add their own implementation in their {@link Configuration}.
+ */
+public class GameBootSystemId implements SystemId, RegistryCleanerListener {
+
+  @Autowired
+  @Qualifier(SecurityConfiguration.GAME_BOOT_SECURE_RANDOM)
+  private SecureRandom random;
+
+  private List<Long> activeIds = new ArrayList<>();
+
+  private Lock lock = new ReentrantLock();
 
   /*
    * (non-Javadoc)
    * 
-   * @see com.github.mrstampy.gameboot.concurrent.Bling#next()
+   * @see com.github.mrstampy.gameboot.SystemId#next()
    */
   @Override
   public Long next() {
-    return ID.getAndIncrement();
+    lock.lock();
+    try {
+      long id = random.nextLong();
+
+      while (id <= 0 || activeIds.contains(id)) {
+        id = random.nextLong();
+      }
+
+      activeIds.add(id);
+
+      return id;
+    } finally {
+      lock.unlock();
+    }
+  }
+
+  @Override
+  public void cleanup(Comparable<?> key) {
+    if (!(key instanceof Long)) return;
+
+    lock.lock();
+    try {
+      activeIds.remove(key);
+    } finally {
+      lock.unlock();
+    }
   }
 }

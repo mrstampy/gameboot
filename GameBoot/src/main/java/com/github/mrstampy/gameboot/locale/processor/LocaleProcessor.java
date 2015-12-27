@@ -66,7 +66,7 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 @Profile(LocaleProcessor.PROFILE)
 public class LocaleProcessor extends AbstractGameBootProcessor<LocaleMessage> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  
+
   public static final String PROFILE = "locale";
 
   @Autowired
@@ -91,8 +91,8 @@ public class LocaleProcessor extends AbstractGameBootProcessor<LocaleMessage> {
    */
   @Override
   protected void validate(LocaleMessage message) throws Exception {
-    if(message == null) fail(getResponseContext(NO_MESSAGE), "No message");
-    
+    if (message == null) fail(getResponseContext(NO_MESSAGE), "No message");
+
     if (isEmpty(message.getLanguageCode())) {
       fail(getResponseContext(LANG_CODE_MISSING, message.getSystemId()), "Missing lang code");
     }

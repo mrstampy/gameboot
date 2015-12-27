@@ -43,8 +43,6 @@ package com.github.mrstampy.gameboot.otp.processor;
 
 import java.lang.invoke.MethodHandles;
 
-import javax.annotation.PostConstruct;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +61,6 @@ import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
-import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 /**
  * The Class OtpNewKeyRequestProcessor generates a key from a request sent on an
@@ -94,27 +91,11 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
   @Autowired
   private OneTimePad pad;
 
-  @Autowired
-  private GameBootUtils utils;
-
   @Value("${otp.default.key.size}")
   private Integer defaultKeySize;
 
   @Value("${otp.maximum.key.size}")
   private Integer maxKeySize;
-
-  /**
-   * Post construct.
-   *
-   * @throws Exception
-   *           the exception
-   */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    if (!utils.isPowerOf2(defaultKeySize)) {
-      throw new IllegalArgumentException("otp.default.key.size must be a power of 2: " + defaultKeySize);
-    }
-  }
 
   /**
    * Gets the type.
@@ -154,9 +135,6 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     }
 
     Integer size = message.getKeySize();
-    if (size != null && !utils.isPowerOf2(size)) {
-      fail(getResponseContext(INVALID_KEY_SIZE, id), "Invalid key size, expecting powers of 2");
-    }
 
     if (size != null && size > maxKeySize) {
       fail(getResponseContext(INVALID_KEY_SIZE, id), "Size " + size + " is greater than the maximum " + maxKeySize);

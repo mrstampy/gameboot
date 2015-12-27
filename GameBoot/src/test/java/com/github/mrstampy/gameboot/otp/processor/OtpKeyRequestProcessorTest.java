@@ -102,18 +102,12 @@ public class OtpKeyRequestProcessorTest {
     r.setKeySize(-32);
     failExpected(r, "negative size");
 
-    r.setKeySize(7);
-    failExpected(r, "bad size");
-
-    r.setKeySize(62);
-    failExpected(r, "Powers of 2");
-
     r.setKeySize(KEY_SIZE);
     r.setKeyFunction(null);
     failExpected(r, "No key function");
 
     r.setKeyFunction(KeyFunction.NEW);
-    r.setKeySize(maxKeySize * 2);
+    r.setKeySize(maxKeySize + 1);
     failExpected(r, "> max key size");
 
     r.setKeySize(KEY_SIZE);

@@ -53,6 +53,7 @@ import org.springframework.stereotype.Component;
 
 import com.codahale.metrics.Timer.Context;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.security.SecurityConfiguration;
 
 /**
  * The Class OneTimePad is an implementation of the
@@ -78,7 +79,7 @@ public class OneTimePad {
   public static final String OTP_CONVERSION = "OTP message conversion timer";
 
   @Autowired
-  @Qualifier(OtpConfiguration.OTP_SECURE_RANDOM)
+  @Qualifier(SecurityConfiguration.GAME_BOOT_SECURE_RANDOM)
   private SecureRandom random;
 
   @Autowired

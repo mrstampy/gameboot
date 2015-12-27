@@ -41,8 +41,17 @@
  */
 package com.github.mrstampy.gameboot.security;
 
+import java.security.SecureRandom;
+
+import javax.annotation.PostConstruct;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+
+import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 /**
  * Security configuration for GameBoot.
@@ -50,5 +59,36 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 @Configuration
 @EnableWebSecurity
 public class SecurityConfiguration {
+
+  public static final String GAME_BOOT_SECURE_RANDOM = "GameBoot Secure Random";
+
+  @Autowired
+  private GameBootUtils utils;
+
+  @Value("${gameboot.secure.random.seed.size}")
+  private int seedSize;
+
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    if (!utils.isPowerOf2(seedSize)) {
+      throw new IllegalArgumentException("gameboot.secure.random.seed.size must be a power of 2: " + seedSize);
+    }
+  }
+
+  @Bean(name = GAME_BOOT_SECURE_RANDOM)
+  public SecureRandom secureRandom() throws Exception {
+    SecureRandom random = SecureRandom.getInstanceStrong();
+
+    byte[] seed = new byte[seedSize];
+    random.nextBytes(seed);
+
+    return random;
+  }
 
 }

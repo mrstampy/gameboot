@@ -41,12 +41,6 @@
  */
 package com.github.mrstampy.gameboot.otp;
 
-import java.security.SecureRandom;
-
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,7 +51,6 @@ import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyProcessor;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketProcessor;
-import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 /**
  * The Class OtpConfiguration.
@@ -71,25 +64,6 @@ public class OtpConfiguration {
 
   /** The Constant OTP_PROFILE. */
   public static final String OTP_PROFILE = "otp";
-
-  @Autowired
-  private GameBootUtils utils;
-
-  @Value("${otp.secure.random.seed.size}")
-  private int seedSize;
-
-  /**
-   * Post construct.
-   *
-   * @throws Exception
-   *           the exception
-   */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    if (!utils.isPowerOf2(seedSize)) {
-      throw new IllegalArgumentException("otp.secure.random.seed.size must be a power of 2: " + seedSize);
-    }
-  }
 
   /**
    * Clear netty handler.
@@ -135,25 +109,6 @@ public class OtpConfiguration {
   @ConditionalOnMissingBean(OtpClearWebSocketProcessor.class)
   public OtpClearWebSocketProcessor clearWebSocketProcessor() {
     return new OtpClearWebSocketProcessor();
-  }
-
-  /**
-   * Returns a strong instance of the secure random seeded with a byte array the
-   * size of which is specified by the gameboot property
-   * 'otp.secure.random.seed.size'.
-   *
-   * @return the secure random
-   * @throws Exception
-   *           the exception
-   */
-  @Bean(name = OTP_SECURE_RANDOM)
-  public SecureRandom secureRandom() throws Exception {
-    SecureRandom random = SecureRandom.getInstanceStrong();
-
-    byte[] seed = new byte[seedSize];
-    random.nextBytes(seed);
-
-    return random;
   }
 
 }
