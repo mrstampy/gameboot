@@ -49,6 +49,7 @@ import org.springframework.context.annotation.Profile;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.messages.SystemIdResponse;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
@@ -56,7 +57,6 @@ import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.messages.OtpSystemId;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -145,7 +145,7 @@ public class OtpClearNettyHandler
 
     OtpClearNettyProcessor cp = getConnectionProcessor();
 
-    Response r = new Response(ResponseCode.INFO, new OtpSystemId(cp.getSystemId()));
+    Response r = new Response(ResponseCode.INFO, new SystemIdResponse(cp.getSystemId()));
 
     cp.sendMessage(ctx, converter.toJsonArray(r), r);
   }

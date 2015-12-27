@@ -39,51 +39,57 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.controller;
+package com.github.mrstampy.gameboot.messages;
 
-import java.lang.invoke.MethodHandles;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.github.mrstampy.gameboot.locale.messages.LocaleMessage;
-import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.systemid.messages.SystemIdMessage;
-import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
+import com.github.mrstampy.gameboot.SystemId;
+import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
+import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
+import com.github.mrstampy.gameboot.systemid.processor.SystemIdMessageProcessor;
 
 /**
- * The default implementation of the {@link MessageClassFinder} interface.
+ * The Class SystemIdResponse is used to encapsulate the {@link SystemId} value
+ * for the connection, sent to the client.
  * 
- * @see GameBootControllerConfiguration
+ * @see SystemIdMessageProcessor
+ * @see OtpClearNettyHandler
+ * @see OtpClearWebSocketHandler
  */
-public class GameBootMessageClassFinder implements MessageClassFinder {
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public class SystemIdResponse {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.controller.MessageClassFinder#findClass(java.
-   * lang.String)
+  private Long systemId;
+
+  /**
+   * Instantiates a new otp system id.
    */
-  @Override
-  public Class<?> findClass(String type) {
-    switch (type) {
-    case UserMessage.TYPE:
-      return UserMessage.class;
-    case OtpKeyRequest.TYPE:
-      return OtpKeyRequest.class;
-    case OtpNewKeyAck.TYPE:
-      return OtpNewKeyAck.class;
-    case LocaleMessage.TYPE:
-      return LocaleMessage.class;
-    case SystemIdMessage.TYPE:
-      return SystemIdMessage.class;
-    default:
-      log.error("No class defined for type {}", type);
-      return null;
-    }
+  public SystemIdResponse() {
   }
 
+  /**
+   * Instantiates a new otp system id.
+   *
+   * @param systemId
+   *          the system id
+   */
+  public SystemIdResponse(Long systemId) {
+    setSystemId(systemId);
+  }
+
+  /**
+   * Gets the system id.
+   *
+   * @return the system id
+   */
+  public Long getSystemId() {
+    return systemId;
+  }
+
+  /**
+   * Sets the system id.
+   *
+   * @param systemId
+   *          the new system id
+   */
+  public void setSystemId(Long systemId) {
+    this.systemId = systemId;
+  }
 }

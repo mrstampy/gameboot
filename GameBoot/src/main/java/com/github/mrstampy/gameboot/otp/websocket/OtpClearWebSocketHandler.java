@@ -58,13 +58,13 @@ import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.messages.SystemIdResponse;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.otp.messages.OtpSystemId;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
@@ -150,7 +150,7 @@ public class OtpClearWebSocketHandler
 
     OtpClearWebSocketProcessor webSocketProcessor = getConnectionProcessor();
 
-    Response r = new Response(ResponseCode.INFO, new OtpSystemId(webSocketProcessor.getSystemId(session)));
+    Response r = new Response(ResponseCode.INFO, new SystemIdResponse(webSocketProcessor.getSystemId(session)));
 
     webSocketProcessor.sendMessage(session, converter.toJsonArray(r));
   }

@@ -39,47 +39,53 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.otp.messages;
+package com.github.mrstampy.gameboot.systemid.processor;
+
+import org.springframework.stereotype.Component;
+
+import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.messages.SystemIdResponse;
+import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
+import com.github.mrstampy.gameboot.systemid.messages.SystemIdMessage;
 
 /**
- * The Class OtpSystemId.
+ * Responds to {@link SystemIdMessage}s with the system id for the connection.
  */
-public class OtpSystemId {
+@Component
+public class SystemIdMessageProcessor extends AbstractGameBootProcessor<SystemIdMessage> {
 
-  private Long systemId;
-
-  /**
-   * Instantiates a new otp system id.
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.processor.GameBootProcessor#getType()
    */
-  public OtpSystemId() {
+  @Override
+  public String getType() {
+    return SystemIdMessage.TYPE;
   }
 
-  /**
-   * Instantiates a new otp system id.
-   *
-   * @param systemId
-   *          the system id
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#validate(
+   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
-  public OtpSystemId(Long systemId) {
-    setSystemId(systemId);
+  @Override
+  protected void validate(SystemIdMessage message) throws Exception {
+    if (message == null) fail(getResponseContext(NO_MESSAGE), "No message");
   }
 
-  /**
-   * Gets the system id.
-   *
-   * @return the system id
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#
+   * processImpl(com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
    */
-  public Long getSystemId() {
-    return systemId;
+  @Override
+  protected Response processImpl(SystemIdMessage message) throws Exception {
+    return new Response(ResponseCode.SUCCESS, new SystemIdResponse(message.getSystemId()));
   }
 
-  /**
-   * Sets the system id.
-   *
-   * @param systemId
-   *          the new system id
-   */
-  public void setSystemId(Long systemId) {
-    this.systemId = systemId;
-  }
 }
