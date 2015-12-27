@@ -68,6 +68,7 @@ import com.github.mrstampy.gameboot.processor.AbstractTransactionalGameBootProce
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessorAspect;
 import com.github.mrstampy.gameboot.security.SecurityConfiguration;
+import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage;

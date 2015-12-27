@@ -39,7 +39,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot;
+package com.github.mrstampy.gameboot.systemid;
 
 /**
  * The Interface SystemId should be implemented to return a system-unique

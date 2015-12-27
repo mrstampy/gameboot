@@ -41,9 +41,9 @@
  */
 package com.github.mrstampy.gameboot.messages;
 
-import com.github.mrstampy.gameboot.SystemId;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
+import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.systemid.processor.SystemIdMessageProcessor;
 
 /**

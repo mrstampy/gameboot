@@ -45,6 +45,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.github.mrstampy.gameboot.systemid.GameBootSystemId;
+import com.github.mrstampy.gameboot.systemid.SystemId;
+
 /**
  * The Class GameBootConfiguration.
  */
