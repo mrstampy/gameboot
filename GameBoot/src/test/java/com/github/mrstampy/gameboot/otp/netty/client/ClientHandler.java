@@ -178,9 +178,7 @@ public class ClientHandler extends ChannelDuplexHandler {
         throw new IllegalStateException("Expecting map of systemId:[value]");
       }
 
-      String s = ((Map<?, ?>) payload[0]).get("systemId").toString();
-
-      systemId = new Long(s);
+      systemId = (Long)((Map<?, ?>) payload[0]).get("systemId");
 
       log.info("Setting system id {}", systemId);
       clearChannel = ctx.channel();
