@@ -54,7 +54,7 @@ public class SystemIdMessage extends AbstractGameBootMessage {
   /**
    * Instantiates a new system id message.
    */
-  protected SystemIdMessage() {
+  public SystemIdMessage() {
     super(TYPE);
   }
 

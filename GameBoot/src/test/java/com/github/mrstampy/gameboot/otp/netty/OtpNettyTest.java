@@ -47,6 +47,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -72,6 +73,7 @@ import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.netty.client.ClientHandler;
+import com.github.mrstampy.gameboot.systemid.messages.SystemIdMessage;
 import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
@@ -179,6 +181,31 @@ public class OtpNettyTest {
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
     assertNotNull(r.getResponse());
     assertEquals(1, r.getResponse().length);
+  }
+
+  /**
+   * Test encrypted request system id.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  public void testEncryptedRequestSystemId() throws Exception {
+    sendMessage(new SystemIdMessage(), clearChannel);
+
+    Response r = clientHandler.getLastResponse();
+
+    assertNotNull(r);
+    assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+
+    Object[] payload = r.getResponse();
+    assertNotNull(payload);
+    assertEquals(1, payload.length);
+    assertTrue(payload[0] instanceof Map<?, ?>);
+
+    Long systemId = (Long) ((Map<?, ?>) payload[0]).get("systemId");
+
+    assertEquals(systemId, clientHandler.getSystemId());
   }
 
   /**
