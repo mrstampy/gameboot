@@ -68,7 +68,7 @@ import com.github.mrstampy.gameboot.util.resource.AbstractFallbackResourceCondit
  * 'error.properties' must exist as the root file. {@link Locale} specific files
  * are named as per property {@link ResourceBundle}s ie.
  * 'error_en_CA.properties' or 'error_fr.properties'. Lookups are performed from
- * specific -> general, '_[lang code]_[country code]' first, then '_[lang
+ * specific to general, '_[lang code]_[country code]' first, then '_[lang
  * code]', then the root 'error.properties'.
  */
 public class GameBootContextLoader implements ApplicationContextAware, ResponseContextLoader {

@@ -41,6 +41,8 @@
  */
 package com.github.mrstampy.gameboot;
 
+import java.util.Locale;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
@@ -49,6 +51,8 @@ import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 import com.github.mrstampy.gameboot.controller.MessageClassFinder;
 import com.github.mrstampy.gameboot.data.GameBootDataConfiguration;
+import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
+import com.github.mrstampy.gameboot.locale.processor.LocaleProcessor;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
@@ -57,6 +61,7 @@ import com.github.mrstampy.gameboot.messages.context.ResponseContextLoader;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.netty.AbstractNettyProcessor;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 import com.github.mrstampy.gameboot.processor.AbstractTransactionalGameBootProcessor;
@@ -67,6 +72,7 @@ import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
+import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
 
 import co.paralleluniverse.springframework.boot.security.autoconfigure.web.FiberSecureSpringBootApplication;
 
@@ -98,20 +104,20 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * {@link AbstractGameBootMessage} representing the new JSON message. This
  * message is sent from the client to the server for processing. Of importance
  * is to ensure that the {@link AbstractGameBootMessage#getType()} returns a
- * GameBoot-unique string, hereafter referred to as The Type.<br>
+ * GameBoot-unique string, hereafter referred to as <b>The Type</b>.<br>
  * <br>
  * 
  * 2. Implement a {@link GameBootProcessor} (or extend one of
  * {@link AbstractGameBootProcessor} or
  * {@link AbstractTransactionalGameBootProcessor}) to process your message.
  * Ensure that the {@link GameBootProcessor#getType()} implementation returns
- * The Type of your new message. An {@link AbstractGameBootMessage} will have
- * only one {@link GameBootProcessor} related by The Type. <br>
+ * <b>The Type</b> of your new message. An {@link AbstractGameBootMessage} will
+ * have only one {@link GameBootProcessor} related by <b>The Type</b>. <br>
  * <br>
  * 
- * 3. Implement the {@link MessageClassFinder} interface to include The Type-to-
- * {@link AbstractGameBootMessage} message class mapping for all new messages.
- * <br>
+ * 3. Implement the {@link MessageClassFinder} interface to include <b>The
+ * Type</b>-to- {@link AbstractGameBootMessage} message class mapping for all
+ * new messages. <br>
  * <br>
  * 
  * 4. Create {@link Configuration}s aware of new classes and functionalities as
@@ -155,9 +161,11 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * <br>
  * 8. <a href=
  * "http://docs.spring.io/spring/docs/current/spring-framework-reference/html/websocket.html">
- * Spring Web Sockets</a> ( {@link AbstractGameBootWebSocketHandler})<br>
+ * Spring Web Sockets</a> ({@link AbstractGameBootWebSocketHandler} and
+ * {@link AbstractWebSocketProcessor})<br>
  * 9. <a href="http://netty.io/">Netty</a> (
- * {@link AbstractGameBootNettyMessageHandler})<br>
+ * {@link AbstractGameBootNettyMessageHandler} and
+ * {@link AbstractNettyProcessor})<br>
  * 10. <a href="http://docs.paralleluniverse.co/comsat/">Comsat</a> to assist
  * web application development for high volume messages.<br>
  * 11. <a href="http://docs.paralleluniverse.co/quasar/">Quasar</a> to process
@@ -205,8 +213,8 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * <h2>Error Messages</h2> <br>
  * 
  * The default implementations of the {@link ResponseContextLoader} and
- * {@link ResponseContextLookup} interfaces expect an 'error.properties' file to
- * be available. While intended for error message context any contextual
+ * {@link ResponseContextLookup} interfaces expect an <b>'error.properties'</b>
+ * file to be available. While intended for error message context any contextual
  * messages can be added which complement any of the {@link ResponseCode}s of
  * responses sent to the client. The default implementations facilitate the
  * rapid addition of new response contexts which can be definitively mapped on
@@ -214,28 +222,54 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * is returned to the client in the {@link Response} as appropriate.<br>
  * <br>
  * 
- * <h2>Example Applications</h2> <br>
+ * <h3>Internationalization and Parameters</h3><br>
  * 
- * To assist with the development of the architecture two mini-applications were
- * developed concurrently.<br>
+ * The default implementation of the {@link ResponseContextLoader} and
+ * {@link ResponseContextLookup} use the file <b>'error.properties'</b> as the
+ * fallback for the creation of {@link ResponseContext} objects.
+ * Internationalization is as easy as adding additional error property files
+ * named using the {@link java.util.ResourceBundle} naming - an <b>'error_[lang
+ * code]_[country code].properties'</b> or an <b>'error_[lang
+ * code].properties'</b> file with messages appropriately translated. By default
+ * a {@link Locale} object is associated with a {@link SystemId} generated value
+ * in the {@link LocaleRegistry} and is used to return a localized
+ * {@link ResponseContext}.<br>
  * <br>
  * 
- * 1. The 'usersession' application ({@link UserSessionConfiguration}) processes
- * {@link UserMessage}s to manage a simple
+ * Message descriptions can be parameterized using
+ * {@link java.text.MessageFormat} notation and passing the parameters into the
+ * {@link ResponseContextLookup}. As the '{' and '}' brackets are used by
+ * default for Spring parameter replacement they must be escaped in the file ie.
+ * <b>my.new.message.description=\{0\} is not a \{1\}</b><br>
+ * <br>
+ * 
+ * <h2>Example Applications</h2> <br>
+ * 
+ * To assist with the development of the architecture three mini-applications
+ * were developed concurrently.<br>
+ * <br>
+ * 
+ * 1. The '<b>usersession</b>' application ({@link UserSessionConfiguration})
+ * processes {@link UserMessage}s to manage a simple
  * login/logout/creation/maintenance/game-specific session creation for a
  * client. This mini-app has a backing datastore and uses caching for the
  * retrieval of online user sessions.<br>
  * <br>
  * 
- * 2. The 'otp' application ({@link OtpConfiguration}) is an implementation of
- * the <a href="https://en.wikipedia.org/wiki/One-time_pad">One Time Pad</a>
+ * 2. The '<b>otp</b>' application ({@link OtpConfiguration}) is an
+ * implementation of the
+ * <a href="https://en.wikipedia.org/wiki/One-time_pad">One Time Pad</a>
  * encryption algorithm designed to provide a high level of encryption on clear
  * channels, bypassing the overhead of SSL/TLS for fast message processing
  * without sacrificing security.<br>
  * <br>
  * 
- * These applications are available when the profiles ('usersession' and 'otp')
- * are active.
+ * 3. The '<b>locale</b>' application ({@link LocaleProcessor}) to demonstrate
+ * {@link Locale} switching in memory.<br>
+ * <br>
+ * 
+ * These applications are available when the profiles ('usersession', 'otp' and
+ * 'locale') are active.
  */
 @Configuration
 @EnableAutoConfiguration
