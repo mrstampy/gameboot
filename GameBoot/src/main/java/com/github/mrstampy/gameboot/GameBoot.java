@@ -238,9 +238,8 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * 
  * Message descriptions can be parameterized using
  * {@link java.text.MessageFormat} notation and passing the parameters into the
- * {@link ResponseContextLookup}. As the '{' and '}' brackets are used by
- * default for Spring parameter replacement they must be escaped in the file ie.
- * <b>my.new.message.description=\{0\} is not a \{1\}</b><br>
+ * {@link ResponseContextLookup}. The '{' and '}' brackets must be escaped in
+ * the file ie. <b>my.new.message.description=\{0\} is not a \{1\}</b><br>
  * <br>
  * 
  * The property <b>'game.boot.additional.locales'</b> exists to be able to add
