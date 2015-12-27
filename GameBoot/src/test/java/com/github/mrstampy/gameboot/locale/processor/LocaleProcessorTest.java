@@ -41,89 +41,91 @@
  */
 package com.github.mrstampy.gameboot.locale.processor;
 
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-import static org.apache.commons.lang3.StringUtils.isNotEmpty;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
-import java.lang.invoke.MethodHandles;
-import java.util.Locale;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.github.mrstampy.gameboot.TestConfiguration;
+import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.locale.messages.LocaleMessage;
 import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 
 /**
- * The Class LocaleProcessor.
+ * The Class LocaleProcessorTest.
  */
-@Component
-@Profile(LocaleProcessor.PROFILE)
-public class LocaleProcessor extends AbstractGameBootProcessor<LocaleMessage> {
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-  
-  public static final String PROFILE = "locale";
+@RunWith(SpringJUnit4ClassRunner.class)
+@SpringApplicationConfiguration(TestConfiguration.class)
+@ActiveProfiles(LocaleProcessor.PROFILE)
+public class LocaleProcessorTest {
+
+  @Autowired
+  private LocaleProcessor processor;
 
   @Autowired
   private LocaleRegistry registry;
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.github.mrstampy.gameboot.processor.GameBootProcessor#getType()
+  /**
+   * Test validation.
+   *
+   * @throws Exception
+   *           the exception
    */
-  @Override
-  public String getType() {
-    return LocaleMessage.TYPE;
+  @Test
+  public void testValidation() throws Exception {
+    validationFailExpected(null, "Null message");
+
+    LocaleMessage msg = new LocaleMessage();
+    msg.setSystemId(1l); // set by the system on the way to processing
+
+    validationFailExpected(msg, "No lang or country codes");
+
+    msg.setCountryCode("FR");
+
+    validationFailExpected(msg, "No lang code");
+
+    msg.setLanguageCode("fr");
+
+    processor.validate(msg);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#validate(
-   * com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
+  /**
+   * Test process.
+   *
+   * @throws Exception
+   *           the exception
    */
-  @Override
-  protected void validate(LocaleMessage message) throws Exception {
-    if(message == null) fail(getResponseContext(NO_MESSAGE), "No message");
-    
-    if (isEmpty(message.getLanguageCode())) {
-      fail(getResponseContext(LANG_CODE_MISSING, message.getSystemId()), "Missing lang code");
-    }
+  @Test
+  public void testProcess() throws Exception {
+    assertEquals(0, registry.size());
 
-    if (message.getSystemId() == null) {
-      fail(getResponseContext(NO_SYSTEM_ID, message.getSystemId()), "Missing system id");
-    }
+    LocaleMessage msg = new LocaleMessage();
+    msg.setSystemId(1l);
+    msg.setLanguageCode("fr");
+
+    Response r = processor.process(msg);
+
+    assertNotNull(r);
+    assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+    assertEquals(1, registry.size());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor#
-   * processImpl(com.github.mrstampy.gameboot.messages.AbstractGameBootMessage)
-   */
-  @Override
-  protected Response processImpl(LocaleMessage message) throws Exception {
-    Long systemId = message.getSystemId();
-
-    Locale locale = null;
-    if (isNotEmpty(message.getCountryCode())) {
-      locale = new Locale(message.getLanguageCode(), message.getCountryCode());
-    } else {
-      locale = new Locale(message.getLanguageCode());
+  private void validationFailExpected(LocaleMessage msg, String desc) {
+    try {
+      processor.validate(msg);
+      fail(desc);
+    } catch (GameBootRuntimeException expected) {
+    } catch (Exception unexpected) {
+      unexpected.printStackTrace();
+      fail(unexpected.getMessage());
     }
-
-    log.debug("Changing locale for system id {} to {}", systemId, locale);
-
-    registry.put(systemId, locale);
-
-    return new Response(message, ResponseCode.SUCCESS);
   }
-
 }
