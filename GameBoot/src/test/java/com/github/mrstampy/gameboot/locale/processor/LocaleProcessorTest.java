@@ -109,9 +109,12 @@ public class LocaleProcessorTest {
   public void testProcess() throws Exception {
     assertEquals(0, registry.size());
 
+    Long systemId = new Long(1);
+    String frenchCode = "fr";
+
     LocaleMessage msg = new LocaleMessage();
-    msg.setSystemId(1l);
-    msg.setLanguageCode("fr");
+    msg.setSystemId(systemId);
+    msg.setLanguageCode(frenchCode);
 
     Response r = processor.process(msg);
 
@@ -119,9 +122,9 @@ public class LocaleProcessorTest {
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
     assertEquals(1, registry.size());
 
-    Locale locale = registry.get(1l);
+    Locale locale = registry.get(systemId);
     assertNotNull(locale);
-    assertEquals("fr", locale.getLanguage());
+    assertEquals(frenchCode, locale.getLanguage());
   }
 
   private void validationFailExpected(LocaleMessage msg, String desc) {
