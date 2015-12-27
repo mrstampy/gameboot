@@ -57,8 +57,8 @@ import com.github.mrstampy.gameboot.util.RegistryCleanerListener;
 /**
  * Default implementation of the {@link SystemId} interface, using the
  * {@link SecurityConfiguration#secureRandom()} to generate greater-than-zero
- * system unique ids. GameBoot implementations using persistent storage will want
- * to add their own implementation in their {@link Configuration}.
+ * system unique ids. GameBoot implementations using persistent storage will
+ * want to add their own implementation in their {@link Configuration}.
  */
 public class GameBootSystemId implements SystemId, RegistryCleanerListener {
 
@@ -85,9 +85,11 @@ public class GameBootSystemId implements SystemId, RegistryCleanerListener {
         id = random.nextLong();
       }
 
-      activeIds.add(id);
+      Long l = new Long(id);
 
-      return id;
+      activeIds.add(l);
+
+      return l;
     } finally {
       lock.unlock();
     }
