@@ -307,7 +307,7 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
 
     boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
 
-    Long sysId = keyRequest.getSystemId();
+    Long sysId = keyRequest.getOtpSystemId();
     Long thisSysId = getSystemId(session);
     boolean ok = d && isEncrypting(session) && thisSysId.equals(sysId);
 

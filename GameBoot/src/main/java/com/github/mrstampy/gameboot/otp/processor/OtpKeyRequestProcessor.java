@@ -56,6 +56,7 @@ import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
+import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.netty.OtpClearNettyHandler;
 import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
@@ -117,7 +118,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
    */
   @Override
   protected void validate(OtpKeyRequest message) throws Exception {
-    Long id = message.getSystemId();
+    Long id = message.getOtpSystemId();
     if (message.getKeyFunction() == null) {
       fail(getResponseContext(INVALID_KEY_FUNCTION, id), "keyFunction one of NEW, DELETE");
     }
@@ -158,14 +159,14 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
     case NEW:
       return newKey(message);
     default:
-      return failure(getResponseContext(UNEXPECTED_ERROR, message.getSystemId()),
+      return failure(getResponseContext(UNEXPECTED_ERROR, message.getOtpSystemId()),
           message,
           "Implementation error: " + message.getKeyFunction());
     }
   }
 
-  private Response deleteKey(OtpKeyRequest message) throws Exception {
-    Long systemId = message.getSystemId();
+  private Response deleteKey(OtpMessage message) throws Exception {
+    Long systemId = message.getOtpSystemId();
     log.debug("Deleting key for {}", systemId);
 
     registry.remove(systemId);
@@ -175,7 +176,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
 
   private Response newKey(OtpKeyRequest message) throws Exception {
     Integer size = message.getKeySize() == null ? defaultKeySize : message.getKeySize();
-    Long systemId = message.getSystemId();
+    Long systemId = message.getOtpSystemId();
 
     log.debug("Creating new OTP key of size {} for {}", size, systemId);
 

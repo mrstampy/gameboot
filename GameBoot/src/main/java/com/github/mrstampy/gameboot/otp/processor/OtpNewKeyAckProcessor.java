@@ -101,7 +101,7 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
    */
   @Override
   protected void validate(OtpNewKeyAck message) throws Exception {
-    Long systemId = message.getSystemId();
+    Long systemId = message.getOtpSystemId();
     if (systemId == null) fail(getResponseContext(NO_SYSTEM_ID), "No systemId");
 
     if (!systemId.equals(message.getProcessorKey())) {
@@ -117,7 +117,7 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
    */
   @Override
   protected Response processImpl(OtpNewKeyAck message) throws Exception {
-    Long systemId = message.getSystemId();
+    Long systemId = message.getOtpSystemId();
 
     byte[] newKey = newKeyRegistry.remove(systemId);
 

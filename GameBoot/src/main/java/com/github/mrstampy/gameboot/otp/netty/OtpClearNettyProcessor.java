@@ -384,7 +384,7 @@ public class OtpClearNettyProcessor extends AbstractNettyProcessor {
   private boolean isDeleteRequest(ChannelHandlerContext ctx, OtpKeyRequest keyRequest) {
     boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
 
-    Long sysId = keyRequest.getSystemId();
+    Long sysId = keyRequest.getOtpSystemId();
     boolean ok = d && isEncrypting() && getSystemId().equals(sysId);
 
     if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, ctx.channel(), getSystemId());

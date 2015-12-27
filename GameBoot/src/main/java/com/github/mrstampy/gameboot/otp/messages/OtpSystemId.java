@@ -41,66 +41,45 @@
  */
 package com.github.mrstampy.gameboot.otp.messages;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
-import com.github.mrstampy.gameboot.otp.processor.OtpKeyRequestProcessor;
-
 /**
- * The Class OtpMessage.
+ * The Class OtpSystemId.
  */
-public abstract class OtpMessage extends AbstractGameBootMessage {
+public class OtpSystemId {
 
-  private Long processorKey;
-  private Long otpSystemId;
+  private Long systemId;
 
   /**
-   * Instantiates a new otp message.
-   *
-   * @param type
-   *          the type
+   * Instantiates a new otp system id.
    */
-  protected OtpMessage(String type) {
-    super(type);
+  public OtpSystemId() {
   }
 
   /**
-   * Gets the processor key.
-   *
-   * @return the processor key
-   */
-  @JsonIgnore
-  public Long getProcessorKey() {
-    return processorKey;
-  }
-
-  /**
-   * Sets the processor key by the system prior to submission to the
-   * {@link OtpKeyRequestProcessor}. Will fail if not set correctly.
-   *
-   * @param processorKey
-   *          the new processor key
-   */
-  public void setProcessorKey(Long processorKey) {
-    this.processorKey = processorKey;
-  }
-
-  /**
-   * Gets the otp system id.
-   *
-   * @return the otp system id
-   */
-  public Long getOtpSystemId() {
-    return otpSystemId;
-  }
-
-  /**
-   * Sets the otp system id.
+   * Instantiates a new otp system id.
    *
    * @param systemId
-   *          the new otp system id
+   *          the system id
    */
-  public void setOtpSystemId(Long systemId) {
-    this.otpSystemId = systemId;
+  public OtpSystemId(Long systemId) {
+    setSystemId(systemId);
   }
 
+  /**
+   * Gets the system id.
+   *
+   * @return the system id
+   */
+  public Long getSystemId() {
+    return systemId;
+  }
+
+  /**
+   * Sets the system id.
+   *
+   * @param systemId
+   *          the new system id
+   */
+  public void setSystemId(Long systemId) {
+    this.systemId = systemId;
+  }
 }

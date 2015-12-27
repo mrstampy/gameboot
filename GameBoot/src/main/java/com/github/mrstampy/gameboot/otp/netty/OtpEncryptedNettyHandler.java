@@ -200,7 +200,7 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
     sendResponse(ctx, message, r);
   }
 
-  private void sendResponse(ChannelHandlerContext ctx, OtpKeyRequest message, Response r)
+  private void sendResponse(ChannelHandlerContext ctx, OtpMessage message, Response r)
       throws JsonProcessingException, GameBootException {
     ChannelFuture cf = ctx.writeAndFlush(converter.toJsonArray(r));
 
@@ -219,7 +219,7 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
       return null;
     }
 
-    Long systemId = message.getSystemId();
+    Long systemId = message.getOtpSystemId();
     if (systemId == null) {
       log.error("System id missing from {}, disconnecting {}", message, ctx.channel());
       ctx.close();

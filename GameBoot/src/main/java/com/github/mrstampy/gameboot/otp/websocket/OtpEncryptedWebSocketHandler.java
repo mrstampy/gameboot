@@ -228,7 +228,7 @@ public class OtpEncryptedWebSocketHandler extends BinaryWebSocketHandler {
       return false;
     }
 
-    Long systemId = message.getSystemId();
+    Long systemId = message.getOtpSystemId();
     if (systemId == null) {
       log.error("System id missing from {}, disconnecting {}", message, session);
 

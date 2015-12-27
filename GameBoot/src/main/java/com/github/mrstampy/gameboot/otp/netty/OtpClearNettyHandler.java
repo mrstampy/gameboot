@@ -56,6 +56,7 @@ import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.otp.messages.OtpSystemId;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -142,10 +143,11 @@ public class OtpClearNettyHandler
   public void channelActive(ChannelHandlerContext ctx) throws Exception {
     super.channelActive(ctx);
 
-    Response r = new Response(ResponseCode.INFO);
-    r.setSystemId(getSystemId());
+    OtpClearNettyProcessor cp = getConnectionProcessor();
 
-    getConnectionProcessor().sendMessage(ctx, converter.toJsonArray(r), r);
+    Response r = new Response(ResponseCode.INFO, new OtpSystemId(cp.getSystemId()));
+
+    cp.sendMessage(ctx, converter.toJsonArray(r), r);
   }
 
   /**

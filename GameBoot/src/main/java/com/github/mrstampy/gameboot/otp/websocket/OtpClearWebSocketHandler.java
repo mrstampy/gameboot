@@ -64,6 +64,7 @@ import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
+import com.github.mrstampy.gameboot.otp.messages.OtpSystemId;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
@@ -149,8 +150,7 @@ public class OtpClearWebSocketHandler
 
     OtpClearWebSocketProcessor webSocketProcessor = getConnectionProcessor();
 
-    Response r = new Response(ResponseCode.INFO);
-    r.setSystemId(webSocketProcessor.getSystemId(session));
+    Response r = new Response(ResponseCode.INFO, new OtpSystemId(webSocketProcessor.getSystemId(session)));
 
     webSocketProcessor.sendMessage(session, converter.toJsonArray(r));
   }

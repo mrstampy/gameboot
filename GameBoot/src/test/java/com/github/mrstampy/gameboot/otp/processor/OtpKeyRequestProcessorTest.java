@@ -96,7 +96,7 @@ public class OtpKeyRequestProcessorTest {
     OtpKeyRequest r = new OtpKeyRequest();
     failExpected(r, "mt message");
 
-    r.setSystemId(CLEAR_CHANNEL_ID);
+    r.setOtpSystemId(CLEAR_CHANNEL_ID);
     r.setKeyFunction(KeyFunction.NEW);
 
     r.setKeySize(-32);

@@ -96,7 +96,7 @@ public class OtpNewKeyAckProcessorTest {
   @Before
   public void before() throws Exception {
     OtpKeyRequest req = new OtpKeyRequest();
-    req.setSystemId(CLEAR_CHANNEL_ID);
+    req.setOtpSystemId(CLEAR_CHANNEL_ID);
     req.setKeySize(KEY_SIZE);
     req.setKeyFunction(KeyFunction.NEW);
 
@@ -125,17 +125,17 @@ public class OtpNewKeyAckProcessorTest {
     OtpNewKeyAck m = new OtpNewKeyAck();
     failExpected(m, "No system id");
 
-    m.setSystemId(4321l);
+    m.setOtpSystemId(4321l);
     failExpected(m, "No key to activate");
 
-    m.setSystemId(CLEAR_CHANNEL_ID);
+    m.setOtpSystemId(CLEAR_CHANNEL_ID);
 
     assertEquals(1, newKeyRegistry.size());
     assertEquals(0, keyRegistry.size());
 
     failExpected(m, "no processor id");
 
-    m.setProcessorKey(m.getSystemId());
+    m.setProcessorKey(m.getOtpSystemId());
     Response r = processor.process(m);
 
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
@@ -147,13 +147,13 @@ public class OtpNewKeyAckProcessorTest {
 
   private void testDelete() throws Exception {
     OtpKeyRequest req = new OtpKeyRequest();
-    req.setSystemId(CLEAR_CHANNEL_ID);
+    req.setOtpSystemId(CLEAR_CHANNEL_ID);
     req.setKeySize(KEY_SIZE);
     req.setKeyFunction(KeyFunction.DELETE);
 
     failExpected((OtpKeyRequest) null, "Null message");
     failExpected(req, "systemId vs processor id");
-    req.setProcessorKey(req.getSystemId());
+    req.setProcessorKey(req.getOtpSystemId());
 
     Response r = requestProcessor.process(req);
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());

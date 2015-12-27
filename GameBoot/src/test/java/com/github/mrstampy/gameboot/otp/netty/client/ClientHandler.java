@@ -43,7 +43,10 @@ package com.github.mrstampy.gameboot.otp.netty.client;
 
 import java.io.IOException;
 import java.lang.invoke.MethodHandles;
+import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+
+import javax.resource.spi.IllegalStateException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -170,9 +173,17 @@ public class ClientHandler extends ChannelDuplexHandler {
     if (!ok(r.getResponseCode())) return;
 
     if (ResponseCode.INFO == r.getResponseCode()) {
-      log.info("Setting system id {}", r.getSystemId());
+      Object[] payload = r.getResponse();
+      if (payload == null || payload.length == 0 || !(payload[0] instanceof Map<?, ?>)) {
+        throw new IllegalStateException("Expecting map of systemId:[value]");
+      }
+
+      String s = ((Map<?, ?>) payload[0]).get("systemId").toString();
+
+      systemId = new Long(s);
+
+      log.info("Setting system id {}", systemId);
       clearChannel = ctx.channel();
-      systemId = r.getSystemId();
       return;
     }
 

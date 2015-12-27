@@ -145,6 +145,7 @@ public abstract class AbstractGameBootMessage {
    *
    * @return the system session id
    */
+  @JsonIgnore
   public Long getSystemId() {
     return systemId;
   }
