@@ -45,6 +45,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.util.Locale;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -116,6 +118,10 @@ public class LocaleProcessorTest {
     assertNotNull(r);
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
     assertEquals(1, registry.size());
+
+    Locale locale = registry.get(1l);
+    assertNotNull(locale);
+    assertEquals("fr", locale.getLanguage());
   }
 
   private void validationFailExpected(LocaleMessage msg, String desc) {

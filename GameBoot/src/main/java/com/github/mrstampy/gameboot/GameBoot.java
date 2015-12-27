@@ -243,6 +243,10 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * <b>my.new.message.description=\{0\} is not a \{1\}</b><br>
  * <br>
  * 
+ * The property <b>'game.boot.additional.locales'</b> exists to be able to add
+ * locales not included with Java.<br>
+ * <br>
+ * 
  * <h2>Example Applications</h2> <br>
  * 
  * To assist with the development of the architecture three mini-applications
