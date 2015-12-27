@@ -41,34 +41,24 @@
  */
 package com.github.mrstampy.gameboot.util;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
- * The Class RegistryCleaner.
+ * A NOOP {@link RegistryCleanerListener} to prevent the server from crashing on
+ * startup if no other listeners exist.
  */
 @Component
-public class RegistryCleaner {
+public class NullRegistryCleanerListener implements RegistryCleanerListener {
 
-  @Autowired
-  private List<GameBootRegistry<?>> registries;
-
-  @Autowired
-  private List<RegistryCleanerListener> listeners;
-
-  /**
-   * Ensures all registries are cleaned of any values specified by the key.
-   *
-   * @param key
-   *          the key
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.util.RegistryCleanerListener#cleanup(java.lang
+   * .Comparable)
    */
+  @Override
   public void cleanup(Comparable<?> key) {
-    if (key == null) return;
-
-    registries.forEach(r -> r.remove(key));
-
-    listeners.forEach(rcl -> rcl.cleanup(key));
   }
+
 }

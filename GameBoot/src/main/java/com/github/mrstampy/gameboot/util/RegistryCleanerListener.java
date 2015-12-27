@@ -41,34 +41,17 @@
  */
 package com.github.mrstampy.gameboot.util;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
 /**
- * The Class RegistryCleaner.
+ * This interface is implemented by any classes wishing to receive notification
+ * of {@link RegistryCleaner} cleanups.
  */
-@Component
-public class RegistryCleaner {
-
-  @Autowired
-  private List<GameBootRegistry<?>> registries;
-
-  @Autowired
-  private List<RegistryCleanerListener> listeners;
+public interface RegistryCleanerListener {
 
   /**
-   * Ensures all registries are cleaned of any values specified by the key.
+   * Cleanup.
    *
    * @param key
    *          the key
    */
-  public void cleanup(Comparable<?> key) {
-    if (key == null) return;
-
-    registries.forEach(r -> r.remove(key));
-
-    listeners.forEach(rcl -> rcl.cleanup(key));
-  }
+  void cleanup(Comparable<?> key);
 }
