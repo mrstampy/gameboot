@@ -103,11 +103,11 @@ public class OtpNewKeyAckProcessorTest {
     Response rep = requestProcessor.process(req);
 
     assertEquals(ResponseCode.SUCCESS, rep.getResponseCode());
-    assertNotNull(rep.getResponse());
-    assertEquals(1, rep.getResponse().length);
-    assertTrue(rep.getResponse()[0] instanceof byte[]);
+    assertNotNull(rep.getPayload());
+    assertEquals(1, rep.getPayload().length);
+    assertTrue(rep.getPayload()[0] instanceof byte[]);
 
-    byte[] b = (byte[]) rep.getResponse()[0];
+    byte[] b = (byte[]) rep.getPayload()[0];
 
     assertEquals(KEY_SIZE.intValue(), b.length);
   }

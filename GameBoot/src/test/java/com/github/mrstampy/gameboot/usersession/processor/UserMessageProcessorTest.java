@@ -173,11 +173,11 @@ public class UserMessageProcessorTest {
 
     assertEquals(m.getId(), r.getId());
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
-    assertNotNull(r.getResponse());
-    assertEquals(1, r.getResponse().length);
-    assertTrue(r.getResponse()[0] instanceof User);
+    assertNotNull(r.getPayload());
+    assertEquals(1, r.getPayload().length);
+    assertTrue(r.getPayload()[0] instanceof User);
 
-    User user = (User) r.getResponse()[0];
+    User user = (User) r.getPayload()[0];
     userId = user.getId();
   }
 
@@ -230,12 +230,12 @@ public class UserMessageProcessorTest {
     assertEquals(m.getId(), r.getId());
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
 
-    assertNotNull(r.getResponse());
-    assertEquals(1, r.getResponse().length);
+    assertNotNull(r.getPayload());
+    assertEquals(1, r.getPayload().length);
 
-    assertTrue(r.getResponse()[0] instanceof UserSession);
+    assertTrue(r.getPayload()[0] instanceof UserSession);
 
-    UserSession session = (UserSession) r.getResponse()[0];
+    UserSession session = (UserSession) r.getPayload()[0];
     sessionId = session.getId();
 
     assertEquals(2, r.getMappingKeys().length);
@@ -269,10 +269,10 @@ public class UserMessageProcessorTest {
     assertEquals(m.getId(), r.getId());
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
 
-    assertNotNull(r.getResponse());
-    assertEquals(1, r.getResponse().length);
+    assertNotNull(r.getPayload());
+    assertEquals(1, r.getPayload().length);
 
-    assertTrue(r.getResponse()[0] instanceof User);
+    assertTrue(r.getPayload()[0] instanceof User);
   }
 
   /**
@@ -295,12 +295,12 @@ public class UserMessageProcessorTest {
     assertEquals(m.getId(), r.getId());
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
 
-    assertNotNull(r.getResponse());
-    assertEquals(1, r.getResponse().length);
+    assertNotNull(r.getPayload());
+    assertEquals(1, r.getPayload().length);
 
-    assertTrue(r.getResponse()[0] instanceof User);
+    assertTrue(r.getPayload()[0] instanceof User);
 
-    User user = (User) r.getResponse()[0];
+    User user = (User) r.getPayload()[0];
     assertEquals(UserState.DELETED, user.getState());
   }
 
@@ -506,12 +506,12 @@ public class UserMessageProcessorTest {
   private User updateCheck(Response r) {
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
 
-    assertNotNull(r.getResponse());
-    assertEquals(1, r.getResponse().length);
+    assertNotNull(r.getPayload());
+    assertEquals(1, r.getPayload().length);
 
-    assertTrue(r.getResponse()[0] instanceof User);
+    assertTrue(r.getPayload()[0] instanceof User);
 
-    return (User) r.getResponse()[0];
+    return (User) r.getPayload()[0];
   }
 
   private void metrics() throws Exception {

@@ -83,7 +83,7 @@ import io.netty.channel.ChannelPromise;
  * 
  * If the key generation is successful a {@link Response} object is returned in
  * the encrypted channel containing the new OTP key as the only element of the
- * {@link Response#getResponse()} array. When sending is complete the encrypted
+ * {@link Response#getPayload()} array. When sending is complete the encrypted
  * channel is disconnected. The client then sends a message of type
  * {@link OtpNewKeyAck} encrypted using the new key in the clear channel. When
  * received the GameBoot server activates the new key for all traffic on the

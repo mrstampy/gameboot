@@ -81,7 +81,7 @@ public class Response extends AbstractGameBootMessage {
 
   private ResponseContext context;
 
-  private Object[] response;
+  private Object[] payload;
 
   private Comparable<?>[] mappingKeys;
 
@@ -99,11 +99,11 @@ public class Response extends AbstractGameBootMessage {
    *          the message
    * @param responseCode
    *          the response code
-   * @param response
-   *          the response
+   * @param payload
+   *          the payload
    */
-  public Response(AbstractGameBootMessage message, ResponseCode responseCode, Object... response) {
-    this(responseCode, response);
+  public Response(AbstractGameBootMessage message, ResponseCode responseCode, Object... payload) {
+    this(responseCode, payload);
     if (message != null) {
       setType(message.getType());
       setId(message.getId());
@@ -115,13 +115,13 @@ public class Response extends AbstractGameBootMessage {
    *
    * @param responseCode
    *          the response code
-   * @param response
-   *          the response
+   * @param payload
+   *          the payload
    */
-  public Response(ResponseCode responseCode, Object... response) {
+  public Response(ResponseCode responseCode, Object... payload) {
     this();
     setResponseCode(responseCode);
-    setResponse(response);
+    setPayload(payload);
   }
 
   /**
@@ -133,12 +133,12 @@ public class Response extends AbstractGameBootMessage {
    *          the response code
    * @param error
    *          the error
-   * @param response
-   *          the response
+   * @param payload
+   *          the payload
    */
   public Response(AbstractGameBootMessage message, ResponseCode responseCode, ResponseContext error,
-      Object... response) {
-    this(message, responseCode, response);
+      Object... payload) {
+    this(message, responseCode, payload);
     setContext(error);
   }
 
@@ -149,11 +149,11 @@ public class Response extends AbstractGameBootMessage {
    *          the response code
    * @param error
    *          the error
-   * @param response
-   *          the response
+   * @param payload
+   *          the payload
    */
-  public Response(ResponseCode responseCode, ResponseContext error, Object... response) {
-    this(responseCode, response);
+  public Response(ResponseCode responseCode, ResponseContext error, Object... payload) {
+    this(responseCode, payload);
     setContext(error);
   }
 
@@ -177,23 +177,23 @@ public class Response extends AbstractGameBootMessage {
   }
 
   /**
-   * Gets the response.
+   * Gets the payload.
    *
-   * @return the response
+   * @return the payload
    */
-  public Object[] getResponse() {
-    return response;
+  public Object[] getPayload() {
+    return payload;
   }
 
   /**
-   * Sets the response.
+   * Sets the payload.
    *
-   * @param response
-   *          the new response
+   * @param payload
+   *          the new payload
    */
-  public void setResponse(Object... response) {
-    if (response != null && response.length == 0) response = null;
-    this.response = response;
+  public void setPayload(Object... payload) {
+    if (payload != null && payload.length == 0) payload = null;
+    this.payload = payload;
   }
 
   /**

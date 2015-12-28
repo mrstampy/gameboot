@@ -83,7 +83,7 @@ import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
  * <br>
  * 
  * If the key generation is successful a {@link Response} object is returned
- * containing the key as the only element of the {@link Response#getResponse()}
+ * containing the key as the only element of the {@link Response#getPayload()}
  * array. The client then sends a message of type {@link OtpNewKeyAck}. When
  * received the GameBoot server activates the new key for all traffic on the
  * {@link OtpClearWebSocketHandler} channel and disconnects this connection.<br>

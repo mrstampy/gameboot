@@ -173,7 +173,7 @@ public class ClientHandler extends ChannelDuplexHandler {
     if (!ok(r.getResponseCode())) return;
 
     if (ResponseCode.INFO == r.getResponseCode()) {
-      Object[] payload = r.getResponse();
+      Object[] payload = r.getPayload();
       if (payload == null || payload.length == 0 || !(payload[0] instanceof Map<?, ?>)) {
         throw new IllegalStateException("Expecting map of systemId:[value]");
       }

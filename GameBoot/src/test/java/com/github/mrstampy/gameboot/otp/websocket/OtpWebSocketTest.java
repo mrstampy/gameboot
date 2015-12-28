@@ -173,8 +173,8 @@ public class OtpWebSocketTest {
 
     assertEquals(m.getId(), r.getId());
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
-    assertNotNull(r.getResponse());
-    assertEquals(1, r.getResponse().length);
+    assertNotNull(r.getPayload());
+    assertEquals(1, r.getPayload().length);
   }
 
   /**

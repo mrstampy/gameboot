@@ -179,8 +179,8 @@ public class OtpNettyTest {
 
     assertEquals(m.getId(), r.getId());
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
-    assertNotNull(r.getResponse());
-    assertEquals(1, r.getResponse().length);
+    assertNotNull(r.getPayload());
+    assertEquals(1, r.getPayload().length);
   }
 
   /**
@@ -198,7 +198,7 @@ public class OtpNettyTest {
     assertNotNull(r);
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
 
-    Object[] payload = r.getResponse();
+    Object[] payload = r.getPayload();
     assertNotNull(payload);
     assertEquals(1, payload.length);
     assertTrue(payload[0] instanceof Map<?, ?>);

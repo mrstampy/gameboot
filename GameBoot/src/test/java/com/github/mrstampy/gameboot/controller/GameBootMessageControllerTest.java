@@ -119,7 +119,7 @@ public class GameBootMessageControllerTest {
     assertNotNull(s);
 
     Response r = mapper.readValue(s, Response.class);
-    Object[] response = r.getResponse();
+    Object[] response = r.getPayload();
 
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
     assertNotNull(response);
