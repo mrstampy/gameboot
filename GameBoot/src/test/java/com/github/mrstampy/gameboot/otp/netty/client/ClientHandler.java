@@ -186,7 +186,7 @@ public class ClientHandler extends ChannelDuplexHandler {
     }
 
     JsonNode node = mapper.readTree(msg);
-    JsonNode response = node.get("response");
+    JsonNode response = node.get("payload");
 
     boolean hasKey = response != null && response.isArray() && response.size() == 1;
 
@@ -211,6 +211,7 @@ public class ClientHandler extends ChannelDuplexHandler {
   }
 
   private boolean ok(ResponseCode responseCode) {
+    if (responseCode == null) return false;
     switch (responseCode) {
     case SUCCESS:
     case INFO:
