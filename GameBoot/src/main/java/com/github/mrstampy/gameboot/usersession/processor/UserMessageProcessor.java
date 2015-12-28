@@ -316,11 +316,26 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
 
     log.info("Updated user {}? {}", user, changed);
 
+    localeCheck(user, message);
+
     //@formatter:off
     return changed ? 
         success(message, user) : 
         failure(getResponseContext(USER_UNCHANGED, message.getSystemId()), message, user);
     //@formatter:on
+  }
+
+  private void localeCheck(User user, UserMessage message) {
+    if (isEmpty(message.getCountryCode()) && isEmpty(message.getLanguageCode())) return;
+
+    Locale locale = null;
+    if (isEmpty(user.getCountryCode())) {
+      locale = new Locale(user.getLanguageCode());
+    } else {
+      locale = new Locale(user.getLanguageCode(), user.getCountryCode());
+    }
+
+    localeRegistry.put(message.getSystemId(), locale);
   }
 
   /**
