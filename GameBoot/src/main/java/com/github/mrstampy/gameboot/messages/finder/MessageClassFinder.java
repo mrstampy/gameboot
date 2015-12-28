@@ -39,8 +39,10 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.controller;
+package com.github.mrstampy.gameboot.messages.finder;
 
+import com.github.mrstampy.gameboot.controller.GameBootControllerConfiguration;
+import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 
 /**

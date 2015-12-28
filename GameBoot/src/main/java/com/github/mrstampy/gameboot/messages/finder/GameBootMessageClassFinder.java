@@ -39,13 +39,14 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.controller;
+package com.github.mrstampy.gameboot.messages.finder;
 
 import java.lang.invoke.MethodHandles;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.mrstampy.gameboot.controller.GameBootControllerConfiguration;
 import com.github.mrstampy.gameboot.locale.messages.LocaleMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
