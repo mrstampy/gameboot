@@ -91,6 +91,10 @@ import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
 @SpringApplicationConfiguration(TestConfiguration.class)
 @ActiveProfiles(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserMessageProcessorTest {
+  private static final String LANGUAGE_CODE = "fr";
+
+  private static final String COUNTRY_CODE = "FR";
+
   private static final UserState NEW_STATE = UserState.INACTIVE;
 
   private static final String NEW_LAST = "last";
@@ -337,6 +341,8 @@ public class UserMessageProcessorTest {
     assertNotEquals(NEW_FIRST, user.getFirstName());
     assertNotEquals(NEW_LAST, user.getLastName());
     assertNotEquals(NEW_STATE, user.getState());
+    assertNotEquals(LANGUAGE_CODE, user.getLanguageCode());
+    assertNotEquals(COUNTRY_CODE, user.getCountryCode());
 
     user = firstNameTest(user, m);
     assertEquals(NEW_EMAIL, user.getEmail());
@@ -344,6 +350,8 @@ public class UserMessageProcessorTest {
     assertEquals(NEW_FIRST, user.getFirstName());
     assertNotEquals(NEW_LAST, user.getLastName());
     assertNotEquals(NEW_STATE, user.getState());
+    assertNotEquals(LANGUAGE_CODE, user.getLanguageCode());
+    assertNotEquals(COUNTRY_CODE, user.getCountryCode());
 
     user = lastNameTest(user, m);
     assertEquals(NEW_EMAIL, user.getEmail());
@@ -351,6 +359,8 @@ public class UserMessageProcessorTest {
     assertEquals(NEW_FIRST, user.getFirstName());
     assertEquals(NEW_LAST, user.getLastName());
     assertNotEquals(NEW_STATE, user.getState());
+    assertNotEquals(LANGUAGE_CODE, user.getLanguageCode());
+    assertNotEquals(COUNTRY_CODE, user.getCountryCode());
 
     user = userStateTest(user, m);
     assertEquals(NEW_EMAIL, user.getEmail());
@@ -358,6 +368,26 @@ public class UserMessageProcessorTest {
     assertEquals(NEW_FIRST, user.getFirstName());
     assertEquals(NEW_LAST, user.getLastName());
     assertEquals(NEW_STATE, user.getState());
+    assertNotEquals(LANGUAGE_CODE, user.getLanguageCode());
+    assertNotEquals(COUNTRY_CODE, user.getCountryCode());
+
+    user = languageCodeTest(user, m);
+    assertEquals(NEW_EMAIL, user.getEmail());
+    assertEquals(NEW_DOB, user.getDob());
+    assertEquals(NEW_FIRST, user.getFirstName());
+    assertEquals(NEW_LAST, user.getLastName());
+    assertEquals(NEW_STATE, user.getState());
+    assertEquals(LANGUAGE_CODE, user.getLanguageCode());
+    assertNotEquals(COUNTRY_CODE, user.getCountryCode());
+
+    user = countryCodeTest(user, m);
+    assertEquals(NEW_EMAIL, user.getEmail());
+    assertEquals(NEW_DOB, user.getDob());
+    assertEquals(NEW_FIRST, user.getFirstName());
+    assertEquals(NEW_LAST, user.getLastName());
+    assertEquals(NEW_STATE, user.getState());
+    assertEquals(LANGUAGE_CODE, user.getLanguageCode());
+    assertEquals(COUNTRY_CODE, user.getCountryCode());
 
     passwordTest(user, m);
   }
@@ -407,6 +437,26 @@ public class UserMessageProcessorTest {
     user = updateCheck(processor.process(m));
     assertEquals(firstName, user.getFirstName());
     m.setFirstName(null);
+    return user;
+  }
+
+  private User languageCodeTest(User user, UserMessage m) throws Exception {
+    assertNotEquals(LANGUAGE_CODE, user.getLanguageCode());
+    m.setLanguageCode(LANGUAGE_CODE);
+
+    user = updateCheck(processor.process(m));
+    assertEquals(LANGUAGE_CODE, user.getLanguageCode());
+    m.setLanguageCode(null);
+    return user;
+  }
+
+  private User countryCodeTest(User user, UserMessage m) throws Exception {
+    assertNotEquals(COUNTRY_CODE, user.getCountryCode());
+    m.setCountryCode(COUNTRY_CODE);
+
+    user = updateCheck(processor.process(m));
+    assertEquals(COUNTRY_CODE, user.getCountryCode());
+    m.setCountryCode(null);
     return user;
   }
 

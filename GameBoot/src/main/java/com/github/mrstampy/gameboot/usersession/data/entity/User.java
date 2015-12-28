@@ -97,6 +97,12 @@ public class User extends AbstractGameBootEntity {
   @OneToMany(fetch = FetchType.LAZY)
   private List<User> blocked;
 
+  @Column(length = 2)
+  private String countryCode;
+
+  @Column(length = 2)
+  private String languageCode;
+
   /**
    * The Enum UserState.
    */
@@ -305,5 +311,21 @@ public class User extends AbstractGameBootEntity {
    */
   public void setBlocked(List<User> blocked) {
     this.blocked = blocked;
+  }
+
+  public String getCountryCode() {
+    return countryCode;
+  }
+
+  public void setCountryCode(String countryCode) {
+    this.countryCode = countryCode;
+  }
+
+  public String getLanguageCode() {
+    return languageCode;
+  }
+
+  public void setLanguageCode(String languageCode) {
+    this.languageCode = languageCode;
   }
 }

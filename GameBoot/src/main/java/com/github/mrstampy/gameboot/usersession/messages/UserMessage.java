@@ -71,6 +71,10 @@ public class UserMessage extends AbstractGameBootMessage {
 
   private String email;
 
+  private String languageCode;
+
+  private String countryCode;
+
   private UserState state;
 
   @JsonFormat(shape = Shape.STRING, pattern = "yyyy/MM/dd")
@@ -296,5 +300,43 @@ public class UserMessage extends AbstractGameBootMessage {
    */
   public void setState(UserState state) {
     this.state = state;
+  }
+
+  /**
+   * Gets the locale language code.
+   *
+   * @return the locale language code
+   */
+  public String getLanguageCode() {
+    return languageCode;
+  }
+
+  /**
+   * Sets the locale language code.
+   *
+   * @param localeLanguageCode
+   *          the new locale language code
+   */
+  public void setLanguageCode(String localeLanguageCode) {
+    this.languageCode = localeLanguageCode;
+  }
+
+  /**
+   * Gets the locale country code.
+   *
+   * @return the locale country code
+   */
+  public String getCountryCode() {
+    return countryCode;
+  }
+
+  /**
+   * Sets the locale country code.
+   *
+   * @param localeCountryCode
+   *          the new locale country code
+   */
+  public void setCountryCode(String localeCountryCode) {
+    this.countryCode = localeCountryCode;
   }
 }

@@ -46,6 +46,7 @@ import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Optional;
 
 import javax.annotation.PostConstruct;
@@ -57,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 
 import com.codahale.metrics.Timer.Context;
+import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.AbstractTransactionalGameBootProcessor;
@@ -99,6 +101,9 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
 
   @Autowired
   private UserSessionLookup lookup;
+
+  @Autowired
+  private LocaleRegistry localeRegistry;
 
   /**
    * Post construct.
@@ -210,6 +215,8 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
         isEmpty(message.getEmail()) && 
         isEmpty(message.getFirstName()) && 
         isEmpty(message.getLastName()) && 
+        isEmpty(message.getLanguageCode()) &&
+        isEmpty(message.getCountryCode()) &&
         message.getState() == null && 
         message.getDob() == null;
     //@formatter:on
@@ -251,11 +258,26 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
 
     log.info("Login for {} is {}", userName, ok);
 
+    setLocale(message);
+
     //@formatter:off
     return ok ? 
         createSession(message, user) : 
         failure(getResponseContext(INVALID_PASSWORD, id), message, "Password is invalid");
     //@formatter:on
+  }
+
+  private void setLocale(UserMessage message) {
+    if (isEmpty(message.getCountryCode()) && isEmpty(message.getLanguageCode())) return;
+
+    Locale locale = null;
+    if (isEmpty(message.getCountryCode())) {
+      locale = new Locale(message.getLanguageCode());
+    } else {
+      locale = new Locale(message.getLanguageCode(), message.getCountryCode());
+    }
+
+    localeRegistry.put(message.getSystemId(), locale);
   }
 
   /**
@@ -407,6 +429,25 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
       user.setState(state);
     }
 
+    String languageCode = message.getLanguageCode();
+    if (changed(languageCode, user.getLanguageCode())) {
+      log.trace("Changing language code from {} to {} for {}",
+          user.getLanguageCode(),
+          languageCode,
+          user.getUserName());
+
+      changed = true;
+      user.setLanguageCode(languageCode);
+    }
+
+    String countryCode = message.getCountryCode();
+    if (changed(countryCode, user.getCountryCode())) {
+      log.trace("Changing country code from {} to {} for {}", user.getCountryCode(), countryCode, user.getUserName());
+
+      changed = true;
+      user.setCountryCode(countryCode);
+    }
+
     return changed;
   }
 
@@ -430,6 +471,8 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     user.setLastName(message.getLastName());
     user.setUserName(message.getUserName());
     user.setState(UserState.ACTIVE);
+    user.setLanguageCode(message.getLanguageCode());
+    user.setCountryCode(message.getCountryCode());
 
     setPasswordHash(message, user);
 
