@@ -443,6 +443,7 @@ public class UserMessageProcessorTest {
   private User languageCodeTest(User user, UserMessage m) throws Exception {
     assertNotEquals(LANGUAGE_CODE, user.getLanguageCode());
     m.setLanguageCode(LANGUAGE_CODE);
+    m.setSystemId(1l); // set by the system
 
     user = updateCheck(processor.process(m));
     assertEquals(LANGUAGE_CODE, user.getLanguageCode());
@@ -453,6 +454,7 @@ public class UserMessageProcessorTest {
   private User countryCodeTest(User user, UserMessage m) throws Exception {
     assertNotEquals(COUNTRY_CODE, user.getCountryCode());
     m.setCountryCode(COUNTRY_CODE);
+    m.setSystemId(1l); // set by the system
 
     user = updateCheck(processor.process(m));
     assertEquals(COUNTRY_CODE, user.getCountryCode());
