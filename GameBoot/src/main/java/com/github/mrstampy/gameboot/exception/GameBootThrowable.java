@@ -41,7 +41,9 @@
  */
 package com.github.mrstampy.gameboot.exception;
 
+import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.context.ResponseContext;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 
 /**
  * The Interface GameBootThrowable.
@@ -56,7 +58,10 @@ public interface GameBootThrowable {
   boolean hasPayload();
 
   /**
-   * Gets the payload.
+   * Gets the payload. If {@link #getError()} is not null the payload is added
+   * to the {@link Response#getPayload()}. If {@link #getErrorCode()} is not
+   * null it is considered to be parameters for the
+   * {@link ResponseContextLookup} of the {@link ResponseContext}.
    *
    * @return the payload
    */
