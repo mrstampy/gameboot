@@ -117,4 +117,7 @@ public interface ResponseContextCodes {
 
   /** The Constant LANG_CODE_MISSING. */
   public static final Integer LANG_CODE_MISSING = -76;
+
+  /** The Constant MUST_BE. */
+  public static final Integer MUST_BE = -75;
 }

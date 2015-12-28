@@ -145,6 +145,9 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
 
     if (isEmpty(message.getUserName())) fail(getResponseContext(NO_USERNAME, id), "userName must be supplied");
 
+    checkLocale(message.getLanguageCode(), "languageCode");
+    checkLocale(message.getCountryCode(), "countryCode");
+
     switch (message.getFunction()) {
     case LOGIN:
       if (isEmpty(message.getOldPassword())) {
@@ -165,6 +168,12 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
       break;
     }
 
+  }
+
+  private void checkLocale(String code, String name) {
+    if (isNotEmpty(code) && code.length() != 2) {
+      fail(getResponseContext(MUST_BE, name, "2 characters."), name + " not 2 characters: " + code);
+    }
   }
 
   /*

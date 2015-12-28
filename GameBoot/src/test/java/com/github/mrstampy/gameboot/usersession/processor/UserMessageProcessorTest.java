@@ -94,6 +94,8 @@ import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
 @ActiveProfiles(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserMessageProcessorTest {
 
+  private static final long SYSTEM_ID = 1l;
+
   private static final String LANGUAGE_CODE = "fr";
 
   private static final String COUNTRY_CODE = "FR";
@@ -377,6 +379,8 @@ public class UserMessageProcessorTest {
     assertNotEquals(LANGUAGE_CODE, user.getLanguageCode());
     assertNotEquals(COUNTRY_CODE, user.getCountryCode());
 
+    testCodeLength(m);
+
     user = languageCodeTest(user, m);
     assertEquals(NEW_EMAIL, user.getEmail());
     assertEquals(NEW_DOB, user.getDob());
@@ -396,6 +400,30 @@ public class UserMessageProcessorTest {
     assertEquals(COUNTRY_CODE, user.getCountryCode());
 
     passwordTest(user, m);
+  }
+
+  /**
+   * Test code length.
+   *
+   * @param m
+   *          the m
+   */
+  protected void testCodeLength(UserMessage m) {
+    m.setSystemId(SYSTEM_ID);
+    m.setLanguageCode("f");
+    failExpected(m, "Language code 2 characters");
+    m.setLanguageCode("frr");
+    failExpected(m, "Language code 2 characters");
+
+    m.setLanguageCode(LANGUAGE_CODE);
+    m.setCountryCode("F");
+    failExpected(m, "Country code 2 characters");
+    m.setCountryCode("FRR");
+    failExpected(m, "Country code 2 characters");
+
+    m.setSystemId(null);
+    m.setCountryCode(null);
+    m.setLanguageCode(null);
   }
 
   private void passwordTest(User user, UserMessage m) throws Exception {

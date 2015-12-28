@@ -315,6 +315,8 @@ public class GameBoot {
    *
    * @param args
    *          the arguments
+   * @throws Exception
+   *           the exception
    */
   public static void main(String[] args) throws Exception {
     ConfigurableApplicationContext ctx = SpringApplication.run(GameBoot.class, args);
