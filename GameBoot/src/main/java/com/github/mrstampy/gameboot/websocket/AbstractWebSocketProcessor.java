@@ -285,8 +285,12 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
 
     Response response = null;
     AGBM agbm = null;
+    String type = null;
+    Integer id = null;
     try {
       agbm = converter.fromJson(msg);
+      type = agbm.getType();
+      id = agbm.getId();
 
       if (!preProcess(session, agbm)) return;
 
@@ -296,7 +300,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
       response = fail(session, agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message {} on channel {}", msg, session, e);
+      log.error("Unexpected exception processing message type {}, id {} on channel {}", type, id, session, e);
       response = fail(getResponseContext(UNEXPECTED_ERROR, session), agbm, "An unexpected error has occurred");
     }
 
@@ -322,6 +326,8 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
 
     Response response = null;
     AGBM agbm = null;
+    String type = null;
+    Integer id = null;
     try {
       agbm = converter.fromJson(msg);
 
@@ -333,7 +339,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
       response = fail(session, agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message {} on channel {}", msg, session, e);
+      log.error("Unexpected exception processing message type {}, id {} on channel {}", type, id, session, e);
       response = fail(getResponseContext(UNEXPECTED_ERROR, session), agbm, "An unexpected error has occurred");
     }
 

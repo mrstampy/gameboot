@@ -59,6 +59,7 @@ import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.connection.AbstractConnectionProcessor;
@@ -163,8 +164,6 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   public void onMessage(ChannelHandlerContext ctx, Object msg) throws Exception {
     helper.incr(MESSAGE_COUNTER);
 
-    log.debug("Received message {} on {}", msg, ctx.channel());
-
     if (msg instanceof String) {
       onMessageImpl(ctx, (String) msg);
     } else if (msg instanceof byte[]) {
@@ -247,8 +246,12 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
 
     Response response = null;
     AGBM agbm = null;
+    String type = null;
+    Integer id = null;
     try {
       agbm = converter.fromJson(msg);
+      type = agbm.getType();
+      id = agbm.getId();
 
       if (!preProcess(ctx, agbm)) return;
 
@@ -258,7 +261,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
       response = fail(ctx, agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message {} on channel {}", msg, ctx.channel(), e);
+      log.error("Unexpected exception processing message type {}, id {} on channel {}", type, id, ctx.channel(), e);
       response = fail(getResponseContext(UNEXPECTED_ERROR, ctx), agbm, "An unexpected error has occurred");
     }
 
@@ -284,8 +287,12 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
 
     Response response = null;
     AGBM agbm = null;
+    String type = null;
+    Integer id = null;
     try {
       agbm = converter.fromJson(msg);
+      type = agbm.getType();
+      id = agbm.getId();
 
       if (!preProcess(ctx, agbm)) return;
 
@@ -295,7 +302,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
       response = fail(ctx, agbm, e);
     } catch (Exception e) {
       helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message {} on channel {}", msg, ctx.channel(), e);
+      log.error("Unexpected exception processing message type {}, id {} on channel {}", type, id, ctx.channel(), e);
       response = fail(getResponseContext(UNEXPECTED_ERROR, ctx), agbm, "An unexpected error has occurred");
     }
 
@@ -369,10 +376,12 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   }
 
   private void log(Future<? super Void> f, Response response, ChannelHandlerContext ctx) {
+    ResponseCode rc = response.getResponseCode();
+    Integer id = response.getId();
     if (f.isSuccess()) {
-      log.debug("Successfully sent {} to {}", response, ctx.channel());
+      log.debug("Successfully sent response code {}, id {} to {}", rc, id, ctx.channel());
     } else {
-      log.error("Could not send {} for message {} to {}", response, ctx.channel(), f.cause());
+      log.error("Could not send response code {}, id {} to {}", rc, id, ctx.channel(), f.cause());
     }
   }
 

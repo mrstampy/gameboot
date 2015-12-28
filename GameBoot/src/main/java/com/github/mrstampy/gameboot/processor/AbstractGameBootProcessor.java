@@ -94,29 +94,32 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    */
   @Override
   public Response process(M message) throws Exception {
-    log.debug("Processing message {}", message);
-
     if (message == null) fail(getResponseContext(NO_MESSAGE), "Null message");
+
+    String type = message.getType();
+    Integer id = message.getId();
+
+    log.debug("Processing message type {}, id {}", type, id);
 
     try {
       validate(message);
 
       Response response = processImpl(message);
-      response.setId(message.getId());
-      if (Response.TYPE.equals(response.getType())) response.setType(message.getType());
+      response.setId(id);
+      if (Response.TYPE.equals(response.getType())) response.setType(type);
 
-      log.debug("Created response {} for {}", response, message);
+      log.debug("Created response, code {} for message type {}, id {}", response.getResponseCode(), type, id);
 
       return response;
     } catch (GameBootRuntimeException | GameBootException e) {
       return gameBootErrorResponse(message, e);
     } catch (Exception e) {
-      log.error("Error in processing {}", message.getType(), e);
+      log.error("Error in processing {}, id {}", type, id, e);
 
       Response r = failure(getResponseContext(UNEXPECTED_ERROR, message.getSystemId()),
           message,
           "An unexpected error has occurred");
-      r.setId(message.getId());
+      r.setId(id);
 
       return r;
     }
