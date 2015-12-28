@@ -41,13 +41,28 @@
  */
 package com.github.mrstampy.gameboot;
 
+import static com.github.mrstampy.gameboot.data.properties.condition.ClassPathCondition.DATABASE_PROPERTIES;
+import static com.github.mrstampy.gameboot.otp.properties.condition.ClassPathCondition.OTP_PROPERTIES;
+import static com.github.mrstampy.gameboot.properties.condition.ClassPathCondition.GAMEBOOT_PROPERTIES;
+import static com.github.mrstampy.gameboot.security.properties.condition.ClassPathCondition.SECURITY_PROPERTIES;
+
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.invoke.MethodHandles;
 import java.util.Locale;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.core.io.Resource;
 
 import com.github.mrstampy.gameboot.controller.MessageClassFinder;
 import com.github.mrstampy.gameboot.data.GameBootDataConfiguration;
@@ -281,6 +296,19 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @FiberSecureSpringBootApplication
 public class GameBoot {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  /**
+   * Use 'generate' as the first command line argument to write the necessary
+   * GameBoot resources to the file system.
+   */
+  public static final String GENERATE = "generate";
+
+  private static final String LOGBACK = "classpath:logback.groovy";
+  private static final String GAMEBOOT_SQL_INIT = "classpath:gameboot.sql.init";
+  private static final String EHCACHE_XML = "classpath:ehcache.xml";
+  private static final String APPLICATION_PROPERTIES = "classpath:application.properties";
+  private static final String ERROR_PROPERTIES = "classpath:error.properties";
 
   /**
    * The main method.
@@ -288,8 +316,52 @@ public class GameBoot {
    * @param args
    *          the arguments
    */
-  public static void main(String[] args) {
-    SpringApplication.run(GameBoot.class, args);
+  public static void main(String[] args) throws Exception {
+    ConfigurableApplicationContext ctx = SpringApplication.run(GameBoot.class, args);
+
+    if (args == null || args.length == 0) return;
+
+    if (GENERATE.equals(args[0])) generatePropertyFiles(ctx);
+  }
+
+  private static void generatePropertyFiles(ConfigurableApplicationContext ctx) throws IOException {
+    writeResource(ctx.getResource(DATABASE_PROPERTIES));
+    writeResource(ctx.getResource(OTP_PROPERTIES));
+    writeResource(ctx.getResource(GAMEBOOT_PROPERTIES));
+    writeResource(ctx.getResource(SECURITY_PROPERTIES));
+    writeResource(ctx.getResource(ERROR_PROPERTIES));
+    writeResource(ctx.getResource(APPLICATION_PROPERTIES));
+    writeResource(ctx.getResource(EHCACHE_XML));
+    writeResource(ctx.getResource(GAMEBOOT_SQL_INIT));
+    writeResource(ctx.getResource(LOGBACK));
+
+    ctx.close();
+  }
+
+  private static void writeResource(Resource resource) throws IOException {
+    String desc = resource.getDescription();
+    log.debug("Creating file from {}", desc);
+
+    if (!resource.exists()) {
+      log.warn("No resource for {}", desc);
+      return;
+    }
+
+    int first = desc.indexOf("[");
+    int last = desc.indexOf("]");
+
+    desc = desc.substring(first + 1, last);
+
+    File f = new File(".", desc);
+
+    try (BufferedOutputStream bis = new BufferedOutputStream(new FileOutputStream(f))) {
+      InputStream in = resource.getInputStream();
+      byte[] b = new byte[in.available()];
+      in.read(b);
+
+      bis.write(b);
+      bis.flush();
+    }
   }
 
 }
