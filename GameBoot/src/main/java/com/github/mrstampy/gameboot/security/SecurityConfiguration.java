@@ -60,6 +60,7 @@ import com.github.mrstampy.gameboot.util.GameBootUtils;
 @EnableWebSecurity
 public class SecurityConfiguration {
 
+  /** The Constant GAME_BOOT_SECURE_RANDOM. */
   public static final String GAME_BOOT_SECURE_RANDOM = "GameBoot Secure Random";
 
   @Autowired
@@ -81,6 +82,13 @@ public class SecurityConfiguration {
     }
   }
 
+  /**
+   * Secure random.
+   *
+   * @return the secure random
+   * @throws Exception
+   *           the exception
+   */
   @Bean(name = GAME_BOOT_SECURE_RANDOM)
   public SecureRandom secureRandom() throws Exception {
     SecureRandom random = SecureRandom.getInstanceStrong();

@@ -313,18 +313,40 @@ public class User extends AbstractGameBootEntity {
     this.blocked = blocked;
   }
 
+  /**
+   * Gets the country code.
+   *
+   * @return the country code
+   */
   public String getCountryCode() {
     return countryCode;
   }
 
+  /**
+   * Sets the country code.
+   *
+   * @param countryCode
+   *          the new country code
+   */
   public void setCountryCode(String countryCode) {
     this.countryCode = countryCode;
   }
 
+  /**
+   * Gets the language code.
+   *
+   * @return the language code
+   */
   public String getLanguageCode() {
     return languageCode;
   }
 
+  /**
+   * Sets the language code.
+   *
+   * @param languageCode
+   *          the new language code
+   */
   public void setLanguageCode(String languageCode) {
     this.languageCode = languageCode;
   }

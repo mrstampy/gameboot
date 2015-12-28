@@ -44,6 +44,8 @@ package com.github.mrstampy.gameboot.util;
 /**
  * This interface is implemented by any classes wishing to receive notification
  * of {@link RegistryCleaner} cleanups.
+ *
+ * @see RegistryCleanerEvent
  */
 public interface RegistryCleanerListener {
 

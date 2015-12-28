@@ -46,6 +46,8 @@ import org.springframework.stereotype.Component;
 /**
  * A NOOP {@link RegistryCleanerListener} to prevent the server from crashing on
  * startup if no other listeners exist.
+ *
+ * @see NullRegistryCleanerEvent
  */
 @Component
 public class NullRegistryCleanerListener implements RegistryCleanerListener {

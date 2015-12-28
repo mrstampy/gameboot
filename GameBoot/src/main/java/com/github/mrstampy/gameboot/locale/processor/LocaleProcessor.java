@@ -67,6 +67,7 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 public class LocaleProcessor extends AbstractGameBootProcessor<LocaleMessage> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  /** The Constant PROFILE. */
   public static final String PROFILE = "locale";
 
   @Autowired

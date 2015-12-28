@@ -93,6 +93,13 @@ public class GameBootSystemId implements SystemId, RegistryCleanerListener {
     }
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.util.RegistryCleanerListener#cleanup(java.lang
+   * .Comparable)
+   */
   @Override
   public void cleanup(Comparable<?> key) {
     if (!(key instanceof Long)) return;
