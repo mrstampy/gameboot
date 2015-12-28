@@ -45,10 +45,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.lang.invoke.MethodHandles;
 import java.util.Date;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -70,6 +71,7 @@ import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.TestConfiguration;
+import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
@@ -91,6 +93,7 @@ import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
 @SpringApplicationConfiguration(TestConfiguration.class)
 @ActiveProfiles(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserMessageProcessorTest {
+
   private static final String LANGUAGE_CODE = "fr";
 
   private static final String COUNTRY_CODE = "FR";
@@ -135,6 +138,9 @@ public class UserMessageProcessorTest {
 
   @Autowired
   private ObjectMapper mapper;
+
+  @Autowired
+  private LocaleRegistry registry;
 
   private Long userId;
 
@@ -441,23 +447,36 @@ public class UserMessageProcessorTest {
   }
 
   private User languageCodeTest(User user, UserMessage m) throws Exception {
+    Long systemId = 1l;
     assertNotEquals(LANGUAGE_CODE, user.getLanguageCode());
     m.setLanguageCode(LANGUAGE_CODE);
-    m.setSystemId(1l); // set by the system
+    m.setSystemId(systemId); // set by the system
 
     user = updateCheck(processor.process(m));
     assertEquals(LANGUAGE_CODE, user.getLanguageCode());
+    assertEquals(1, registry.size());
+
+    Locale locale = registry.get(systemId);
+    assertEquals(LANGUAGE_CODE, locale.getLanguage());
+
     m.setLanguageCode(null);
     return user;
   }
 
   private User countryCodeTest(User user, UserMessage m) throws Exception {
+    Long systemId = 1l;
     assertNotEquals(COUNTRY_CODE, user.getCountryCode());
     m.setCountryCode(COUNTRY_CODE);
-    m.setSystemId(1l); // set by the system
+    m.setSystemId(systemId); // set by the system
 
     user = updateCheck(processor.process(m));
     assertEquals(COUNTRY_CODE, user.getCountryCode());
+    assertEquals(1, registry.size());
+
+    Locale locale = registry.get(systemId);
+    assertEquals(LANGUAGE_CODE, locale.getLanguage());
+    assertEquals(COUNTRY_CODE, locale.getCountry());
+
     m.setCountryCode(null);
     return user;
   }
