@@ -59,8 +59,8 @@ public class UserSessionKey extends AbstractNumberKey<Long> {
   /**
    * Instantiates a new user session key.
    *
-   * @param value
-   *          the value
+   * @param session
+   *          the session
    */
   public UserSessionKey(UserSession session) {
     super(session.getId());
