@@ -147,7 +147,7 @@ public class UserMessageProcessorTest {
 
   private Long userId;
 
-  private Long sessionId;
+  private UserSessionKey sessionId;
 
   /**
    * Before.
@@ -193,9 +193,9 @@ public class UserMessageProcessorTest {
   @After
   public void after() throws Exception {
     if (sessionId != null) {
-      if (assist.hasSession(sessionId)) assist.logout(sessionId);
+      if (assist.hasSession(sessionId.getValue())) assist.logout(sessionId.getValue());
 
-      userSessionRepo.delete(sessionId);
+      userSessionRepo.delete(sessionId.getValue());
     }
 
     userRepo.delete(userId);
@@ -239,7 +239,7 @@ public class UserMessageProcessorTest {
     assertTrue(r.getPayload()[0] instanceof UserSession);
 
     UserSession session = (UserSession) r.getPayload()[0];
-    sessionId = session.getId();
+    sessionId = new UserSessionKey(session.getId());
 
     assertEquals(2, r.getMappingKeys().length);
     assertEquals(TEST_USER, r.getMappingKeys()[0]);
