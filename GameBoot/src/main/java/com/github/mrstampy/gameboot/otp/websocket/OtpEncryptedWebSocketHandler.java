@@ -66,6 +66,7 @@ import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.processor.OtpKeyRequestProcessor;
+import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
 import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
 
 /**
@@ -236,7 +237,9 @@ public class OtpEncryptedWebSocketHandler extends BinaryWebSocketHandler {
       return false;
     }
 
-    WebSocketSession clearChannel = registry.get(systemId);
+    SystemIdWrapper siw = new SystemIdWrapper(systemId);
+
+    WebSocketSession clearChannel = registry.get(siw);
     if (clearChannel == null || !clearChannel.isOpen()) {
       log.error("No clear channel for {}, from encrypted channel {}, disconnecting",
           systemId,

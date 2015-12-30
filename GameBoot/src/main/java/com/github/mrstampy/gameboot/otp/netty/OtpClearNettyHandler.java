@@ -145,7 +145,7 @@ public class OtpClearNettyHandler
 
     OtpClearNettyProcessor cp = getConnectionProcessor();
 
-    Response r = new Response(ResponseCode.INFO, new SystemIdResponse(cp.getSystemId()));
+    Response r = new Response(ResponseCode.INFO, new SystemIdResponse(cp.getSystemId().getId()));
 
     cp.sendMessage(ctx, converter.toJsonArray(r), r);
   }

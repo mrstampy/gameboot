@@ -65,9 +65,9 @@ import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
-import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRegistry;
+import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
 import com.github.mrstampy.gameboot.util.concurrent.MDCRunnable;
 import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
 
@@ -153,7 +153,7 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
 
   @SuppressWarnings("unused")
   private byte[] evaluateForNewKeyAck(WebSocketSession session, byte[] msg) {
-    Long systemId = getSystemId(session);
+    SystemIdWrapper systemId = getSystemId(session);
     if (!newKeyRegistry.contains(systemId)) return msg;
 
     byte[] newKey = newKeyRegistry.get(systemId);
@@ -212,8 +212,6 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
         Response fail = fail(getResponseContext(UNEXPECTED_MESSAGE, session), agbm);
         sendMessage(session, converter.toJsonArray(fail));
       }
-    case OtpNewKeyAck.TYPE:
-      ((OtpMessage) agbm).setProcessorKey(getSystemId(session));
       break;
     default:
       ok = isValidType(session, agbm);
@@ -308,7 +306,7 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
     boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
 
     Long sysId = keyRequest.getOtpSystemId();
-    Long thisSysId = getSystemId(session);
+    SystemIdWrapper thisSysId = getSystemId(session);
     boolean ok = d && isEncrypting(session) && thisSysId.equals(sysId);
 
     if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, session.getRemoteAddress(), thisSysId);

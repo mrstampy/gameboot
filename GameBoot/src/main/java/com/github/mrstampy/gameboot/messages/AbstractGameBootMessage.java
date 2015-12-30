@@ -48,6 +48,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
 import com.github.mrstampy.gameboot.util.GameBootRegistry;
 
 /**
@@ -60,7 +61,7 @@ public abstract class AbstractGameBootMessage {
 
   private String type;
 
-  private Long systemId;
+  private SystemIdWrapper systemId;
 
   /**
    * The Enum Transport.
@@ -146,7 +147,7 @@ public abstract class AbstractGameBootMessage {
    * @return the system session id
    */
   @JsonIgnore
-  public Long getSystemId() {
+  public SystemIdWrapper getSystemId() {
     return systemId;
   }
 
@@ -156,7 +157,7 @@ public abstract class AbstractGameBootMessage {
    * @param systemSessionId
    *          the new system session id
    */
-  public void setSystemId(Long systemSessionId) {
+  public void setSystemId(SystemIdWrapper systemSessionId) {
     this.systemId = systemSessionId;
   }
 

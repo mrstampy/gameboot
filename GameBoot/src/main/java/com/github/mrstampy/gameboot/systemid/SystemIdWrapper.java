@@ -39,44 +39,75 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.otp.messages;
+package com.github.mrstampy.gameboot.systemid;
 
-import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
- * The Class OtpMessage.
+ * The Class SystemIdWrapper.
  */
-public abstract class OtpMessage extends AbstractGameBootMessage {
+public class SystemIdWrapper implements Comparable<SystemIdWrapper> {
 
-  private Long otpSystemId;
+  private final Long id;
 
   /**
-   * Instantiates a new otp message.
+   * Instantiates a new system id wrapper.
    *
-   * @param type
-   *          the type
+   * @param id
+   *          the id
    */
-  protected OtpMessage(String type) {
-    super(type);
+  public SystemIdWrapper(Long id) {
+    if (id == null) throw new NullPointerException("No id");
+    this.id = id;
   }
 
   /**
-   * Gets the otp system id.
+   * Compare to.
    *
-   * @return the otp system id
+   * @param o
+   *          the o
+   * @return the int
    */
-  public Long getOtpSystemId() {
-    return otpSystemId;
+  @Override
+  public int compareTo(SystemIdWrapper o) {
+    return this.id.compareTo(o.id);
   }
 
   /**
-   * Sets the otp system id.
+   * Gets the id.
    *
-   * @param systemId
-   *          the new otp system id
+   * @return the id
    */
-  public void setOtpSystemId(Long systemId) {
-    this.otpSystemId = systemId;
+  public Long getId() {
+    return id;
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#toString()
+   */
+  public String toString() {
+    return id.toString();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  public boolean equals(Object o) {
+    return EqualsBuilder.reflectionEquals(this, o);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#hashCode()
+   */
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this);
   }
 
 }

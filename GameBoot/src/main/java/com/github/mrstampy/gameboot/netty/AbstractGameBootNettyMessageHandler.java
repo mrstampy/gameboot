@@ -52,6 +52,7 @@ import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemId;
+import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -162,7 +163,7 @@ public abstract class AbstractGameBootNettyMessageHandler<C, CP extends Connecti
    *
    * @return the key
    */
-  public Long getSystemId() {
+  public SystemIdWrapper getSystemId() {
     return connectionProcessor.getSystemId(null);
   }
 

@@ -62,6 +62,7 @@ import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
+import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
 
 /**
  * The Class OtpNewKeyRequestProcessor generates a key from a request sent on an
@@ -125,9 +126,11 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
 
     if (id == null) fail(getResponseContext(NO_SYSTEM_ID), "No systemId");
 
+    SystemIdWrapper siw = new SystemIdWrapper(id);
+
     switch (message.getKeyFunction()) {
     case DELETE:
-      if (!id.equals(message.getProcessorKey())) {
+      if (!siw.equals(message.getSystemId())) {
         fail(getResponseContext(SYSTEM_ID_MISMATCH, id), "systemId does not match processor id");
       }
       break;
@@ -166,7 +169,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
   }
 
   private Response deleteKey(OtpMessage message) throws Exception {
-    Long systemId = message.getOtpSystemId();
+    SystemIdWrapper systemId = new SystemIdWrapper(message.getOtpSystemId());
     log.debug("Deleting key for {}", systemId);
 
     registry.remove(systemId);
@@ -176,7 +179,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
 
   private Response newKey(OtpKeyRequest message) throws Exception {
     Integer size = message.getKeySize() == null ? defaultKeySize : message.getKeySize();
-    Long systemId = message.getOtpSystemId();
+    SystemIdWrapper systemId = new SystemIdWrapper(message.getOtpSystemId());
 
     log.debug("Creating new OTP key of size {} for {}", size, systemId);
 

@@ -59,6 +59,7 @@ import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
+import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
 
 /**
  * The Class OtpNewKeyAckProcessor activates a new OTP key for the client. The
@@ -101,10 +102,10 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
    */
   @Override
   protected void validate(OtpNewKeyAck message) throws Exception {
-    Long systemId = message.getOtpSystemId();
-    if (systemId == null) fail(getResponseContext(NO_SYSTEM_ID), "No systemId");
+    if (message.getOtpSystemId() == null) fail(getResponseContext(NO_SYSTEM_ID), "No systemId");
+    SystemIdWrapper systemId = new SystemIdWrapper(message.getOtpSystemId());
 
-    if (!systemId.equals(message.getProcessorKey())) {
+    if (!systemId.equals(message.getSystemId())) {
       fail(getResponseContext(SYSTEM_ID_MISMATCH), "systemId does not match processor id");
     }
   }
@@ -117,7 +118,7 @@ public class OtpNewKeyAckProcessor extends AbstractGameBootProcessor<OtpNewKeyAc
    */
   @Override
   protected Response processImpl(OtpNewKeyAck message) throws Exception {
-    Long systemId = message.getOtpSystemId();
+    SystemIdWrapper systemId = new SystemIdWrapper(message.getOtpSystemId());
 
     byte[] newKey = newKeyRegistry.remove(systemId);
 

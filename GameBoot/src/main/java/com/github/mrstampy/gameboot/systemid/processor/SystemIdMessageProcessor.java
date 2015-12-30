@@ -85,7 +85,7 @@ public class SystemIdMessageProcessor extends AbstractGameBootProcessor<SystemId
    */
   @Override
   protected Response processImpl(SystemIdMessage message) throws Exception {
-    return new Response(ResponseCode.SUCCESS, new SystemIdResponse(message.getSystemId()));
+    return new Response(ResponseCode.SUCCESS, new SystemIdResponse(message.getSystemId().getId()));
   }
 
 }

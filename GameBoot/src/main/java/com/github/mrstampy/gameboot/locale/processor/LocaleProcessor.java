@@ -58,6 +58,7 @@ import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
+import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
 
 /**
  * The Class LocaleProcessor.
@@ -111,7 +112,7 @@ public class LocaleProcessor extends AbstractGameBootProcessor<LocaleMessage> {
    */
   @Override
   protected Response processImpl(LocaleMessage message) throws Exception {
-    Long systemId = message.getSystemId();
+    SystemIdWrapper systemId = message.getSystemId();
 
     Locale locale = null;
     if (isNotEmpty(message.getCountryCode())) {

@@ -50,8 +50,8 @@ public interface SystemId {
   /**
    * Next.
    *
-   * @return the long
+   * @return the SystemIdWrapper
    */
-  Long next();
+  SystemIdWrapper next();
 
 }

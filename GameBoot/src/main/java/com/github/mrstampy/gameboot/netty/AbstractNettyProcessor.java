@@ -65,6 +65,7 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.connection.AbstractConnectionProcessor;
 import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemId;
+import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.RegistryCleaner;
 
@@ -103,7 +104,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   @Autowired
   private GameBootUtils utils;
 
-  private Long systemId;
+  private SystemIdWrapper systemId;
 
   /**
    * Post construct, invoke from {@link PostConstruct}-annotated subclass
@@ -391,7 +392,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * @param systemId
    *          the new system id
    */
-  public void setSystemId(Long systemId) {
+  public void setSystemId(SystemIdWrapper systemId) {
     this.systemId = systemId;
   }
 
@@ -402,7 +403,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    *          the ctx
    * @return the system id
    */
-  public Long getSystemId(ChannelHandlerContext ctx) {
+  public SystemIdWrapper getSystemId(ChannelHandlerContext ctx) {
     return systemId;
   }
 
@@ -411,7 +412,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    *
    * @return the system id
    */
-  public Long getSystemId() {
+  public SystemIdWrapper getSystemId() {
     return systemId;
   }
 }

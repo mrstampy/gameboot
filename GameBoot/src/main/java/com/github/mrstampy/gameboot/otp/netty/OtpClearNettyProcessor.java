@@ -68,9 +68,9 @@ import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
-import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRegistry;
+import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
 import com.github.mrstampy.gameboot.util.concurrent.MDCRunnable;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -165,7 +165,7 @@ public class OtpClearNettyProcessor extends AbstractNettyProcessor {
 
   @SuppressWarnings("unused")
   private byte[] evaluateForNewKeyAck(ChannelHandlerContext ctx, byte[] msg) {
-    Long systemId = getSystemId();
+    SystemIdWrapper systemId = getSystemId();
     if (!newKeyRegistry.contains(systemId)) return msg;
 
     byte[] newKey = newKeyRegistry.get(systemId);
@@ -176,7 +176,7 @@ public class OtpClearNettyProcessor extends AbstractNettyProcessor {
       return converted;
     } catch (Exception e) {
       String s = keyRegistry.contains(systemId) ? "old key" : "unencrypted";
-      log.warn("Awaiting new key ack, assuming {} for {}, system id {}.", s, ctx.channel(), systemId);
+      log.warn("Awaiting new key ack, assuming {} for {}, system id {}.", s, ctx.channel(), systemId, e);
     }
 
     return msg;
@@ -362,7 +362,6 @@ public class OtpClearNettyProcessor extends AbstractNettyProcessor {
   protected <AGBM extends AbstractGameBootMessage> void pendingKeyChange(AGBM agbm) {
     if (agbm.getId() == null) agbm.setId(DEFAULT_KEY_CHANGE_ID);
     expectingKeyChange.put(agbm.getId(), Boolean.TRUE);
-    ((OtpMessage) agbm).setProcessorKey(getSystemId());
   }
 
   /**
@@ -385,7 +384,7 @@ public class OtpClearNettyProcessor extends AbstractNettyProcessor {
     boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
 
     Long sysId = keyRequest.getOtpSystemId();
-    boolean ok = d && isEncrypting() && getSystemId().equals(sysId);
+    boolean ok = d && isEncrypting() && getSystemId().equals(new SystemIdWrapper(sysId));
 
     if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, ctx.channel(), getSystemId());
 
