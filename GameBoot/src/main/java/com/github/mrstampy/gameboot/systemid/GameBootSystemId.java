@@ -79,13 +79,12 @@ public class GameBootSystemId implements SystemId, RegistryCleanerListener {
   public SystemIdWrapper next() {
     lock.lock();
     try {
-      Long id = random.nextLong();
+      SystemIdWrapper siw = new SystemIdWrapper(random.nextLong());
 
-      while (id.longValue() <= 0 || activeIds.contains(id)) {
-        id = random.nextLong();
+      while (siw.getId().longValue() <= 0 || activeIds.contains(siw)) {
+        siw = new SystemIdWrapper(random.nextLong());
       }
 
-      SystemIdWrapper siw = new SystemIdWrapper(id);
       activeIds.add(siw);
 
       return siw;
