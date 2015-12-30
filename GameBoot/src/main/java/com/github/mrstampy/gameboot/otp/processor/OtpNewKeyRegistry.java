@@ -45,6 +45,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
@@ -115,8 +116,8 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
 
     super.put(key, value);
 
-    // sf = svc.schedule(() -> cleanup(key), newKeyExpiry, TimeUnit.SECONDS);
-    // futures.put(key, sf);
+    sf = svc.schedule(() -> cleanup(key), newKeyExpiry, TimeUnit.SECONDS);
+    futures.put(key, sf);
   }
 
   /**
