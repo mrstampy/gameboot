@@ -67,6 +67,8 @@ import com.github.mrstampy.gameboot.usersession.data.entity.User;
 import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
 import com.github.mrstampy.gameboot.usersession.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepository;
+import com.github.mrstampy.gameboot.usersession.processor.UserSessionKey;
+import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 
 /**
  * The Class UserSessionAssist provides methods to look up {@link User}s and
@@ -100,6 +102,9 @@ public class UserSessionAssist implements ResponseContextCodes {
 
   @Autowired
   private ResponseContextLookup lookup;
+
+  @Autowired
+  private RegistryCleaner cleaner;
 
   private String sessionsKey = SESSIONS_KEY;
 
@@ -267,9 +272,14 @@ public class UserSessionAssist implements ResponseContextCodes {
   public User logout(Long id) throws GameBootRuntimeException {
     UserSession session = expected(id);
 
+    User user = session.getUser();
+
+    cleaner.cleanup(user.getUserName());
+    cleaner.cleanup(new UserSessionKey(session));
+
     closeSession(session);
 
-    return session.getUser();
+    return user;
   }
 
   /**
