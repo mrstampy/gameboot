@@ -304,7 +304,7 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
 
     Response r = success(message, session);
 
-    r.setMappingKeys(user.getUserName(), new UserSessionKey(session.getId()));
+    r.setMappingKeys(user.getUserName(), new UserSessionKey(session));
 
     return r;
   }

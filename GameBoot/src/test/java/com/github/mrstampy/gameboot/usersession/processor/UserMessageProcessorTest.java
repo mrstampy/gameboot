@@ -239,7 +239,7 @@ public class UserMessageProcessorTest {
     assertTrue(r.getPayload()[0] instanceof UserSession);
 
     UserSession session = (UserSession) r.getPayload()[0];
-    sessionId = new UserSessionKey(session.getId());
+    sessionId = new UserSessionKey(session);
 
     assertEquals(2, r.getMappingKeys().length);
     assertEquals(TEST_USER, r.getMappingKeys()[0]);
