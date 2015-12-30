@@ -89,10 +89,11 @@ public abstract class AbstractNumberKey<N extends Number> implements Comparable<
    * 
    * @see java.lang.Object#equals(java.lang.Object)
    */
+  @SuppressWarnings("unchecked")
   public boolean equals(Object o) {
-    if (!(o instanceof AbstractNumberKey)) return false;
+    if (o == null || !getClass().equals(o.getClass())) return false;
 
-    AbstractNumberKey<?> ank = (AbstractNumberKey<?>) o;
+    AbstractNumberKey<N> ank = (AbstractNumberKey<N>) o;
 
     return this.value.equals(ank.value);
   }
