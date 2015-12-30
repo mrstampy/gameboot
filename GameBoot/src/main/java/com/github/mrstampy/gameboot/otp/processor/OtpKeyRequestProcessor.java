@@ -126,11 +126,11 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
 
     if (id == null) fail(getResponseContext(NO_SYSTEM_ID), "No systemId");
 
-    SystemIdKey siw = new SystemIdKey(id);
+    SystemIdKey sik = new SystemIdKey(id);
 
     switch (message.getKeyFunction()) {
     case DELETE:
-      if (!siw.equals(message.getSystemId())) {
+      if (!sik.equals(message.getSystemId())) {
         fail(getResponseContext(SYSTEM_ID_MISMATCH, id), "systemId does not match processor id");
       }
       break;

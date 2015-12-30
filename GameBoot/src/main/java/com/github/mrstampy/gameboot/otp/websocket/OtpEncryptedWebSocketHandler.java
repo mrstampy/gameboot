@@ -237,9 +237,9 @@ public class OtpEncryptedWebSocketHandler extends BinaryWebSocketHandler {
       return false;
     }
 
-    SystemIdKey siw = new SystemIdKey(systemId);
+    SystemIdKey sik = new SystemIdKey(systemId);
 
-    WebSocketSession clearChannel = registry.get(siw);
+    WebSocketSession clearChannel = registry.get(sik);
     if (clearChannel == null || !clearChannel.isOpen()) {
       log.error("No clear channel for {}, from encrypted channel {}, disconnecting",
           systemId,

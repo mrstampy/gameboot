@@ -227,9 +227,9 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
       return null;
     }
 
-    SystemIdKey siw = new SystemIdKey(systemId);
+    SystemIdKey sik = new SystemIdKey(systemId);
 
-    Channel clearChannel = registry.get(siw);
+    Channel clearChannel = registry.get(sik);
     if (clearChannel == null || !clearChannel.isActive()) {
       log.error("No clear channel for {}, from encrypted channel {}, disconnecting", systemId, ctx.channel());
       ctx.close();
