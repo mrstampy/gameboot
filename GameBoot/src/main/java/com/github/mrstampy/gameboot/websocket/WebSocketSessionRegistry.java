@@ -48,7 +48,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
-import com.github.mrstampy.gameboot.util.GameBootRegistry;
+import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 
 /**
  * The Class WebSocketSessionRegistry.

@@ -45,7 +45,7 @@ import java.util.Locale;
 
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.util.GameBootRegistry;
+import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 
 /**
  * The Class LocaleRegistry.

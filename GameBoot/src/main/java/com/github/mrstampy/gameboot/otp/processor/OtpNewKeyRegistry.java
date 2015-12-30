@@ -62,7 +62,7 @@ import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.systemid.SystemId;
-import com.github.mrstampy.gameboot.util.GameBootRegistry;
+import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 
 /**
  * The Class OtpNewKeyRegistry acts as a temporary in-memory storage of newly

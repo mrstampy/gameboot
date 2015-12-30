@@ -39,7 +39,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.util;
+package com.github.mrstampy.gameboot.util.registry;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -55,7 +55,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Simple registry superclass backed by a {@link ConcurrentHashMap}.
+ * Simple registry superclass backed by a {@link ConcurrentHashMap}. It is
+ * recommended when using a {@link Number} as a key to subclass
+ * {@link AbstractNumberKey} in order to be able to type the key and avoid
+ * collisions.
  *
  * @param <V>
  *          the value type

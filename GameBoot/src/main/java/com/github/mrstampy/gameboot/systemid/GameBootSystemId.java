@@ -52,7 +52,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
 import com.github.mrstampy.gameboot.security.SecurityConfiguration;
-import com.github.mrstampy.gameboot.util.RegistryCleanerListener;
+import com.github.mrstampy.gameboot.util.registry.RegistryCleanerListener;
 
 /**
  * Default implementation of the {@link SystemId} interface, using the
@@ -81,7 +81,7 @@ public class GameBootSystemId implements SystemId, RegistryCleanerListener {
     try {
       SystemIdWrapper siw = new SystemIdWrapper(random.nextLong());
 
-      while (siw.getId().longValue() <= 0 || activeIds.contains(siw)) {
+      while (siw.getValue().longValue() <= 0 || activeIds.contains(siw)) {
         siw = new SystemIdWrapper(random.nextLong());
       }
 

@@ -39,48 +39,88 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.otp;
+package com.github.mrstampy.gameboot.util.registry;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Component;
-
-import com.github.mrstampy.gameboot.metrics.MetricsHelper;
-import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 /**
- * The Class KeyRegistry is intended to keep OTP secret keys mapped to any
- * {@link Comparable} object.
+ * The Class AbstractNumberKey is to be subclassed for {@link GameBootRegistry}
+ * keys extending {@link java.lang.Number} and implementing
+ * {@link java.lang.Comparable}.
+ *
+ * @param <N>
+ *          the number type
  */
-@Component
-@Profile(OtpConfiguration.OTP_PROFILE)
-public class KeyRegistry extends GameBootRegistry<byte[]> {
+public abstract class AbstractNumberKey<N extends Number> implements Comparable<AbstractNumberKey<N>> {
 
-  private static final String REGISTRY_SIZE = "OTP Key Registry Size";
-
-  @Autowired
-  private MetricsHelper helper;
+  private final N value;
 
   /**
-   * Post construct.
+   * Instantiates a new abstract number key.
    *
-   * @throws Exception
-   *           the exception
+   * @param value
+   *          the value
    */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    helper.gauge(() -> size(), REGISTRY_SIZE, getClass(), "otp", "key", "registry", "size");
+  public AbstractNumberKey(N value) {
+    if (value == null) throw new NullPointerException("No value");
+    this.value = value;
+  }
+
+  /**
+   * Gets the value.
+   *
+   * @return the value
+   */
+  public N getValue() {
+    return value;
   }
 
   /*
    * (non-Javadoc)
    * 
-   * @see com.github.mrstampy.gameboot.util.GameBootRegistry#isLogOk()
+   * @see java.lang.Object#toString()
    */
-  protected final boolean isLogOk() {
-    return false;
+  public String toString() {
+    return value.toString();
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
+  public boolean equals(Object o) {
+    if (!(o instanceof AbstractNumberKey)) return false;
+
+    AbstractNumberKey<?> ank = (AbstractNumberKey<?>) o;
+
+    return this.value.equals(ank.value);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Object#hashCode()
+   */
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this);
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see java.lang.Comparable#compareTo(java.lang.Object)
+   */
+  @SuppressWarnings("unchecked")
+  @Override
+  public int compareTo(AbstractNumberKey<N> o) {
+    if (!(value instanceof Comparable)) {
+      throw new IllegalStateException(value.getClass() + " is not a java.lang.Comparable");
+    }
+
+    Comparable<N> left = (Comparable<N>) value;
+
+    return left.compareTo(o.value);
   }
 
 }

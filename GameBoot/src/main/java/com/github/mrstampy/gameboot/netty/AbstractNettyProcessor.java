@@ -67,7 +67,7 @@ import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
-import com.github.mrstampy.gameboot.util.RegistryCleaner;
+import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;

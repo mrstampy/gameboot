@@ -41,73 +41,21 @@
  */
 package com.github.mrstampy.gameboot.systemid;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+import com.github.mrstampy.gameboot.util.registry.AbstractNumberKey;
 
 /**
  * The Class SystemIdWrapper.
  */
-public class SystemIdWrapper implements Comparable<SystemIdWrapper> {
-
-  private final Long id;
+public class SystemIdWrapper extends AbstractNumberKey<Long> {
 
   /**
    * Instantiates a new system id wrapper.
    *
-   * @param id
-   *          the id
+   * @param value
+   *          the value
    */
-  public SystemIdWrapper(Long id) {
-    if (id == null) throw new NullPointerException("No id");
-    this.id = id;
-  }
-
-  /**
-   * Compare to.
-   *
-   * @param o
-   *          the o
-   * @return the int
-   */
-  @Override
-  public int compareTo(SystemIdWrapper o) {
-    return this.id.compareTo(o.id);
-  }
-
-  /**
-   * Gets the id.
-   *
-   * @return the id
-   */
-  public Long getId() {
-    return id;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
-  public String toString() {
-    return id.toString();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  public boolean equals(Object o) {
-    return EqualsBuilder.reflectionEquals(this, o);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  public int hashCode() {
-    return HashCodeBuilder.reflectionHashCode(this);
+  public SystemIdWrapper(Long value) {
+    super(value);
   }
 
 }

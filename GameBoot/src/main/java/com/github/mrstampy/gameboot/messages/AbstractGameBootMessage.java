@@ -49,7 +49,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
-import com.github.mrstampy.gameboot.util.GameBootRegistry;
+import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 
 /**
  * The superclass for all GameBoot JSON messages.

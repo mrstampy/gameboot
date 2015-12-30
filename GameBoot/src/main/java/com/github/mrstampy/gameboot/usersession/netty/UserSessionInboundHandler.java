@@ -60,7 +60,7 @@ import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
-import com.github.mrstampy.gameboot.util.RegistryCleaner;
+import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;

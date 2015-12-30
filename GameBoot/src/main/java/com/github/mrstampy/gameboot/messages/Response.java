@@ -45,7 +45,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
-import com.github.mrstampy.gameboot.util.GameBootRegistry;
+import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**

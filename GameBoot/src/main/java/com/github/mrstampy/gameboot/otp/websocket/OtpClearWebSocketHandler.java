@@ -150,7 +150,8 @@ public class OtpClearWebSocketHandler
 
     OtpClearWebSocketProcessor webSocketProcessor = getConnectionProcessor();
 
-    Response r = new Response(ResponseCode.INFO, new SystemIdResponse(webSocketProcessor.getSystemId(session).getId()));
+    Response r = new Response(ResponseCode.INFO,
+        new SystemIdResponse(webSocketProcessor.getSystemId(session).getValue()));
 
     webSocketProcessor.sendMessage(session, converter.toJsonArray(r));
   }
