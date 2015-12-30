@@ -62,7 +62,7 @@ import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 
 /**
  * The Class OtpNewKeyRequestProcessor generates a key from a request sent on an
@@ -126,7 +126,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
 
     if (id == null) fail(getResponseContext(NO_SYSTEM_ID), "No systemId");
 
-    SystemIdWrapper siw = new SystemIdWrapper(id);
+    SystemIdKey siw = new SystemIdKey(id);
 
     switch (message.getKeyFunction()) {
     case DELETE:
@@ -169,7 +169,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
   }
 
   private Response deleteKey(OtpMessage message) throws Exception {
-    SystemIdWrapper systemId = new SystemIdWrapper(message.getOtpSystemId());
+    SystemIdKey systemId = new SystemIdKey(message.getOtpSystemId());
     log.debug("Deleting key for {}", systemId);
 
     registry.remove(systemId);
@@ -179,7 +179,7 @@ public class OtpKeyRequestProcessor extends AbstractGameBootProcessor<OtpKeyRequ
 
   private Response newKey(OtpKeyRequest message) throws Exception {
     Integer size = message.getKeySize() == null ? defaultKeySize : message.getKeySize();
-    SystemIdWrapper systemId = new SystemIdWrapper(message.getOtpSystemId());
+    SystemIdKey systemId = new SystemIdKey(message.getOtpSystemId());
 
     log.debug("Creating new OTP key of size {} for {}", size, systemId);
 

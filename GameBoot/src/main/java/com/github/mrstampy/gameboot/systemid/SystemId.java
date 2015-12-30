@@ -52,6 +52,6 @@ public interface SystemId {
    *
    * @return the SystemIdWrapper
    */
-  SystemIdWrapper next();
+  SystemIdKey next();
 
 }

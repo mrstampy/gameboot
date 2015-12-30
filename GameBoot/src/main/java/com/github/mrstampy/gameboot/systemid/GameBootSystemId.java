@@ -66,7 +66,7 @@ public class GameBootSystemId implements SystemId, RegistryCleanerListener {
   @Qualifier(SecurityConfiguration.GAME_BOOT_SECURE_RANDOM)
   private SecureRandom random;
 
-  private List<SystemIdWrapper> activeIds = new ArrayList<>();
+  private List<SystemIdKey> activeIds = new ArrayList<>();
 
   private Lock lock = new ReentrantLock();
 
@@ -76,13 +76,13 @@ public class GameBootSystemId implements SystemId, RegistryCleanerListener {
    * @see com.github.mrstampy.gameboot.SystemId#next()
    */
   @Override
-  public SystemIdWrapper next() {
+  public SystemIdKey next() {
     lock.lock();
     try {
-      SystemIdWrapper siw = new SystemIdWrapper(random.nextLong());
+      SystemIdKey siw = new SystemIdKey(random.nextLong());
 
       while (siw.getValue().longValue() <= 0 || activeIds.contains(siw)) {
-        siw = new SystemIdWrapper(random.nextLong());
+        siw = new SystemIdKey(random.nextLong());
       }
 
       activeIds.add(siw);
@@ -102,7 +102,7 @@ public class GameBootSystemId implements SystemId, RegistryCleanerListener {
    */
   @Override
   public void cleanup(Comparable<?> key) {
-    if (!(key instanceof SystemIdWrapper)) return;
+    if (!(key instanceof SystemIdKey)) return;
 
     lock.lock();
     try {

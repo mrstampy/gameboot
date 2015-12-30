@@ -75,7 +75,7 @@ import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.usersession.ActiveSessions;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
@@ -95,7 +95,7 @@ import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
 @ActiveProfiles(UserSessionConfiguration.USER_SESSION_PROFILE)
 public class UserMessageProcessorTest {
 
-  private static final SystemIdWrapper SYSTEM_ID = new SystemIdWrapper(1l);
+  private static final SystemIdKey SYSTEM_ID = new SystemIdKey(1l);
 
   private static final String LANGUAGE_CODE = "fr";
 

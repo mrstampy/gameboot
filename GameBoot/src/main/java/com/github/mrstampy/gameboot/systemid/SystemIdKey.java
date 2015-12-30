@@ -44,17 +44,17 @@ package com.github.mrstampy.gameboot.systemid;
 import com.github.mrstampy.gameboot.util.registry.AbstractNumberKey;
 
 /**
- * The Class SystemIdWrapper.
+ * The Class SystemIdKey.
  */
-public class SystemIdWrapper extends AbstractNumberKey<Long> {
+public class SystemIdKey extends AbstractNumberKey<Long> {
 
   /**
-   * Instantiates a new system id wrapper.
+   * Instantiates a new system id key.
    *
    * @param value
    *          the value
    */
-  public SystemIdWrapper(Long value) {
+  public SystemIdKey(Long value) {
     super(value);
   }
 

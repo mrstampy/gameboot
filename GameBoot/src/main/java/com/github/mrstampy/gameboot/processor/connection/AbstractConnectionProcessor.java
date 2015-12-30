@@ -52,7 +52,7 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 
 /**
  * The Class AbstractConnectionProcessor.
@@ -123,7 +123,7 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
    * @return the response context
    */
   protected ResponseContext getResponseContext(Integer code, C ctx, Object... parameters) {
-    SystemIdWrapper systemId = getSystemId(ctx);
+    SystemIdKey systemId = getSystemId(ctx);
     Locale locale = systemId == null ? Locale.getDefault() : localeRegistry.get(systemId);
     return lookup.lookup(code, locale, parameters);
   }
@@ -145,7 +145,7 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
    * getLocale()
    */
   public Locale getLocale(C ctx) {
-    SystemIdWrapper systemId = getSystemId(ctx);
+    SystemIdKey systemId = getSystemId(ctx);
     if (!localeRegistry.contains(systemId)) localeRegistry.put(systemId, Locale.getDefault());
     return localeRegistry.get(systemId);
   }

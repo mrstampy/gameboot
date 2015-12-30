@@ -58,7 +58,7 @@ import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 
 /**
  * Abstract superclass for {@link GameBootProcessor}s.
@@ -149,7 +149,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
     return r;
   }
 
-  private ResponseContext getError(SystemIdWrapper systemId, GameBootThrowable e) {
+  private ResponseContext getError(SystemIdKey systemId, GameBootThrowable e) {
     if (e.getError() != null) return e.getError();
     if (e.getErrorCode() == null) return null;
 
@@ -180,7 +180,7 @@ public abstract class AbstractGameBootProcessor<M extends AbstractGameBootMessag
    *          the parameters
    * @return the response context
    */
-  protected ResponseContext getResponseContext(Integer code, SystemIdWrapper systemId, Object... parameters) {
+  protected ResponseContext getResponseContext(Integer code, SystemIdKey systemId, Object... parameters) {
     Locale locale = systemId == null ? Locale.getDefault() : localeRegistry.get(systemId);
     return lookup.lookup(code, locale, parameters);
   }

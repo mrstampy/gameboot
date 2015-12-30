@@ -73,7 +73,7 @@ import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.connection.AbstractConnectionProcessor;
 import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemId;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 
@@ -106,7 +106,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   private GameBootUtils utils;
 
   /** The system ids. */
-  protected Map<String, SystemIdWrapper> systemIds = new ConcurrentHashMap<>();
+  protected Map<String, SystemIdKey> systemIds = new ConcurrentHashMap<>();
 
   /**
    * Post construct, invoke from {@link PostConstruct}-annotated subclass
@@ -146,7 +146,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
    *          the session
    */
   protected void addToRegistry(WebSocketSession session) {
-    SystemIdWrapper systemId = getSystemId(session);
+    SystemIdKey systemId = getSystemId(session);
     if (!registry.contains(systemId)) registry.put(systemId, session);
   }
 
@@ -161,7 +161,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   public void onDisconnection(WebSocketSession session) throws Exception {
     String id = session.getId();
 
-    SystemIdWrapper systemId = systemIds.remove(id);
+    SystemIdKey systemId = systemIds.remove(id);
     cleaner.cleanup(systemId);
 
     Set<Entry<Comparable<?>, WebSocketSession>> set = registry.getKeysForValue(session);
@@ -419,7 +419,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
    * getSystemId(java.lang.Object)
    */
   @Override
-  public SystemIdWrapper getSystemId(WebSocketSession session) {
+  public SystemIdKey getSystemId(WebSocketSession session) {
     return systemIds.get(session.getId());
   }
 
@@ -431,7 +431,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
    * @param systemId
    *          the new system id
    */
-  public void setSystemId(WebSocketSession session, SystemIdWrapper systemId) {
+  public void setSystemId(WebSocketSession session, SystemIdKey systemId) {
     systemIds.put(session.getId(), systemId);
   }
 

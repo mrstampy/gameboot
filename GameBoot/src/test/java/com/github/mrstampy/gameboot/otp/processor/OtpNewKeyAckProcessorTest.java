@@ -66,7 +66,7 @@ import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 
 /**
  * The Class OtpNewKeyAckProcessorTest.
@@ -126,7 +126,7 @@ public class OtpNewKeyAckProcessorTest {
     OtpNewKeyAck m = new OtpNewKeyAck();
     failExpected(m, "No system id");
 
-    m.setSystemId(new SystemIdWrapper(CLEAR_CHANNEL_ID));
+    m.setSystemId(new SystemIdKey(CLEAR_CHANNEL_ID));
 
     m.setOtpSystemId(4321l);
     failExpected(m, "No key to activate");
@@ -154,7 +154,7 @@ public class OtpNewKeyAckProcessorTest {
     failExpected((OtpKeyRequest) null, "Null message");
     failExpected(req, "No system id");
 
-    req.setSystemId(new SystemIdWrapper(CLEAR_CHANNEL_ID));
+    req.setSystemId(new SystemIdKey(CLEAR_CHANNEL_ID));
 
     Response r = requestProcessor.process(req);
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());

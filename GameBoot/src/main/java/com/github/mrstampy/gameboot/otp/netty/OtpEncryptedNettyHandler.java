@@ -63,7 +63,7 @@ import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpMessage;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.processor.OtpKeyRequestProcessor;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 
 import io.netty.channel.Channel;
@@ -227,7 +227,7 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
       return null;
     }
 
-    SystemIdWrapper siw = new SystemIdWrapper(systemId);
+    SystemIdKey siw = new SystemIdKey(systemId);
 
     Channel clearChannel = registry.get(siw);
     if (clearChannel == null || !clearChannel.isActive()) {

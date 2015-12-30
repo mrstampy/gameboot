@@ -70,7 +70,7 @@ import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest.KeyFunction;
 import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
 import com.github.mrstampy.gameboot.otp.processor.OtpNewKeyRegistry;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.concurrent.MDCRunnable;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -165,7 +165,7 @@ public class OtpClearNettyProcessor extends AbstractNettyProcessor {
 
   @SuppressWarnings("unused")
   private byte[] evaluateForNewKeyAck(ChannelHandlerContext ctx, byte[] msg) {
-    SystemIdWrapper systemId = getSystemId();
+    SystemIdKey systemId = getSystemId();
     if (!newKeyRegistry.contains(systemId)) return msg;
 
     byte[] newKey = newKeyRegistry.get(systemId);
@@ -384,7 +384,7 @@ public class OtpClearNettyProcessor extends AbstractNettyProcessor {
     boolean d = KeyFunction.DELETE == keyRequest.getKeyFunction();
 
     Long sysId = keyRequest.getOtpSystemId();
-    boolean ok = d && isEncrypting() && getSystemId().equals(new SystemIdWrapper(sysId));
+    boolean ok = d && isEncrypting() && getSystemId().equals(new SystemIdKey(sysId));
 
     if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, ctx.channel(), getSystemId());
 

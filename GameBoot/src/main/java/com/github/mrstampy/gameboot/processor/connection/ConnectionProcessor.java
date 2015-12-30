@@ -51,7 +51,7 @@ import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLoader;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 
 /**
  * The Interface ConnectionProcessor provides the structure for processing
@@ -249,7 +249,7 @@ public interface ConnectionProcessor<C> extends ResponseContextCodes {
    *          the ctx
    * @return the system id
    */
-  SystemIdWrapper getSystemId(C ctx);
+  SystemIdKey getSystemId(C ctx);
 
   /**
    * Gets the locale.

@@ -63,7 +63,7 @@ import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.AbstractTransactionalGameBootProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 import com.github.mrstampy.gameboot.usersession.UserSessionLookup;
 import com.github.mrstampy.gameboot.usersession.data.entity.User;
@@ -141,7 +141,7 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
    */
   @Override
   protected void validate(UserMessage message) throws Exception {
-    SystemIdWrapper id = message.getSystemId();
+    SystemIdKey id = message.getSystemId();
     if (message.getFunction() == null) fail(getResponseContext(INVALID_USER_FUNCTION, id), "Invalid function");
 
     if (isEmpty(message.getUserName())) fail(getResponseContext(NO_USERNAME, id), "userName must be supplied");
@@ -256,7 +256,7 @@ public class UserMessageProcessor extends AbstractTransactionalGameBootProcessor
     String userName = message.getUserName();
     User user = assist.expectedUser(userName);
 
-    SystemIdWrapper id = message.getSystemId();
+    SystemIdKey id = message.getSystemId();
     switch (user.getState()) {
     case ACTIVE:
       break;

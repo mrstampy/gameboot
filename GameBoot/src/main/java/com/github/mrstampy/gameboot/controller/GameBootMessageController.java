@@ -68,7 +68,7 @@ import com.github.mrstampy.gameboot.messages.finder.MessageClassFinder;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 
 /**
@@ -209,7 +209,7 @@ public class GameBootMessageController implements ResponseContextCodes {
    *          the parameters
    * @return the response context
    */
-  protected ResponseContext getResponseContext(Integer code, SystemIdWrapper systemId, Object... parameters) {
+  protected ResponseContext getResponseContext(Integer code, SystemIdKey systemId, Object... parameters) {
     Locale locale = systemId == null ? Locale.getDefault() : localeRegistry.get(systemId);
     return lookup.lookup(code, locale, parameters);
   }

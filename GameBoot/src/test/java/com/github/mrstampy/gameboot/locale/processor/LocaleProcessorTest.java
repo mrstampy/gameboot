@@ -60,7 +60,7 @@ import com.github.mrstampy.gameboot.locale.messages.LocaleMessage;
 import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.systemid.SystemIdWrapper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 
 /**
  * The Class LocaleProcessorTest.
@@ -91,8 +91,8 @@ public class LocaleProcessorTest {
     validationFailExpected(null, "Null message");
 
     LocaleMessage msg = new LocaleMessage();
-    msg.setSystemId(new SystemIdWrapper(1l)); // set by the system on the way to
-                                              // processing
+    msg.setSystemId(new SystemIdKey(1l)); // set by the system on the way to
+                                          // processing
 
     validationFailExpected(msg, "No lang or country codes");
 
@@ -115,7 +115,7 @@ public class LocaleProcessorTest {
   public void testProcess() throws Exception {
     assertEquals(0, registry.size());
 
-    SystemIdWrapper systemId = new SystemIdWrapper(1l);
+    SystemIdKey systemId = new SystemIdKey(1l);
 
     LocaleMessage msg = new LocaleMessage();
     msg.setSystemId(systemId);
