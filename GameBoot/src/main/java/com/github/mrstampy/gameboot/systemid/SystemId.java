@@ -41,9 +41,15 @@
  */
 package com.github.mrstampy.gameboot.systemid;
 
+import com.github.mrstampy.gameboot.netty.AbstractNettyProcessor;
+import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
+
 /**
  * The Interface SystemId should be implemented to return a system-unique
  * identifier with each call to {@link #next()}.
+ * 
+ * @see AbstractNettyProcessor#onConnection(io.netty.channel.ChannelHandlerContext)
+ * @see AbstractWebSocketProcessor#onConnection(org.springframework.web.socket.WebSocketSession)
  */
 public interface SystemId {
 

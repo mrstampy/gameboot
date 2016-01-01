@@ -42,9 +42,12 @@
 package com.github.mrstampy.gameboot.systemid;
 
 import com.github.mrstampy.gameboot.util.registry.AbstractNumberKey;
+import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 
 /**
- * The Class SystemIdKey.
+ * This key is the primary key used by the system to get and set various
+ * transient objects in the {@link GameBootRegistry}s. It is created upon client
+ * connection and retired on disconnection.
  */
 public class SystemIdKey extends AbstractNumberKey<Long> {
 
