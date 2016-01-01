@@ -66,8 +66,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 import com.github.mrstampy.gameboot.data.GameBootDataConfiguration;
-import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.locale.processor.LocaleProcessor;
+import com.github.mrstampy.gameboot.locale.processor.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;

@@ -57,7 +57,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import com.github.mrstampy.gameboot.TestConfiguration;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.locale.messages.LocaleMessage;
-import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;

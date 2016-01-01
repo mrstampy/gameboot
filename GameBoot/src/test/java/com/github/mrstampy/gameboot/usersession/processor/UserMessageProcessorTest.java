@@ -71,7 +71,7 @@ import com.codahale.metrics.Timer;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.mrstampy.gameboot.TestConfiguration;
-import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
+import com.github.mrstampy.gameboot.locale.processor.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;

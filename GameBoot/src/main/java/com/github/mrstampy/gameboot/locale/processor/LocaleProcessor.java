@@ -54,7 +54,6 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.locale.messages.LocaleMessage;
-import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;

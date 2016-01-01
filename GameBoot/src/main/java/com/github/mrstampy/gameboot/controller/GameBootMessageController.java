@@ -57,7 +57,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
-import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
+import com.github.mrstampy.gameboot.locale.processor.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;

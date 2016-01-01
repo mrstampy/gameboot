@@ -46,7 +46,7 @@ import java.util.Locale;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.mrstampy.gameboot.exception.GameBootThrowable;
-import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
+import com.github.mrstampy.gameboot.locale.processor.LocaleRegistry;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;

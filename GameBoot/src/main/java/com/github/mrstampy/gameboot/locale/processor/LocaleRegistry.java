@@ -39,7 +39,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.locale.messages;
+package com.github.mrstampy.gameboot.locale.processor;
 
 import java.util.Locale;
 
