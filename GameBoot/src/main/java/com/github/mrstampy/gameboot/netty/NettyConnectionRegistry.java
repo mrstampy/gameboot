@@ -56,6 +56,7 @@ import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
+import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 
 import io.netty.channel.Channel;
@@ -122,7 +123,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
    * @param channel
    *          the channel
    */
-  public void put(Comparable<?> key, Channel channel) {
+  public void put(AbstractRegistryKey<?> key, Channel channel) {
     super.put(key, channel);
     channel.closeFuture().addListener(f -> map.remove(key));
   }
@@ -137,7 +138,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
    * @param listeners
    *          the listeners
    */
-  public void send(Comparable<?> key, String message, ChannelFutureListener... listeners) {
+  public void send(AbstractRegistryKey<?> key, String message, ChannelFutureListener... listeners) {
     checkKey(key);
 
     Channel channel = get(key);
@@ -203,7 +204,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
    * @param key
    *          the key
    */
-  public void removeFromGroup(String groupKey, Comparable<?> key) {
+  public void removeFromGroup(String groupKey, AbstractRegistryKey<?> key) {
     checkKey(key);
     Channel channel = get(key);
     if (channel != null) removeFromGroup(groupKey, channel);

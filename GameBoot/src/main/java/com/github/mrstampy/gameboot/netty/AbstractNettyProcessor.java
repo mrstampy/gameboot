@@ -67,6 +67,7 @@ import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
+import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 
 import io.netty.channel.Channel;
@@ -376,7 +377,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   }
 
   private void processMappingKeys(Response r, Channel channel) {
-    Comparable<?>[] keys = r.getMappingKeys();
+    AbstractRegistryKey<?>[] keys = r.getMappingKeys();
     if (keys == null || keys.length == 0) return;
 
     for (int i = 0; i < keys.length; i++) {

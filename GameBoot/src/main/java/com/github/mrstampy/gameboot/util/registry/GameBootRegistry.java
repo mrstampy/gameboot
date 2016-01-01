@@ -41,8 +41,6 @@
  */
 package com.github.mrstampy.gameboot.util.registry;
 
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
 import java.lang.invoke.MethodHandles;
 import java.util.Collections;
 import java.util.Map;
@@ -68,7 +66,7 @@ public abstract class GameBootRegistry<V> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /** The map. */
-  protected Map<Comparable<?>, V> map = new ConcurrentHashMap<>();
+  protected Map<AbstractRegistryKey<?>, V> map = new ConcurrentHashMap<>();
 
   /**
    * Put.
@@ -78,7 +76,7 @@ public abstract class GameBootRegistry<V> {
    * @param value
    *          the value
    */
-  public void put(Comparable<?> key, V value) {
+  public void put(AbstractRegistryKey<?> key, V value) {
     checkKey(key);
     checkValue(value);
 
@@ -104,7 +102,7 @@ public abstract class GameBootRegistry<V> {
    *          the key
    * @return the v
    */
-  public V get(Comparable<?> key) {
+  public V get(AbstractRegistryKey<?> key) {
     checkKey(key);
 
     return map.get(key);
@@ -117,7 +115,7 @@ public abstract class GameBootRegistry<V> {
    *          the key
    * @return the v
    */
-  public V remove(Comparable<?> key) {
+  public V remove(AbstractRegistryKey<?> key) {
     checkKey(key);
 
     if (isLogOk()) log.debug("Deregistering {} in {}", key, getClass().getSimpleName());
@@ -132,7 +130,7 @@ public abstract class GameBootRegistry<V> {
    *          the key
    * @return true, if successful
    */
-  public boolean contains(Comparable<?> key) {
+  public boolean contains(AbstractRegistryKey<?> key) {
     checkKey(key);
     return map.containsKey(key);
   }
@@ -165,12 +163,12 @@ public abstract class GameBootRegistry<V> {
    *          the value
    * @return the keys for value
    */
-  public Set<Entry<Comparable<?>, V>> getKeysForValue(V value) {
+  public Set<Entry<AbstractRegistryKey<?>, V>> getKeysForValue(V value) {
     return Collections
         .unmodifiableSet(map.entrySet().stream().filter(e -> isValue(e, value)).collect(Collectors.toSet()));
   }
 
-  private boolean isValue(Entry<Comparable<?>, V> e, V value) {
+  private boolean isValue(Entry<AbstractRegistryKey<?>, V> e, V value) {
     return value == e.getValue() || value.equals(e.getValue());
   }
 
@@ -180,12 +178,8 @@ public abstract class GameBootRegistry<V> {
    * @param key
    *          the key
    */
-  protected void checkKey(Comparable<?> key) {
+  protected void checkKey(AbstractRegistryKey<?> key) {
     if (key == null) fail("No key");
-
-    if (key instanceof String) {
-      if (isEmpty((String) key)) fail("No key");
-    }
   }
 
   /**

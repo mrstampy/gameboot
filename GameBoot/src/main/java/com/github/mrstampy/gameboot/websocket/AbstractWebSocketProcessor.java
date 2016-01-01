@@ -75,6 +75,7 @@ import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
+import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 
 /**
@@ -164,7 +165,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
     SystemIdKey systemId = systemIds.remove(id);
     cleaner.cleanup(systemId);
 
-    Set<Entry<Comparable<?>, WebSocketSession>> set = registry.getKeysForValue(session);
+    Set<Entry<AbstractRegistryKey<?>, WebSocketSession>> set = registry.getKeysForValue(session);
 
     set.forEach(e -> registry.remove(e.getKey()));
   }
@@ -458,7 +459,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   }
 
   private void processMappingKeys(Response r, WebSocketSession session) {
-    Comparable<?>[] keys = r.getMappingKeys();
+    AbstractRegistryKey<?>[] keys = r.getMappingKeys();
     if (keys == null || keys.length == 0) return;
 
     for (int i = 0; i < keys.length; i++) {

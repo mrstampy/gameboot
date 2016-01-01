@@ -45,6 +45,7 @@ import java.util.Locale;
 
 import org.springframework.stereotype.Component;
 
+import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 
 /**
@@ -59,7 +60,7 @@ public class LocaleRegistry extends GameBootRegistry<Locale> {
    * @see com.github.mrstampy.gameboot.util.GameBootRegistry#get(java.lang.
    * Comparable)
    */
-  public Locale get(Comparable<?> key) {
+  public Locale get(AbstractRegistryKey<?> key) {
     Locale l = super.get(key);
 
     return l == null ? Locale.getDefault() : l;

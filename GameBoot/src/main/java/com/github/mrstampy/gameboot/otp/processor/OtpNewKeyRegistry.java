@@ -62,6 +62,7 @@ import com.github.mrstampy.gameboot.otp.netty.OtpEncryptedNettyHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpClearWebSocketHandler;
 import com.github.mrstampy.gameboot.otp.websocket.OtpEncryptedWebSocketHandler;
 import com.github.mrstampy.gameboot.systemid.SystemId;
+import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 
 /**
@@ -110,7 +111,7 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
    *          the value
    */
   @Override
-  public void put(Comparable<?> key, byte[] value) {
+  public void put(AbstractRegistryKey<?> key, byte[] value) {
     ScheduledFuture<?> sf = futures.remove(key);
     if (sf != null) sf.cancel(true);
 
@@ -128,7 +129,7 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
    * @return the byte[]
    */
   @Override
-  public byte[] remove(Comparable<?> key) {
+  public byte[] remove(AbstractRegistryKey<?> key) {
     byte[] b = super.remove(key);
 
     ScheduledFuture<?> sf = futures.remove(key);
@@ -146,7 +147,7 @@ public class OtpNewKeyRegistry extends GameBootRegistry<byte[]> {
     return false;
   }
 
-  private void cleanup(Comparable<?> key) {
+  private void cleanup(AbstractRegistryKey<?> key) {
     super.remove(key);
     futures.remove(key);
   }

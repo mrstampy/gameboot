@@ -45,6 +45,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.netty.AbstractNettyProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
+import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 import com.github.mrstampy.gameboot.web.WebProcessor;
 import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
@@ -84,7 +85,7 @@ public class Response extends AbstractGameBootMessage {
 
   private Object[] payload;
 
-  private Comparable<?>[] mappingKeys;
+  private AbstractRegistryKey<?>[] mappingKeys;
 
   /**
    * Instantiates a new response.
@@ -217,7 +218,7 @@ public class Response extends AbstractGameBootMessage {
    * @return the mapping keys
    */
   @JsonIgnore
-  public Comparable<?>[] getMappingKeys() {
+  public AbstractRegistryKey<?>[] getMappingKeys() {
     return mappingKeys;
   }
 
@@ -239,7 +240,7 @@ public class Response extends AbstractGameBootMessage {
    *      com.github.mrstampy.gameboot.controller.GameBootMessageController,
    *      AbstractGameBootMessage)
    */
-  public void setMappingKeys(Comparable<?>... mappingKeys) {
+  public void setMappingKeys(AbstractRegistryKey<?>... mappingKeys) {
     this.mappingKeys = mappingKeys;
   }
 

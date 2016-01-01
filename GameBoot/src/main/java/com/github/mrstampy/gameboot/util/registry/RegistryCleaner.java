@@ -64,7 +64,7 @@ public class RegistryCleaner {
    * @param key
    *          the key
    */
-  public void cleanup(Comparable<?> key) {
+  public void cleanup(AbstractRegistryKey<?> key) {
     if (key == null) return;
 
     registries.forEach(r -> r.remove(key));

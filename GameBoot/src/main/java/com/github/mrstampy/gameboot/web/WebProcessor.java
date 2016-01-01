@@ -73,6 +73,7 @@ import com.github.mrstampy.gameboot.processor.connection.AbstractConnectionProce
 import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
+import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 
 /**
@@ -155,7 +156,7 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> {
     SystemIdKey systemId = systemIds.remove(id);
     cleaner.cleanup(systemId);
 
-    Set<Entry<Comparable<?>, HttpSession>> set = registry.getKeysForValue(httpSession);
+    Set<Entry<AbstractRegistryKey<?>, HttpSession>> set = registry.getKeysForValue(httpSession);
 
     set.forEach(e -> registry.remove(e.getKey()));
   }
@@ -401,7 +402,7 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> {
   }
 
   private void processMappingKeys(Response r, HttpSession httpSession) {
-    Comparable<?>[] keys = r.getMappingKeys();
+    AbstractRegistryKey<?>[] keys = r.getMappingKeys();
     if (keys == null || keys.length == 0) return;
 
     for (int i = 0; i < keys.length; i++) {
