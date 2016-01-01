@@ -51,6 +51,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Profile;
+import org.springframework.web.socket.BinaryMessage;
+import org.springframework.web.socket.WebSocketMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
@@ -122,13 +124,18 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
     }
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor#
+   * onConnection(org.springframework.web.socket.WebSocketSession)
+   */
   public void onConnection(WebSocketSession session) throws Exception {
     super.onConnection(session);
 
     Response r = new Response(ResponseCode.INFO, new SystemIdResponse(getSystemId(session).getValue()));
 
     sendMessage(session, converter.toJsonArray(r));
-    log.debug("Sent system id to client");
   }
 
   /*
@@ -139,30 +146,33 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
    * (org.springframework.web.socket.WebSocketSession, java.lang.Object)
    */
   public void onMessage(WebSocketSession session, Object msg) throws Exception {
-    if (!(msg instanceof byte[])) {
-      sendError(getResponseContext(NOT_BYTE_ARRAY, session), session, "Message must be a byte array");
+    if (!(msg instanceof BinaryMessage)) {
+      sendError(getResponseContext(NOT_BYTE_ARRAY, session),
+          session,
+          "Message must be a BinaryMessage: " + msg.getClass());
       return;
     }
 
-    byte[] mb = (byte[]) msg;
+    byte[] mb = ((BinaryMessage) msg).getPayload().array();
 
-    byte[] key = keyRegistry.get(session.getId());
+    byte[] key = keyRegistry.get(getSystemId(session));
 
     byte[] b = evaluateForNewKeyAck(session, mb);
 
     if (key == null) {
-      super.onMessage(session, b);
+      onMessageImpl(session, b);
       return;
     }
 
     helper.incr(OTP_DECRYPT_COUNTER);
 
+    log.debug("Decrypting? {}", b == mb);
+
     byte[] converted = b == mb ? oneTimePad.convert(key, mb) : b;
 
-    super.onMessage(session, converted);
+    onMessageImpl(session, converted);
   }
 
-  @SuppressWarnings("unused")
   private byte[] evaluateForNewKeyAck(WebSocketSession session, byte[] msg) {
     SystemIdKey systemId = getSystemId(session);
     if (!newKeyRegistry.contains(systemId)) return msg;
@@ -172,6 +182,7 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
     try {
       byte[] converted = oneTimePad.convert(newKey, msg);
       OtpNewKeyAck ack = converter.fromJson(converted);
+      log.debug("Received new key ack id {} on {}", ack.getId(), session);
       return converted;
     } catch (Exception e) {
       String s = keyRegistry.contains(systemId) ? "old key" : "unencrypted";
@@ -253,7 +264,20 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
    * @return true, if is encrypting
    */
   public boolean isEncrypting(WebSocketSession session) {
-    return keyRegistry.contains(session.getId());
+    return keyRegistry.contains(getSystemId(session));
+  }
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor#
+   * createMessage(org.springframework.web.socket.WebSocketSession,
+   * java.lang.Object)
+   */
+  protected WebSocketMessage<?> createMessage(WebSocketSession session, Object msg) throws Exception {
+    byte[] message = encryptIfRequired(session, msg);
+
+    return super.createMessage(session, message);
   }
 
   /**
@@ -276,7 +300,9 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
     byte[] processed = (msg instanceof byte[]) ? (byte[]) msg : ((String) msg).getBytes();
     if (!isEncrypting(session)) return processed;
 
-    byte[] key = keyRegistry.get(session.getId());
+    log.debug("Encrypting message");
+
+    byte[] key = keyRegistry.get(getSystemId(session));
 
     helper.incr(OTP_ENCRYPT_COUNTER);
 
@@ -318,7 +344,7 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
 
     Long sysId = keyRequest.getOtpSystemId();
     SystemIdKey thisSysId = getSystemId(session);
-    boolean ok = d && isEncrypting(session) && thisSysId.equals(sysId);
+    boolean ok = d && isEncrypting(session) && thisSysId.getValue().equals(sysId);
 
     if (!ok) log.error("Delete key for {} received on {}, key {}", sysId, session.getRemoteAddress(), thisSysId);
 

@@ -396,15 +396,26 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
    *          the session
    * @param msg
    *          the msg
-   * @throws IOException
-   *           if message cannot be sent.
+   * @throws Exception
+   *           the exception
    */
-  public void sendMessage(WebSocketSession session, Object msg) throws IOException {
-    WebSocketMessage<?> toGo = createMessage(msg);
+  public void sendMessage(WebSocketSession session, Object msg) throws Exception {
+    WebSocketMessage<?> toGo = createMessage(session, msg);
     session.sendMessage(toGo);
   }
 
-  private WebSocketMessage<?> createMessage(Object msg) {
+  /**
+   * Creates the message.
+   *
+   * @param session
+   *          the session
+   * @param msg
+   *          the msg
+   * @return the web socket message
+   * @throws Exception
+   *           the exception
+   */
+  protected WebSocketMessage<?> createMessage(WebSocketSession session, Object msg) throws Exception {
     if (msg instanceof byte[]) return new BinaryMessage((byte[]) msg);
 
     if (msg instanceof String) return new TextMessage(((String) msg).getBytes());

@@ -63,6 +63,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.core.io.Resource;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 import com.github.mrstampy.gameboot.data.GameBootDataConfiguration;
 import com.github.mrstampy.gameboot.locale.messages.LocaleRegistry;
@@ -295,6 +296,7 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
 @ComponentScan(basePackages = "com.github.mrstampy.gameboot")
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @FiberSecureSpringBootApplication
+@EnableWebSocket
 public class GameBoot {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

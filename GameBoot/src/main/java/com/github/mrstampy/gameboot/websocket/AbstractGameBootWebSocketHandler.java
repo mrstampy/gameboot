@@ -91,7 +91,7 @@ public abstract class AbstractGameBootWebSocketHandler<C, CP extends ConnectionP
    */
   @Override
   public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-    webSocketProcessor.onConnection(session);
+    webSocketProcessor.onDisconnection(session);
   }
 
   /*
@@ -102,7 +102,7 @@ public abstract class AbstractGameBootWebSocketHandler<C, CP extends ConnectionP
    */
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-    webSocketProcessor.onDisconnection(session);
+    webSocketProcessor.onConnection(session);
   }
 
   /**

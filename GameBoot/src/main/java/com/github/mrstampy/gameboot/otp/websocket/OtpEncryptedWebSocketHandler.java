@@ -224,6 +224,11 @@ public class OtpEncryptedWebSocketHandler extends BinaryWebSocketHandler {
    *           the exception
    */
   protected boolean validateChannel(WebSocketSession session, OtpKeyRequest message) throws Exception {
+    if (message.getKeyFunction() == null) {
+      session.close();
+      return false;
+    }
+
     switch (message.getKeyFunction()) {
     case NEW:
       break;
