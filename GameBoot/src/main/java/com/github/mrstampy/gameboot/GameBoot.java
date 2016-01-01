@@ -83,11 +83,13 @@ import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 import com.github.mrstampy.gameboot.processor.AbstractTransactionalGameBootProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessorAspect;
+import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 import com.github.mrstampy.gameboot.security.SecurityConfiguration;
 import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.usersession.UserSessionAssist;
 import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
+import com.github.mrstampy.gameboot.web.WebProcessor;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
 import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
 
@@ -109,6 +111,18 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * new message types sent from the client to the server for processing.<br>
  * 2. A {@link Response} message (or no message) is sent back to the client for
  * messages processed.<br>
+ * <br>
+ * 
+ * The interface {@link GameBootProcessor} is implemented for each
+ * {@link AbstractGameBootMessage}, processing the message and returning the
+ * {@link Response}.<br>
+ * <br>
+ * 
+ * The interface {@link ConnectionProcessor} ({@link WebProcessor},
+ * {@link AbstractNettyProcessor}, {@link AbstractWebSocketProcessor}) provides
+ * context around incoming messages, making available the context object,
+ * setting and management of {@link SystemId}s, processing of
+ * {@link Response#getMappingKeys()} and any other contextual processing.<br>
  * <br>
  * 
  * Technologies have been included to assist with the rapid processing of high
@@ -137,7 +151,13 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * new messages. <br>
  * <br>
  * 
- * 4. Create {@link Configuration}s aware of new classes and functionalities as
+ * 4. Ensure the {@link ConnectionProcessor} related to the application's
+ * {@link AbstractGameBootMessage#getTransport()} ({@link WebProcessor},
+ * {@link AbstractNettyProcessor}, {@link AbstractWebSocketProcessor}) can
+ * process the application's messages.<br>
+ * <br>
+ * 
+ * 5. Create {@link Configuration}s aware of new classes and functionalities as
  * required by your application and a main class to start and wire together your
  * application.<br>
  * <br>
