@@ -39,89 +39,33 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.util.registry;
+package com.github.mrstampy.gameboot.usersession.processor;
 
-import org.apache.commons.lang3.builder.HashCodeBuilder;
+import com.github.mrstampy.gameboot.netty.AbstractNettyProcessor;
+import com.github.mrstampy.gameboot.usersession.data.entity.User;
+import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
+import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
+import com.github.mrstampy.gameboot.web.WebProcessor;
+import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
 
 /**
- * The Class AbstractNumberKey is to be subclassed for {@link GameBootRegistry}
- * keys extending {@link java.lang.Number} and implementing
- * {@link java.lang.Comparable}.
- *
- * @param <N>
- *          the number type
+ * Given a {@link User#getUserName()} this key is used to map associated
+ * transient objects to a {@link GameBootRegistry}.
+ * 
+ * @see AbstractNettyProcessor
+ * @see AbstractWebSocketProcessor
+ * @see WebProcessor
  */
-public abstract class AbstractNumberKey<N extends Number> implements Comparable<AbstractNumberKey<N>> {
-
-  private final N value;
+public class UsernameKey extends AbstractRegistryKey<String> {
 
   /**
-   * Instantiates a new abstract number key.
+   * Instantiates a new username key.
    *
    * @param value
    *          the value
    */
-  public AbstractNumberKey(N value) {
-    if (value == null) throw new NullPointerException("No value");
-    this.value = value;
-  }
-
-  /**
-   * Gets the value.
-   *
-   * @return the value
-   */
-  public N getValue() {
-    return value;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#toString()
-   */
-  public String toString() {
-    return value.toString();
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
-  @SuppressWarnings("unchecked")
-  public boolean equals(Object o) {
-    if (o == null || !getClass().equals(o.getClass())) return false;
-
-    AbstractNumberKey<N> ank = (AbstractNumberKey<N>) o;
-
-    return this.value.equals(ank.value);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
-  public int hashCode() {
-    return HashCodeBuilder.reflectionHashCode(this);
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Comparable#compareTo(java.lang.Object)
-   */
-  @SuppressWarnings("unchecked")
-  @Override
-  public int compareTo(AbstractNumberKey<N> o) {
-    if (!(value instanceof Comparable)) {
-      throw new IllegalStateException(value.getClass() + " is not a java.lang.Comparable");
-    }
-
-    Comparable<N> left = (Comparable<N>) value;
-
-    return left.compareTo(o.value);
+  public UsernameKey(String value) {
+    super(value);
   }
 
 }

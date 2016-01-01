@@ -41,7 +41,7 @@
  */
 package com.github.mrstampy.gameboot.systemid;
 
-import com.github.mrstampy.gameboot.util.registry.AbstractNumberKey;
+import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 
 /**
@@ -49,7 +49,7 @@ import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
  * transient objects in the {@link GameBootRegistry}s. It is created upon client
  * connection and retired on disconnection.
  */
-public class SystemIdKey extends AbstractNumberKey<Long> {
+public class SystemIdKey extends AbstractRegistryKey<Long> {
 
   /**
    * Instantiates a new system id key.

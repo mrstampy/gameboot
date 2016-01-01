@@ -68,6 +68,7 @@ import com.github.mrstampy.gameboot.usersession.data.entity.UserSession;
 import com.github.mrstampy.gameboot.usersession.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.usersession.data.repository.UserSessionRepository;
 import com.github.mrstampy.gameboot.usersession.processor.UserSessionKey;
+import com.github.mrstampy.gameboot.usersession.processor.UsernameKey;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 
 /**
@@ -274,7 +275,7 @@ public class UserSessionAssist implements ResponseContextCodes {
 
     User user = session.getUser();
 
-    cleaner.cleanup(user.getUserName());
+    cleaner.cleanup(new UsernameKey(user.getUserName()));
     cleaner.cleanup(new UserSessionKey(session));
 
     closeSession(session);

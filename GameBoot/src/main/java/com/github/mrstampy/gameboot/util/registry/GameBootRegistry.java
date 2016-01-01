@@ -57,7 +57,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Simple registry superclass backed by a {@link ConcurrentHashMap}. It is
  * recommended when using a {@link Number} as a key to subclass
- * {@link AbstractNumberKey} in order to be able to type the key and avoid
+ * {@link AbstractRegistryKey} in order to be able to type the key and avoid
  * collisions.
  *
  * @param <V>
