@@ -180,7 +180,6 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   public void onMessage(WebSocketSession session, Object msg) throws Exception {
     if (!(msg instanceof WebSocketMessage<?>)) throw new IllegalArgumentException("Must be a WebSocketMessage");
 
-    helper.incr(MESSAGE_COUNTER);
     Object payload = extractPayload(session, msg);
 
     if (payload instanceof String) {
@@ -281,8 +280,11 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
    * channel.WebSocketSession, java.lang.String)
    */
   @Override
-  public <AGBM extends AbstractGameBootMessage> void process(WebSocketSession session, String msg) throws Exception {
+  public <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session, String msg)
+      throws Exception {
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
+
+    helper.incr(MESSAGE_COUNTER);
 
     Response response = null;
     AGBM agbm = null;
@@ -293,7 +295,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
       type = agbm.getType();
       id = agbm.getId();
 
-      if (!preProcess(session, agbm)) return;
+      if (!preProcess(session, agbm)) return null;
 
       response = process(session, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
@@ -307,11 +309,13 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
 
     postProcess(session, agbm, response);
 
-    if (response == null) return;
+    if (response == null) return null;
 
     String r = converter.toJson(response);
 
     sendMessage(session, r, response);
+
+    return response;
   }
 
   /*
@@ -322,8 +326,11 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
    * channel.WebSocketSession, byte[])
    */
   @Override
-  public <AGBM extends AbstractGameBootMessage> void process(WebSocketSession session, byte[] msg) throws Exception {
+  public <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session, byte[] msg)
+      throws Exception {
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
+
+    helper.incr(MESSAGE_COUNTER);
 
     Response response = null;
     AGBM agbm = null;
@@ -331,8 +338,10 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
     Integer id = null;
     try {
       agbm = converter.fromJson(msg);
+      type = agbm.getType();
+      id = agbm.getId();
 
-      if (!preProcess(session, agbm)) return;
+      if (!preProcess(session, agbm)) return null;
 
       response = process(session, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
@@ -346,11 +355,13 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
 
     postProcess(session, agbm, response);
 
-    if (response == null) return;
+    if (response == null) return null;
 
     byte[] r = converter.toJsonArray(response);
 
     sendMessage(session, r, response);
+
+    return response;
   }
 
   /*

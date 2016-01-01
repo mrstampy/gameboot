@@ -103,10 +103,11 @@ public interface ConnectionProcessor<C> extends ResponseContextCodes {
    *          the ctx
    * @param msg
    *          the msg
+   * @return the response
    * @throws Exception
    *           the exception
    */
-  <AGBM extends AbstractGameBootMessage> void process(C ctx, String msg) throws Exception;
+  <AGBM extends AbstractGameBootMessage> Response process(C ctx, String msg) throws Exception;
 
   /**
    * Implement to process byte arrays.
@@ -117,10 +118,11 @@ public interface ConnectionProcessor<C> extends ResponseContextCodes {
    *          the ctx
    * @param msg
    *          the msg
+   * @return the response
    * @throws Exception
    *           the exception
    */
-  <AGBM extends AbstractGameBootMessage> void process(C ctx, byte[] msg) throws Exception;
+  <AGBM extends AbstractGameBootMessage> Response process(C ctx, byte[] msg) throws Exception;
 
   /**
    * Implement to process the converted {@link AbstractGameBootMessage}.

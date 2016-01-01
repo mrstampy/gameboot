@@ -163,8 +163,6 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    */
   @Override
   public void onMessage(ChannelHandlerContext ctx, Object msg) throws Exception {
-    helper.incr(MESSAGE_COUNTER);
-
     if (msg instanceof String) {
       onMessageImpl(ctx, (String) msg);
     } else if (msg instanceof byte[]) {
@@ -242,8 +240,11 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * channel.ChannelHandlerContext, java.lang.String)
    */
   @Override
-  public <AGBM extends AbstractGameBootMessage> void process(ChannelHandlerContext ctx, String msg) throws Exception {
+  public <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, String msg)
+      throws Exception {
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
+
+    helper.incr(MESSAGE_COUNTER);
 
     Response response = null;
     AGBM agbm = null;
@@ -254,7 +255,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
       type = agbm.getType();
       id = agbm.getId();
 
-      if (!preProcess(ctx, agbm)) return;
+      if (!preProcess(ctx, agbm)) return null;
 
       response = process(ctx, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
@@ -268,11 +269,13 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
 
     postProcess(ctx, agbm, response);
 
-    if (response == null) return;
+    if (response == null) return null;
 
     String r = converter.toJson(response);
 
     sendMessage(ctx, r, response);
+
+    return response;
   }
 
   /*
@@ -283,8 +286,11 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    * channel.ChannelHandlerContext, byte[])
    */
   @Override
-  public <AGBM extends AbstractGameBootMessage> void process(ChannelHandlerContext ctx, byte[] msg) throws Exception {
+  public <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, byte[] msg)
+      throws Exception {
     GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
+
+    helper.incr(MESSAGE_COUNTER);
 
     Response response = null;
     AGBM agbm = null;
@@ -295,7 +301,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
       type = agbm.getType();
       id = agbm.getId();
 
-      if (!preProcess(ctx, agbm)) return;
+      if (!preProcess(ctx, agbm)) return null;
 
       response = process(ctx, controller, agbm);
     } catch (GameBootException | GameBootRuntimeException e) {
@@ -309,11 +315,13 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
 
     postProcess(ctx, agbm, response);
 
-    if (response == null) return;
+    if (response == null) return null;
 
     byte[] r = converter.toJsonArray(response);
 
     sendMessage(ctx, r, response);
+
+    return response;
   }
 
   /*

@@ -46,6 +46,7 @@ import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.netty.AbstractNettyProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
+import com.github.mrstampy.gameboot.web.AbstractWebProcessor;
 import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
 
 /**
@@ -232,6 +233,9 @@ public class Response extends AbstractGameBootMessage {
    *      com.github.mrstampy.gameboot.controller.GameBootMessageController,
    *      AbstractGameBootMessage)
    * @see AbstractWebSocketProcessor#process(org.springframework.web.socket.WebSocketSession,
+   *      com.github.mrstampy.gameboot.controller.GameBootMessageController,
+   *      AbstractGameBootMessage)
+   * @see AbstractWebProcessor#process(javax.servlet.http.HttpSession,
    *      com.github.mrstampy.gameboot.controller.GameBootMessageController,
    *      AbstractGameBootMessage)
    */

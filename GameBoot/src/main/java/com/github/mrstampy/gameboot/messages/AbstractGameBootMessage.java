@@ -53,6 +53,7 @@ import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
+import com.github.mrstampy.gameboot.web.AbstractWebProcessor;
 import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
 
 /**
@@ -178,6 +179,9 @@ public abstract class AbstractGameBootMessage {
    *      com.github.mrstampy.gameboot.controller.GameBootMessageController,
    *      AbstractGameBootMessage)
    * @see AbstractWebSocketProcessor#process(org.springframework.web.socket.WebSocketSession,
+   *      com.github.mrstampy.gameboot.controller.GameBootMessageController,
+   *      AbstractGameBootMessage)
+   * @see AbstractWebProcessor#process(javax.servlet.http.HttpSession,
    *      com.github.mrstampy.gameboot.controller.GameBootMessageController,
    *      AbstractGameBootMessage)
    */
