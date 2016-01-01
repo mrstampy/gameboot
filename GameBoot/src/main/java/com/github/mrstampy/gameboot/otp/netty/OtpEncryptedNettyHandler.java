@@ -211,6 +211,12 @@ public class OtpEncryptedNettyHandler extends SimpleChannelInboundHandler<byte[]
   private OtpKeyRequest convertAndValidate(ChannelHandlerContext ctx, byte[] msg) throws Exception {
     OtpKeyRequest message = converter.fromJson(msg);
 
+    if (message.getKeyFunction() == null) {
+      log.error("No key function, closing channel");
+      ctx.close();
+      return null;
+    }
+
     switch (message.getKeyFunction()) {
     case NEW:
       break;
