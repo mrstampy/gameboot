@@ -50,7 +50,7 @@ import org.apache.commons.lang3.builder.HashCodeBuilder;
  * @param <N>
  *          the type
  */
-public abstract class AbstractRegistryKey<N extends Comparable<?>> implements Comparable<AbstractRegistryKey<N>> {
+public abstract class AbstractRegistryKey<N extends Comparable<N>> implements Comparable<AbstractRegistryKey<N>> {
 
   private final N value;
 
@@ -111,16 +111,9 @@ public abstract class AbstractRegistryKey<N extends Comparable<?>> implements Co
    * 
    * @see java.lang.Comparable#compareTo(java.lang.Object)
    */
-  @SuppressWarnings("unchecked")
   @Override
   public int compareTo(AbstractRegistryKey<N> o) {
-    if (!(value instanceof Comparable)) {
-      throw new IllegalStateException(value.getClass() + " is not a java.lang.Comparable");
-    }
-
-    Comparable<N> left = (Comparable<N>) value;
-
-    return left.compareTo(o.value);
+    return value.compareTo(o.value);
   }
 
 }
