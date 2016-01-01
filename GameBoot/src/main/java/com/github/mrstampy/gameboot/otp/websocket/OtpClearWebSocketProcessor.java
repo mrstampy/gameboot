@@ -59,6 +59,8 @@ import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.messages.SystemIdResponse;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
@@ -118,6 +120,15 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
     if (!helper.containsCounter(OTP_ENCRYPT_COUNTER)) {
       helper.counter(OTP_ENCRYPT_COUNTER, getClass(), "otp", "encrypt", "counter");
     }
+  }
+
+  public void onConnection(WebSocketSession session) throws Exception {
+    super.onConnection(session);
+
+    Response r = new Response(ResponseCode.INFO, new SystemIdResponse(getSystemId(session).getValue()));
+
+    sendMessage(session, converter.toJsonArray(r));
+    log.debug("Sent system id to client");
   }
 
   /*

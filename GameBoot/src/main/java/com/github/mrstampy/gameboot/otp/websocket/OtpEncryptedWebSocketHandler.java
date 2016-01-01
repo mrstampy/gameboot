@@ -46,6 +46,8 @@ import java.lang.invoke.MethodHandles;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 
+import javax.websocket.Session;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +58,7 @@ import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.adapter.AbstractWebSocketSession;
 import org.springframework.web.socket.handler.BinaryWebSocketHandler;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
@@ -120,11 +123,12 @@ public class OtpEncryptedWebSocketHandler extends BinaryWebSocketHandler {
    * @throws Exception
    *           the exception
    */
+  @SuppressWarnings("unchecked")
   @Override
   public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-    String s = session.getUri().toString();
+    boolean encrypted = ((AbstractWebSocketSession<Session>) session).getNativeSession().isSecure();
 
-    if (!s.startsWith("wss")) {
+    if (!encrypted) {
       log.error("Not an encrypted web socket {}, disconnecting", session.getRemoteAddress());
       session.close();
     }

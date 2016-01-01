@@ -55,10 +55,8 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
-import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.messages.SystemIdResponse;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
@@ -121,9 +119,6 @@ public class OtpClearWebSocketHandler
   @Qualifier(GameBootConcurrentConfiguration.GAME_BOOT_EXECUTOR)
   private ExecutorService svc;
 
-  @Autowired
-  private GameBootMessageConverter converter;
-
   /*
    * (non-Javadoc)
    * 
@@ -134,26 +129,6 @@ public class OtpClearWebSocketHandler
   @PostConstruct
   public void postConstruct() throws Exception {
     super.postConstruct();
-  }
-
-  /**
-   * After connection established.
-   *
-   * @param session
-   *          the session
-   * @throws Exception
-   *           the exception
-   */
-  @Override
-  public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-    super.afterConnectionEstablished(session);
-
-    OtpClearWebSocketProcessor webSocketProcessor = getConnectionProcessor();
-
-    Response r = new Response(ResponseCode.INFO,
-        new SystemIdResponse(webSocketProcessor.getSystemId(session).getValue()));
-
-    webSocketProcessor.sendMessage(session, converter.toJsonArray(r));
   }
 
   /*
