@@ -48,8 +48,12 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.github.mrstampy.gameboot.netty.AbstractNettyProcessor;
+import com.github.mrstampy.gameboot.processor.GameBootProcessor;
+import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
+import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
 
 /**
  * The superclass for all GameBoot JSON messages.
@@ -64,15 +68,16 @@ public abstract class AbstractGameBootMessage {
   private SystemIdKey systemId;
 
   /**
-   * The Enum Transport.
+   * The Enum Transport, used to indicate to the {@link GameBootProcessor} how
+   * the connection to the client is managed.
    */
   public enum Transport {
 
-    /** The web. */
+    /** Indicates that the message was received over the web. */
     WEB,
-    /** The web socket. */
+    /** Indicates that the message was received over a websocket. */
     WEB_SOCKET,
-    /** The netty. */
+    /** Indicates that the message was received over Netty */
     NETTY;
   }
 
@@ -141,10 +146,13 @@ public abstract class AbstractGameBootMessage {
   }
 
   /**
-   * Gets the system session id, transient data set (or not) by message
-   * processing to indicate keys for the various {@link GameBootRegistry}s.
+   * Transient value set by the GameBoot implementation prior to processing by
+   * its {@link GameBootProcessor}, can be used by the {@link GameBootProcessor}
+   * to get and set transient objects related to the connected client in the
+   * various {@link GameBootRegistry}s.
    *
    * @return the system session id
+   * @see SystemId
    */
   @JsonIgnore
   public SystemIdKey getSystemId() {
@@ -162,9 +170,16 @@ public abstract class AbstractGameBootMessage {
   }
 
   /**
-   * Gets the transport.
+   * This transient value is set by the GameBoot implementation prior to
+   * processing by its {@link GameBootProcessor}.
    *
    * @return the transport
+   * @see AbstractNettyProcessor#process(io.netty.channel.ChannelHandlerContext,
+   *      com.github.mrstampy.gameboot.controller.GameBootMessageController,
+   *      AbstractGameBootMessage)
+   * @see AbstractWebSocketProcessor#process(org.springframework.web.socket.WebSocketSession,
+   *      com.github.mrstampy.gameboot.controller.GameBootMessageController,
+   *      AbstractGameBootMessage)
    */
   @JsonIgnore
   public Transport getTransport() {

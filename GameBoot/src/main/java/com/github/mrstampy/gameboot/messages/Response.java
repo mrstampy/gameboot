@@ -43,10 +43,10 @@ package com.github.mrstampy.gameboot.messages;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.mrstampy.gameboot.messages.context.ResponseContext;
-import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.netty.AbstractNettyProcessor;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
-import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
+import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
 
 /**
  * The response to (intended) all GameBoot messages. {@link #getResponseCode()}
@@ -223,13 +223,17 @@ public class Response extends AbstractGameBootMessage {
   /**
    * Sets the mapping keys. {@link GameBootProcessor} implementations can use
    * this method to pass any mapping keys (userName, sessionId) to the
-   * infrastructure for ease of lookups.
+   * infrastructure for ease of lookups in the various {@link GameBootRegistry}
+   * s.
    *
    * @param mappingKeys
    *          the new mapping keys
-   * @see AbstractGameBootNettyMessageHandler
-   * @see AbstractGameBootWebSocketHandler
-   * @see GameBootRegistry
+   * @see AbstractNettyProcessor#process(io.netty.channel.ChannelHandlerContext,
+   *      com.github.mrstampy.gameboot.controller.GameBootMessageController,
+   *      AbstractGameBootMessage)
+   * @see AbstractWebSocketProcessor#process(org.springframework.web.socket.WebSocketSession,
+   *      com.github.mrstampy.gameboot.controller.GameBootMessageController,
+   *      AbstractGameBootMessage)
    */
   public void setMappingKeys(Comparable<?>... mappingKeys) {
     this.mappingKeys = mappingKeys;
