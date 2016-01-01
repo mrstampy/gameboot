@@ -46,10 +46,8 @@ import javax.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Profile;
 
-import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.messages.SystemIdResponse;
 import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
@@ -117,9 +115,6 @@ import io.netty.channel.ChannelPromise;
 public class OtpClearNettyHandler
     extends AbstractGameBootNettyMessageHandler<ChannelHandlerContext, OtpClearNettyProcessor> {
 
-  @Autowired
-  private GameBootMessageConverter converter;
-
   /**
    * Post construct.
    *
@@ -129,40 +124,6 @@ public class OtpClearNettyHandler
   @PostConstruct
   public void postConstruct() throws Exception {
     super.postConstruct();
-  }
-
-  /**
-   * Channel active.
-   *
-   * @param ctx
-   *          the ctx
-   * @throws Exception
-   *           the exception
-   */
-  @Override
-  public void channelActive(ChannelHandlerContext ctx) throws Exception {
-    super.channelActive(ctx);
-
-    OtpClearNettyProcessor cp = getConnectionProcessor();
-
-    Response r = new Response(ResponseCode.INFO, new SystemIdResponse(cp.getSystemId().getValue()));
-
-    cp.sendMessage(ctx, converter.toJsonArray(r), r);
-  }
-
-  /**
-   * Channel inactive.
-   *
-   * @param ctx
-   *          the ctx
-   * @throws Exception
-   *           the exception
-   */
-  @Override
-  public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-    super.channelInactive(ctx);
-
-    converter = null;
   }
 
   /**
