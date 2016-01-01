@@ -365,7 +365,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   public <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session,
       GameBootMessageController controller, AGBM agbm) throws Exception {
     agbm.setSystemId(getSystemId(session));
-    agbm.setTransport(Transport.NETTY);
+    agbm.setTransport(Transport.WEB_SOCKET);
     agbm.setLocal((InetSocketAddress) session.getLocalAddress());
     agbm.setRemote((InetSocketAddress) session.getRemoteAddress());
 
