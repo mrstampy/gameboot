@@ -58,7 +58,6 @@ import javax.websocket.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -72,7 +71,6 @@ import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
 /**
  * The Class WebSocketEndpoint.
  */
-@Component
 public class WebSocketEndpoint extends Endpoint {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

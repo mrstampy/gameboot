@@ -330,6 +330,8 @@ public class OtpNettyTest {
     assertTrue(r.isSuccess());
     assertEquals(2, r.getId().intValue());
 
+    Thread.sleep(100);
+
     assertFalse(encChannel.isActive());
   }
 

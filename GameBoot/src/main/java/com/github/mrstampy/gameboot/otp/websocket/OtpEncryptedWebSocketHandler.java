@@ -225,6 +225,7 @@ public class OtpEncryptedWebSocketHandler extends BinaryWebSocketHandler {
    */
   protected boolean validateChannel(WebSocketSession session, OtpKeyRequest message) throws Exception {
     if (message.getKeyFunction() == null) {
+      log.error("No key function, closing channel");
       session.close();
       return false;
     }

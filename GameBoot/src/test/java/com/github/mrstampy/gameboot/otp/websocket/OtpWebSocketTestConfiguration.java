@@ -90,6 +90,21 @@ public class OtpWebSocketTestConfiguration implements WebSocketConfigurer {
     return new WebSocketTestInitializer();
   }
 
+  /**
+   * Endpoint.
+   *
+   * @return the web socket endpoint
+   */
+  @Bean
+  public WebSocketEndpoint endpoint() {
+    return new WebSocketEndpoint();
+  }
+
+  /**
+   * Creates the web socket container.
+   *
+   * @return the servlet server container factory bean
+   */
   @Bean
   public ServletServerContainerFactoryBean createWebSocketContainer() {
     ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
