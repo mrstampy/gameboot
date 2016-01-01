@@ -242,7 +242,7 @@ public class UserMessageProcessorTest {
     sessionId = new UserSessionKey(session);
 
     assertEquals(2, r.getMappingKeys().length);
-    assertEquals(TEST_USER, r.getMappingKeys()[0]);
+    assertEquals(new UsernameKey(TEST_USER), r.getMappingKeys()[0]);
     assertEquals(sessionId, r.getMappingKeys()[1]);
 
     failExpected(m, "User logged in");
