@@ -48,11 +48,10 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
 
 import com.github.mrstampy.gameboot.otp.netty.OtpNettyTestConfiguration;
 import com.github.mrstampy.gameboot.otp.websocket.OtpWebSocketTestConfiguration;
-
-import co.paralleluniverse.springframework.boot.security.autoconfigure.web.FiberSecureSpringBootApplication;
 
 /**
  * The Class TestConfiguration.
@@ -61,7 +60,7 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
 @EnableAutoConfiguration
 @EnableAspectJAutoProxy(proxyTargetClass = true)
 @EnableCaching
-@FiberSecureSpringBootApplication
+@EnableWebSocket
 //@formatter:off
 @ComponentScan(
 		basePackages = "com.github.mrstampy.gameboot",

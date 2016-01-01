@@ -41,36 +41,25 @@
  */
 package com.github.mrstampy.gameboot.otp.websocket;
 
-import java.util.Arrays;
-
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 import org.springframework.web.socket.server.HandshakeHandler;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 import org.springframework.web.socket.server.standard.TomcatRequestUpgradeStrategy;
 import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
-import org.springframework.web.socket.server.support.WebSocketHttpRequestHandler;
 import org.springframework.web.socket.sockjs.transport.handler.WebSocketTransportHandler;
-
-import com.github.mrstampy.gameboot.otp.netty.client.ClientHandler;
-import com.github.mrstampy.gameboot.otp.websocket.client.ClearClientInitializer;
-import com.github.mrstampy.gameboot.otp.websocket.client.EncryptedClientInitializer;
-
-import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioSocketChannel;
 
 /**
  * The Class OtpWebSocketTestConfiguration.
  */
 @Configuration
 @PropertySource("/test.properties")
-@EnableWebSocket
 public class OtpWebSocketTestConfiguration implements WebSocketConfigurer {
 
   /** The Constant CLIENT_ENCRYPTED_BOOTSTRAP. */
@@ -79,17 +68,17 @@ public class OtpWebSocketTestConfiguration implements WebSocketConfigurer {
   /** The Constant CLIENT_CLEAR_BOOTSTRAP. */
   public static final String CLIENT_CLEAR_BOOTSTRAP = "CLIENT_CLEAR_BOOTSTRAP";
 
-  /** The Constant ENCRYPTED_WS. */
-  public static final String ENCRYPTED_WS = "Encrypted ws";
-
-  /** The Constant CLEAR_WS. */
-  public static final String CLEAR_WS = "Clear ws";
-
   @Value("${ws.path}")
   private String clrPath;
 
   @Value("${wss.path}")
   private String encPath;
+
+  @Autowired
+  private OtpClearWebSocketHandler clearHandler;
+
+  @Autowired
+  private OtpEncryptedWebSocketHandler encHandler;
 
   /**
    * Initer.
@@ -100,16 +89,15 @@ public class OtpWebSocketTestConfiguration implements WebSocketConfigurer {
   public WebSocketTestInitializer initer() {
     return new WebSocketTestInitializer();
   }
-  //
-  // @Bean
-  // public ServletServerContainerFactoryBean createWebSocketContainer() {
-  // ServletServerContainerFactoryBean container = new
-  // ServletServerContainerFactoryBean();
-  // container.setMaxTextMessageBufferSize(8192);
-  // container.setMaxBinaryMessageBufferSize(8192);
-  //
-  // return container;
-  // }
+
+  @Bean
+  public ServletServerContainerFactoryBean createWebSocketContainer() {
+    ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+    container.setMaxTextMessageBufferSize(8192);
+    container.setMaxBinaryMessageBufferSize(8192);
+
+    return container;
+  }
 
   /*
    * (non-Javadoc)
@@ -122,39 +110,11 @@ public class OtpWebSocketTestConfiguration implements WebSocketConfigurer {
   public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
     //@formatter:off
     registry
-      .addHandler(clearHandler(), clrPath)
-      .addHandler(encryptedHandler(), encPath)
+      .addHandler(clearHandler, clrPath)
+      .addHandler(encHandler, encPath)
       .addInterceptors(new HttpSessionHandshakeInterceptor())
       .setHandshakeHandler(createHandshakeHandler());
     //@formatter:on
-  }
-
-  /**
-   * Encrypted.
-   *
-   * @return the web socket http request handler
-   */
-  @Bean(name = ENCRYPTED_WS)
-  public WebSocketHttpRequestHandler encrypted() {
-    WebSocketHttpRequestHandler ws = new WebSocketHttpRequestHandler(encryptedHandler(), createHandshakeHandler());
-
-    ws.setHandshakeInterceptors(Arrays.asList(new HttpSessionHandshakeInterceptor()));
-
-    return ws;
-  }
-
-  /**
-   * Clear.
-   *
-   * @return the web socket http request handler
-   */
-  @Bean(name = CLEAR_WS)
-  public WebSocketHttpRequestHandler clear() {
-    WebSocketHttpRequestHandler ws = new WebSocketHttpRequestHandler(clearHandler(), createHandshakeHandler());
-
-    ws.setHandshakeInterceptors(Arrays.asList(new HttpSessionHandshakeInterceptor()));
-
-    return ws;
   }
 
   /**
@@ -185,70 +145,6 @@ public class OtpWebSocketTestConfiguration implements WebSocketConfigurer {
   @Bean
   public OtpClearWebSocketHandler clearHandler() {
     return new OtpClearWebSocketHandler();
-  }
-
-  /**
-   * Encrypted client bootstrap.
-   *
-   * @return the bootstrap
-   * @throws Exception
-   *           the exception
-   */
-  @Bean(name = CLIENT_ENCRYPTED_BOOTSTRAP)
-  public Bootstrap encryptedClientBootstrap() throws Exception {
-    //@formatter:off
-    return new Bootstrap()
-        .channel(NioSocketChannel.class)
-        .group(new NioEventLoopGroup())
-        .handler(encryptedClientInitializer());
-    //@formatter:on
-  }
-
-  /**
-   * Clear client bootstrap.
-   *
-   * @return the bootstrap
-   * @throws Exception
-   *           the exception
-   */
-  @Bean(name = CLIENT_CLEAR_BOOTSTRAP)
-  public Bootstrap clearClientBootstrap() throws Exception {
-    //@formatter:off
-    return new Bootstrap()
-        .channel(NioSocketChannel.class)
-        .group(new NioEventLoopGroup())
-        .handler(clearClientInitializer());
-    //@formatter:on
-  }
-
-  /**
-   * Encrypted client initializer.
-   *
-   * @return the encrypted client initializer
-   */
-  @Bean
-  public EncryptedClientInitializer encryptedClientInitializer() {
-    return new EncryptedClientInitializer();
-  }
-
-  /**
-   * Clear client initializer.
-   *
-   * @return the clear client initializer
-   */
-  @Bean
-  public ClearClientInitializer clearClientInitializer() {
-    return new ClearClientInitializer();
-  }
-
-  /**
-   * Client handler.
-   *
-   * @return the client handler
-   */
-  @Bean
-  public ClientHandler clientHandler() {
-    return new ClientHandler();
   }
 
 }
