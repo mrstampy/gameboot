@@ -41,16 +41,26 @@
  */
 package com.github.mrstampy.gameboot.web;
 
-import javax.servlet.http.HttpSession;
-
-import org.springframework.stereotype.Component;
-
-import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 /**
- * The Class HttpSessionRegistry.
+ * The Class WebConfiguration.
  */
-@Component
-public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
+@Configuration
+public class WebConfiguration {
 
+  public static final String DEFAULT_WEB_ALLOWABLE = "Default Web Allowable";
+
+  /**
+   * Allowable types.
+   *
+   * @return the web allowable
+   */
+  @Bean(name = DEFAULT_WEB_ALLOWABLE)
+  @ConditionalOnMissingBean(WebAllowable.class)
+  public WebAllowable allowableTypes() {
+    return new DefaultWebAllowable();
+  }
 }

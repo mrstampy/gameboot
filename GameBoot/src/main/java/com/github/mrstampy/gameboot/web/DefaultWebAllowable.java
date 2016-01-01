@@ -41,16 +41,23 @@
  */
 package com.github.mrstampy.gameboot.web;
 
-import javax.servlet.http.HttpSession;
-
-import org.springframework.stereotype.Component;
-
-import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 
 /**
- * The Class HttpSessionRegistry.
+ * The Class DefaultWebAllowable allows all {@link AbstractGameBootMessage}s
+ * through for processing by the {@link WebProcessor}.
  */
-@Component
-public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
+public class DefaultWebAllowable implements WebAllowable {
+
+  /*
+   * (non-Javadoc)
+   * 
+   * @see com.github.mrstampy.gameboot.web.WebAllowable#isAllowable(com.github.
+   * mrstampy.gameboot.messages.AbstractGameBootMessage)
+   */
+  @Override
+  public boolean isAllowable(AbstractGameBootMessage message) {
+    return true;
+  }
 
 }

@@ -56,6 +56,7 @@ import org.ehcache.internal.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
@@ -75,9 +76,10 @@ import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 
 /**
- * The Class AbstractWebProcessor.
+ * The Class WebProcessor.
  */
-public abstract class AbstractWebProcessor extends AbstractConnectionProcessor<HttpSession> {
+@Component
+public class WebProcessor extends AbstractConnectionProcessor<HttpSession> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String MESSAGE_COUNTER = "GameBoot Web Message Counter";
@@ -102,6 +104,8 @@ public abstract class AbstractWebProcessor extends AbstractConnectionProcessor<H
   @Autowired
   private GameBootUtils utils;
 
+  private WebAllowable allowable;
+
   /** The system ids. */
   protected Map<String, SystemIdKey> systemIds = new ConcurrentHashMap<>();
 
@@ -112,7 +116,8 @@ public abstract class AbstractWebProcessor extends AbstractConnectionProcessor<H
    * @throws Exception
    *           the exception
    */
-  protected void postConstruct() throws Exception {
+  @PostConstruct
+  public void postConstruct() throws Exception {
     if (!helper.containsCounter(MESSAGE_COUNTER)) {
       helper.counter(MESSAGE_COUNTER, getClass(), "inbound", "messages");
     }
@@ -224,6 +229,9 @@ public abstract class AbstractWebProcessor extends AbstractConnectionProcessor<H
     Integer id = null;
     try {
       agbm = converter.fromJson(msg);
+
+      if (!allowable.isAllowable(agbm)) return fail(getResponseContext(UNEXPECTED_MESSAGE, httpSession), agbm);
+
       type = agbm.getType();
       id = agbm.getId();
 
@@ -264,6 +272,9 @@ public abstract class AbstractWebProcessor extends AbstractConnectionProcessor<H
     Integer id = null;
     try {
       agbm = converter.fromJson(msg);
+
+      if (!allowable.isAllowable(agbm)) return fail(getResponseContext(UNEXPECTED_MESSAGE, httpSession), agbm);
+
       type = agbm.getType();
       id = agbm.getId();
 
@@ -396,6 +407,18 @@ public abstract class AbstractWebProcessor extends AbstractConnectionProcessor<H
     for (int i = 0; i < keys.length; i++) {
       registry.put(keys[i], httpSession);
     }
+  }
+
+  /**
+   * Sets the allowable component used to discriminate
+   * {@link AbstractGameBootMessage}s, exposed for overriding by subclasses.
+   *
+   * @param allowable
+   *          the new allowable
+   */
+  @Autowired
+  public void setAllowable(WebAllowable allowable) {
+    this.allowable = allowable;
   }
 
 }
