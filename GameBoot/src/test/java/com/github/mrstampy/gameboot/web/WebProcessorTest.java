@@ -43,7 +43,9 @@ package com.github.mrstampy.gameboot.web;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +59,8 @@ import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.usersession.UserSessionConfiguration;
+import com.github.mrstampy.gameboot.usersession.data.entity.User;
+import com.github.mrstampy.gameboot.usersession.data.repository.UserRepository;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
 import com.github.mrstampy.gameboot.usersession.messages.UserMessage.Function;
 
@@ -78,7 +82,17 @@ public class WebProcessorTest {
   @Autowired
   private GameBootMessageConverter converter;
 
+  @Autowired
+  private UserRepository userRepo;
+
   private MockHttpSession httpSession = new MockHttpSession(null, "ID");
+
+  private Long userId;
+
+  @After
+  public void after() throws Exception {
+    userRepo.delete(userId);
+  }
 
   /**
    * Test create user.
@@ -88,17 +102,47 @@ public class WebProcessorTest {
    */
   @Test
   public void testCreateUser() throws Exception {
+    UserMessage m = createUserMessage();
+
+    Response r = processor.process(httpSession, converter.toJson(m));
+
+    assertResponse(m, r);
+  }
+
+  /**
+   * Test create user binary.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @Test
+  public void testCreateUserBinary() throws Exception {
+    UserMessage m = createUserMessage();
+
+    Response r = processor.process(httpSession, converter.toJsonArray(m));
+
+    assertResponse(m, r);
+  }
+
+  private UserMessage createUserMessage() {
     UserMessage m = new UserMessage();
+
     m.setId(1);
     m.setFunction(Function.CREATE);
     m.setUserName(TEST_USER);
     m.setNewPassword(PASSWORD);
 
-    Response r = processor.process(httpSession, converter.toJson(m));
+    return m;
+  }
 
+  private void assertResponse(UserMessage m, Response r) {
     assertEquals(m.getId(), r.getId());
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
     assertNotNull(r.getPayload());
     assertEquals(1, r.getPayload().length);
+    assertTrue(r.getPayload()[0] instanceof User);
+
+    User user = (User) r.getPayload()[0];
+    userId = user.getId();
   }
 }
