@@ -47,10 +47,10 @@ import java.net.InetSocketAddress;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 
-import org.ehcache.internal.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -283,10 +283,10 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   public <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session, String msg)
       throws Exception {
     helper.incr(MESSAGE_COUNTER);
-    
+
     Response response = super.process(session, msg);
-    
-    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
+
+    if (ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
@@ -302,10 +302,10 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   public <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session, byte[] msg)
       throws Exception {
     helper.incr(MESSAGE_COUNTER);
-    
+
     Response response = super.process(session, msg);
-    
-    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
+
+    if (ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }

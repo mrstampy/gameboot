@@ -45,12 +45,12 @@ import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
 
-import org.ehcache.internal.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -236,10 +236,10 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(HttpSession httpSession, String msg) throws Exception {
     helper.incr(MESSAGE_COUNTER);
-    
+
     Response response = super.process(httpSession, msg);
-    
-    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
+
+    if (ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
@@ -253,10 +253,10 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(HttpSession httpSession, byte[] msg) throws Exception {
     helper.incr(MESSAGE_COUNTER);
-    
+
     Response response = super.process(httpSession, msg);
-    
-    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
+
+    if (ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
@@ -273,7 +273,7 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
   public <AGBM extends AbstractGameBootMessage> Response process(HttpSession httpSession,
       GameBootMessageController controller, AGBM agbm) throws Exception {
     if (!allowable.isAllowable(agbm)) return fail(getResponseContext(UNEXPECTED_MESSAGE, httpSession), agbm);
-    
+
     agbm.setSystemId(getSystemId(httpSession));
     agbm.setTransport(Transport.WEB);
 

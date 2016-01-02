@@ -50,6 +50,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
+import com.github.mrstampy.gameboot.messaging.MessagingGroups;
 import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
@@ -62,8 +63,8 @@ import io.netty.channel.ChannelHandlerContext;
  * Messages are presumed to have been converted to JSON strings representing an
  * {@link AbstractGameBootMessage} and are processed by the
  * {@link GameBootMessageController}. Channels are added to the
- * {@link NettyConnectionRegistry#ALL} group and registering the channel against
- * the {@link SystemId#next()} value obtained on connection. (The
+ * {@link MessagingGroups#ALL} group and registering the channel against the
+ * {@link SystemId#next()} value obtained on connection. (The
  * {@link AbstractNettyMessageHandler#channelActive(ChannelHandlerContext)} and
  * {@link AbstractNettyMessageHandler#channelInactive(ChannelHandlerContext)}
  * must be called by subclasses overriding them.) <br>
@@ -99,8 +100,8 @@ public abstract class AbstractNettyMessageHandler<C, CP extends ConnectionProces
   /**
    * Subclasses overriding this method should remember to invoke it with a call
    * to 'super.'. Implementation generates a {@link SystemId} and puts the
-   * channel in both the {@link NettyConnectionRegistry#ALL} group and against
-   * the system id.
+   * channel in both the {@link MessagingGroups#ALL} group and against the
+   * system id.
    *
    * @param ctx
    *          the ctx

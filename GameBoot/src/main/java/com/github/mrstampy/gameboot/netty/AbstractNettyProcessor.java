@@ -238,10 +238,10 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   public <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, String msg)
       throws Exception {
     helper.incr(MESSAGE_COUNTER);
-    
+
     Response response = super.process(ctx, msg);
-    
-    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
+
+    if (ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
@@ -257,10 +257,10 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   public <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, byte[] msg)
       throws Exception {
     helper.incr(MESSAGE_COUNTER);
-    
+
     Response response = super.process(ctx, msg);
-    
-    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
+
+    if (ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
