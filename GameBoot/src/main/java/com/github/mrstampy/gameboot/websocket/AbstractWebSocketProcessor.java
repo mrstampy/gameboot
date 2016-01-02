@@ -61,20 +61,18 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.exception.GameBootThrowable;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
 import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.connection.AbstractConnectionProcessor;
 import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
-import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 
@@ -102,9 +100,6 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
 
   @Autowired
   private GameBootMessageConverter converter;
-
-  @Autowired
-  private GameBootUtils utils;
 
   /** The system ids. */
   protected Map<String, SystemIdKey> systemIds = new ConcurrentHashMap<>();
@@ -287,38 +282,11 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session, String msg)
       throws Exception {
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
     helper.incr(MESSAGE_COUNTER);
-
-    Response response = null;
-    AGBM agbm = null;
-    String type = null;
-    Integer id = null;
-    try {
-      agbm = converter.fromJson(msg);
-      type = agbm.getType();
-      id = agbm.getId();
-
-      if (!preProcess(session, agbm)) return null;
-
-      response = process(session, controller, agbm);
-    } catch (GameBootException | GameBootRuntimeException e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(session, agbm, e);
-    } catch (Exception e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message type {}, id {} on channel {}", type, id, session, e);
-      response = fail(getResponseContext(UNEXPECTED_ERROR, session), agbm, "An unexpected error has occurred");
-    }
-
-    postProcess(session, agbm, response);
-
-    if (response == null) return null;
-
-    String r = converter.toJson(response);
-
-    sendMessage(session, r, response);
+    
+    Response response = super.process(session, msg);
+    
+    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
@@ -333,38 +301,11 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session, byte[] msg)
       throws Exception {
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
     helper.incr(MESSAGE_COUNTER);
-
-    Response response = null;
-    AGBM agbm = null;
-    String type = null;
-    Integer id = null;
-    try {
-      agbm = converter.fromJson(msg);
-      type = agbm.getType();
-      id = agbm.getId();
-
-      if (!preProcess(session, agbm)) return null;
-
-      response = process(session, controller, agbm);
-    } catch (GameBootException | GameBootRuntimeException e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(session, agbm, e);
-    } catch (Exception e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message type {}, id {} on channel {}", type, id, session, e);
-      response = fail(getResponseContext(UNEXPECTED_ERROR, session), agbm, "An unexpected error has occurred");
-    }
-
-    postProcess(session, agbm, response);
-
-    if (response == null) return null;
-
-    byte[] r = converter.toJsonArray(response);
-
-    sendMessage(session, r, response);
+    
+    Response response = super.process(session, msg);
+    
+    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }

@@ -41,8 +41,6 @@
  */
 package com.github.mrstampy.gameboot.web;
 
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
 import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -52,7 +50,6 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.ehcache.internal.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,19 +58,16 @@ import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.exception.GameBootThrowable;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
-import com.github.mrstampy.gameboot.messages.GameBootMessageConverter;
 import com.github.mrstampy.gameboot.messages.Response;
+import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.messages.context.ResponseContext;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.processor.connection.AbstractConnectionProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
-import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleanerListener;
@@ -100,12 +94,6 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
 
   @Autowired
   private RegistryCleaner cleaner;
-
-  @Autowired
-  private GameBootMessageConverter converter;
-
-  @Autowired
-  private GameBootUtils utils;
 
   private WebAllowable allowable;
 
@@ -247,37 +235,11 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
    */
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(HttpSession httpSession, String msg) throws Exception {
-    if (isEmpty(msg)) return null;
-
     helper.incr(MESSAGE_COUNTER);
-
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
-    Response response = null;
-    AGBM agbm = null;
-    String type = null;
-    Integer id = null;
-    try {
-      agbm = converter.fromJson(msg);
-
-      if (!allowable.isAllowable(agbm)) return fail(getResponseContext(UNEXPECTED_MESSAGE, httpSession), agbm);
-
-      type = agbm.getType();
-      id = agbm.getId();
-
-      if (!preProcess(httpSession, agbm)) return null;
-
-      response = process(httpSession, controller, agbm);
-    } catch (GameBootException | GameBootRuntimeException e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(httpSession, agbm, e);
-    } catch (Exception e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message type {}, id {} on channel {}", type, id, httpSession, e);
-      response = fail(getResponseContext(UNEXPECTED_ERROR, httpSession), agbm, "An unexpected error has occurred");
-    }
-
-    postProcess(httpSession, agbm, response);
+    
+    Response response = super.process(httpSession, msg);
+    
+    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
@@ -290,37 +252,11 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
    */
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(HttpSession httpSession, byte[] msg) throws Exception {
-    if (msg == null || msg.length == 0) return null;
-
     helper.incr(MESSAGE_COUNTER);
-
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
-    Response response = null;
-    AGBM agbm = null;
-    String type = null;
-    Integer id = null;
-    try {
-      agbm = converter.fromJson(msg);
-
-      if (!allowable.isAllowable(agbm)) return fail(getResponseContext(UNEXPECTED_MESSAGE, httpSession), agbm);
-
-      type = agbm.getType();
-      id = agbm.getId();
-
-      if (!preProcess(httpSession, agbm)) return null;
-
-      response = process(httpSession, controller, agbm);
-    } catch (GameBootException | GameBootRuntimeException e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(httpSession, agbm, e);
-    } catch (Exception e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message type {}, id {} on channel {}", type, id, httpSession, e);
-      response = fail(getResponseContext(UNEXPECTED_ERROR, httpSession), agbm, "An unexpected error has occurred");
-    }
-
-    postProcess(httpSession, agbm, response);
+    
+    Response response = super.process(httpSession, msg);
+    
+    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
@@ -336,6 +272,8 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(HttpSession httpSession,
       GameBootMessageController controller, AGBM agbm) throws Exception {
+    if (!allowable.isAllowable(agbm)) return fail(getResponseContext(UNEXPECTED_MESSAGE, httpSession), agbm);
+    
     agbm.setSystemId(getSystemId(httpSession));
     agbm.setTransport(Transport.WEB);
 
@@ -355,7 +293,6 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
    */
   @Override
   public void sendMessage(HttpSession httpSession, Object msg, Response response) throws Exception {
-    throw new NotImplementedException("Cannot send a message to an HttpSession");
   }
 
   /**
@@ -404,7 +341,6 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
    */
   @Override
   public void sendError(HttpSession httpSession, GameBootThrowable e) {
-    throw new NotImplementedException("Cannot send a message to an HttpSession");
   }
 
   /*
@@ -416,7 +352,6 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
    */
   @Override
   public void sendError(ResponseContext rc, HttpSession httpSession, String message) {
-    throw new NotImplementedException("Cannot send a message to an HttpSession");
   }
 
   /*

@@ -84,9 +84,6 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
   private static final String REGISTRY_SIZE = "Web Socket Connections";
 
   @Autowired
-  private WebSocketSessionRegistry webSocketRegistry;
-
-  @Autowired
   private MetricsHelper helper;
 
   private Map<String, List<WebSocketSession>> sessionGroups = new ConcurrentHashMap<>();
@@ -326,7 +323,7 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
 
     List<WebSocketSession> exceptions = new ArrayList<>();
     for (SystemIdKey key : except) {
-      WebSocketSession session = webSocketRegistry.get(key);
+      WebSocketSession session = get(key);
       if (session != null) exceptions.add(session);
     }
 
@@ -345,7 +342,7 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
   }
 
   private void addToActiveInGroups(WebSocketSession session) {
-    Optional<Entry<AbstractRegistryKey<?>, WebSocketSession>> o = webSocketRegistry.getKeysForValue(session).stream()
+    Optional<Entry<AbstractRegistryKey<?>, WebSocketSession>> o = getKeysForValue(session).stream()
         .filter(k -> k instanceof SystemIdKey).findFirst();
 
     if (o.isPresent()) activeInGroups.put((SystemIdKey) o.get().getKey(), session);

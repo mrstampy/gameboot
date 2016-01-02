@@ -52,8 +52,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.mrstampy.gameboot.concurrent.GameBootConcurrentConfiguration;
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
-import com.github.mrstampy.gameboot.exception.GameBootException;
-import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
 import com.github.mrstampy.gameboot.exception.GameBootThrowable;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage.Transport;
@@ -66,7 +64,6 @@ import com.github.mrstampy.gameboot.processor.connection.AbstractConnectionProce
 import com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemId;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
-import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
 
@@ -101,9 +98,6 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
 
   @Autowired
   private GameBootMessageConverter converter;
-
-  @Autowired
-  private GameBootUtils utils;
 
   private SystemIdKey systemId;
 
@@ -243,38 +237,11 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, String msg)
       throws Exception {
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
     helper.incr(MESSAGE_COUNTER);
-
-    Response response = null;
-    AGBM agbm = null;
-    String type = null;
-    Integer id = null;
-    try {
-      agbm = converter.fromJson(msg);
-      type = agbm.getType();
-      id = agbm.getId();
-
-      if (!preProcess(ctx, agbm)) return null;
-
-      response = process(ctx, controller, agbm);
-    } catch (GameBootException | GameBootRuntimeException e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(ctx, agbm, e);
-    } catch (Exception e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message type {}, id {} on channel {}", type, id, ctx.channel(), e);
-      response = fail(getResponseContext(UNEXPECTED_ERROR, ctx), agbm, "An unexpected error has occurred");
-    }
-
-    postProcess(ctx, agbm, response);
-
-    if (response == null) return null;
-
-    String r = converter.toJson(response);
-
-    sendMessage(ctx, r, response);
+    
+    Response response = super.process(ctx, msg);
+    
+    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
@@ -289,38 +256,11 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, byte[] msg)
       throws Exception {
-    GameBootMessageController controller = utils.getBean(GameBootMessageController.class);
-
     helper.incr(MESSAGE_COUNTER);
-
-    Response response = null;
-    AGBM agbm = null;
-    String type = null;
-    Integer id = null;
-    try {
-      agbm = converter.fromJson(msg);
-      type = agbm.getType();
-      id = agbm.getId();
-
-      if (!preProcess(ctx, agbm)) return null;
-
-      response = process(ctx, controller, agbm);
-    } catch (GameBootException | GameBootRuntimeException e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      response = fail(ctx, agbm, e);
-    } catch (Exception e) {
-      helper.incr(FAILED_MESSAGE_COUNTER);
-      log.error("Unexpected exception processing message type {}, id {} on channel {}", type, id, ctx.channel(), e);
-      response = fail(getResponseContext(UNEXPECTED_ERROR, ctx), agbm, "An unexpected error has occurred");
-    }
-
-    postProcess(ctx, agbm, response);
-
-    if (response == null) return null;
-
-    byte[] r = converter.toJsonArray(response);
-
-    sendMessage(ctx, r, response);
+    
+    Response response = super.process(ctx, msg);
+    
+    if(ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
