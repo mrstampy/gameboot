@@ -54,6 +54,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.github.mrstampy.gameboot.messaging.MessagingGroups;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
@@ -80,7 +81,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /** Group key for ALL Netty connections. */
-  public static final String ALL = "ALL";
+  public static final String ALL = MessagingGroups.ALL;
 
   private static final String NETTY_CONNECTIONS = "Netty Connections";
 

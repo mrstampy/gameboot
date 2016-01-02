@@ -65,6 +65,7 @@ import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
+import com.github.mrstampy.gameboot.messaging.MessagingGroups;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
@@ -77,6 +78,9 @@ import com.github.mrstampy.gameboot.util.registry.RegistryCleanerListener;
 @Component
 public class WebSocketGroups implements RegistryCleanerListener {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  /** The Constant ALL. */
+  public static final String ALL = MessagingGroups.ALL;
 
   @Autowired
   private WebSocketSessionRegistry webSocketRegistry;
@@ -96,6 +100,12 @@ public class WebSocketGroups implements RegistryCleanerListener {
    * com.github.mrstampy.gameboot.util.registry.RegistryCleanerListener#cleanup(
    * com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey)
    */
+  /**
+   * Cleanup.
+   *
+   * @param key
+   *          the key
+   */
   @Override
   public void cleanup(AbstractRegistryKey<?> key) {
     if (!(key instanceof SystemIdKey)) return;
@@ -104,6 +114,19 @@ public class WebSocketGroups implements RegistryCleanerListener {
     if (session == null) return;
 
     sessionGroups.entrySet().forEach(e -> removeFromGroups(e, session));
+  }
+
+  /**
+   * Put in all.
+   *
+   * @param key
+   *          the key
+   * @param session
+   *          the session
+   */
+  public void putInAll(SystemIdKey key, WebSocketSession session) {
+    putInGroup(ALL, session);
+    activeInGroups.put(key, session);
   }
 
   /**
@@ -171,6 +194,30 @@ public class WebSocketGroups implements RegistryCleanerListener {
     }
 
     sessionGroups.remove(groupName);
+  }
+
+  /**
+   * Send to all.
+   *
+   * @param message
+   *          the message
+   * @param except
+   *          the except
+   */
+  public void sendToAll(byte[] message, SystemIdKey... except) {
+    sendToGroup(ALL, message, except);
+  }
+
+  /**
+   * Send to all.
+   *
+   * @param message
+   *          the message
+   * @param except
+   *          the except
+   */
+  public void sendToAll(String message, SystemIdKey... except) {
+    sendToGroup(ALL, message, except);
   }
 
   /**

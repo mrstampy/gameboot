@@ -64,6 +64,9 @@ import io.netty.channel.group.ChannelMatcher;
 @Component
 public class MessagingGroups {
 
+  /** Group key for ALL connections. */
+  public static final String ALL = "ALL";
+
   private static final ChannelMatcher NOOP_MATCHER = new ChannelMatcher() {
 
     @Override
@@ -124,6 +127,30 @@ public class MessagingGroups {
    */
   public void removeFromGroup(String groupName, WebSocketSession session) {
     webSocketGroups.removeFromGroup(groupName, session);
+  }
+
+  /**
+   * Send to all.
+   *
+   * @param message
+   *          the message
+   * @param except
+   *          the except
+   */
+  public void sendToAll(String message, SystemIdKey... except) {
+    sendMessage(NettyConnectionRegistry.ALL, message, except);
+  }
+
+  /**
+   * Send to all.
+   *
+   * @param message
+   *          the message
+   * @param except
+   *          the except
+   */
+  public void sendToAll(byte[] message, SystemIdKey... except) {
+    sendMessage(NettyConnectionRegistry.ALL, message, except);
   }
 
   /**
