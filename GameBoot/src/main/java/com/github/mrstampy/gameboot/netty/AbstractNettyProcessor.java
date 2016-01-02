@@ -137,8 +137,8 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
 
     log.info("Connected to {}, adding to registry with key {}", ctx.channel(), getSystemId());
 
-    registry.putInGroup(NettyConnectionRegistry.ALL, ctx.channel());
     registry.put(getSystemId(), ctx.channel());
+    registry.putInAll(ctx.channel());
   }
 
   /*

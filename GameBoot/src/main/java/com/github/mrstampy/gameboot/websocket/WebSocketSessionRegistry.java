@@ -41,6 +41,7 @@
  */
 package com.github.mrstampy.gameboot.websocket;
 
+import static com.github.mrstampy.gameboot.messaging.MessagingGroups.ALL;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.io.IOException;
@@ -67,7 +68,6 @@ import org.springframework.web.socket.BinaryMessage;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.github.mrstampy.gameboot.messaging.MessagingGroups;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
@@ -82,9 +82,6 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String REGISTRY_SIZE = "Web Socket Connections";
-
-  /** The Constant ALL. */
-  public static final String ALL = MessagingGroups.ALL;
 
   @Autowired
   private WebSocketSessionRegistry webSocketRegistry;

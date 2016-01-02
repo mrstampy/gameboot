@@ -138,7 +138,7 @@ public class MessagingGroups {
    *          the except
    */
   public void sendToAll(String message, SystemIdKey... except) {
-    sendMessage(NettyConnectionRegistry.ALL, message, except);
+    sendMessage(ALL, message, except);
   }
 
   /**
@@ -150,7 +150,7 @@ public class MessagingGroups {
    *          the except
    */
   public void sendToAll(byte[] message, SystemIdKey... except) {
-    sendMessage(NettyConnectionRegistry.ALL, message, except);
+    sendMessage(ALL, message, except);
   }
 
   /**

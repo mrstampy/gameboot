@@ -41,6 +41,7 @@
  */
 package com.github.mrstampy.gameboot.netty;
 
+import static com.github.mrstampy.gameboot.messaging.MessagingGroups.ALL;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.lang.invoke.MethodHandles;
@@ -54,7 +55,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.github.mrstampy.gameboot.messaging.MessagingGroups;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
@@ -79,9 +79,6 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
 @Component
 public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
-  /** Group key for ALL Netty connections. */
-  public static final String ALL = MessagingGroups.ALL;
 
   private static final String NETTY_CONNECTIONS = "Netty Connections";
 
@@ -145,6 +142,16 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
     Channel channel = get(key);
 
     sendMessage(key, message, channel, listeners);
+  }
+
+  /**
+   * Put in all.
+   *
+   * @param channel
+   *          the channel
+   */
+  public void putInAll(Channel channel) {
+    putInGroup(ALL, channel);
   }
 
   /**
