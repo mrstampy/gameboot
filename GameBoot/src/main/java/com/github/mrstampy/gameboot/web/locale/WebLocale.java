@@ -41,10 +41,13 @@
  */
 package com.github.mrstampy.gameboot.web.locale;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Locale;
 
 import javax.servlet.ServletRequest;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.mrstampy.gameboot.locale.processor.LocaleRegistry;
@@ -55,6 +58,7 @@ import com.github.mrstampy.gameboot.systemid.SystemIdKey;
  * {@link ServletRequest}.
  */
 public class WebLocale {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Autowired
   private LocaleRegistry registry;
@@ -70,6 +74,10 @@ public class WebLocale {
   public void setLocale(ServletRequest request, SystemIdKey key) {
     Locale locale = request.getLocale();
 
-    if (locale != null) registry.put(key, locale);
+    if (locale == null) return;
+
+    log.debug("Setting locale {} for {}", locale, key);
+
+    registry.put(key, locale);
   }
 }
