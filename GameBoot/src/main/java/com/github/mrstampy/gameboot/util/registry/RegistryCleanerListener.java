@@ -53,5 +53,5 @@ public interface RegistryCleanerListener {
    * @param key
    *          the key
    */
-  void cleanup(Comparable<?> key);
+  void cleanup(AbstractRegistryKey<?> key);
 }

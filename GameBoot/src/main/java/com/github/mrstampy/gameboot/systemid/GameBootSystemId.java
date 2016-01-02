@@ -52,6 +52,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 
 import com.github.mrstampy.gameboot.security.SecurityConfiguration;
+import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleanerListener;
 
 /**
@@ -101,7 +102,7 @@ public class GameBootSystemId implements SystemId, RegistryCleanerListener {
    * .Comparable)
    */
   @Override
-  public void cleanup(Comparable<?> key) {
+  public void cleanup(AbstractRegistryKey<?> key) {
     if (!(key instanceof SystemIdKey)) return;
 
     lock.lock();

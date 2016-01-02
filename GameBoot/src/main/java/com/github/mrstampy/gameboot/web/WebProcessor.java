@@ -47,6 +47,7 @@ import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
@@ -75,12 +76,13 @@ import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
+import com.github.mrstampy.gameboot.util.registry.RegistryCleanerListener;
 
 /**
  * The Class WebProcessor.
  */
 @Component
-public class WebProcessor extends AbstractConnectionProcessor<HttpSession> {
+public class WebProcessor extends AbstractConnectionProcessor<HttpSession> implements RegistryCleanerListener {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String MESSAGE_COUNTER = "GameBoot Web Message Counter";
@@ -148,6 +150,14 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> {
     systemIds.put(httpSession.getId(), key);
 
     registry.put(key, httpSession);
+  }
+
+  @Override
+  public void cleanup(AbstractRegistryKey<?> key) {
+    if (!(key instanceof SystemIdKey)) return;
+
+    systemIds.entrySet().stream().filter(e -> e.getKey().equals(key)).collect(Collectors.toSet())
+        .forEach(e -> systemIds.remove(e.getKey()));
   }
 
   /*

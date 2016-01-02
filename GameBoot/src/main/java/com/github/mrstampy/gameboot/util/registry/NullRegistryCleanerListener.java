@@ -58,7 +58,7 @@ public class NullRegistryCleanerListener implements RegistryCleanerListener {
    * .Comparable)
    */
   @Override
-  public void cleanup(Comparable<?> key) {
+  public void cleanup(AbstractRegistryKey<?> key) {
   }
 
 }
