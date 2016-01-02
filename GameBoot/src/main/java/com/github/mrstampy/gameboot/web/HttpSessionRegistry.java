@@ -133,7 +133,7 @@ public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
    */
   public void restartExpiry(AbstractRegistryKey<?> key) {
     HttpSession session = get(key);
-    
+
     stopCleanup(key);
 
     scheduleCleanup(key, session);

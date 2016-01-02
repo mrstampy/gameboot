@@ -266,6 +266,32 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   }
 
   /**
+   * Send the message to all connected channels.
+   *
+   * @param message
+   *          the message
+   * @param listeners
+   *          the listeners
+   */
+  public void sendToAll(byte[] message, ChannelFutureListener... listeners) {
+    sendToGroup(ALL, message, listeners);
+  }
+
+  /**
+   * Send to all.
+   *
+   * @param message
+   *          the message
+   * @param matcher
+   *          the matcher
+   * @param listeners
+   *          the listeners
+   */
+  public void sendToAll(byte[] message, ChannelMatcher matcher, ChannelFutureListener... listeners) {
+    sendToGroup(ALL, message, matcher, listeners);
+  }
+
+  /**
    * Send the message to a specific group.
    *
    * @param groupKey
@@ -284,7 +310,31 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
     ChannelGroup group = groups.get(groupKey);
 
-    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey, message), listeners);
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey), listeners);
+    ChannelGroupFuture cf = group.writeAndFlush(message);
+    cf.addListeners(all);
+  }
+
+  /**
+   * Send the message to a specific group.
+   *
+   * @param groupKey
+   *          the group key
+   * @param message
+   *          the message
+   * @param listeners
+   *          the listeners
+   */
+  public void sendToGroup(String groupKey, byte[] message, ChannelFutureListener... listeners) {
+    groupCheck(groupKey);
+    if (!groups.containsKey(groupKey)) {
+      log.warn("No group {} to send message {}", groupKey, message);
+      return;
+    }
+
+    ChannelGroup group = groups.get(groupKey);
+
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey), listeners);
     ChannelGroupFuture cf = group.writeAndFlush(message);
     cf.addListeners(all);
   }
@@ -310,7 +360,33 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
     ChannelGroup group = groups.get(groupKey);
 
-    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey, message), listeners);
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey), listeners);
+    ChannelGroupFuture cf = group.writeAndFlush(message, matcher);
+    cf.addListeners(all);
+  }
+
+  /**
+   * Send to group.
+   *
+   * @param groupKey
+   *          the group key
+   * @param message
+   *          the message
+   * @param matcher
+   *          the matcher
+   * @param listeners
+   *          the listeners
+   */
+  public void sendToGroup(String groupKey, byte[] message, ChannelMatcher matcher, ChannelFutureListener... listeners) {
+    groupCheck(groupKey);
+    if (!groups.containsKey(groupKey)) {
+      log.warn("No group {} to send message {}", groupKey, message);
+      return;
+    }
+
+    ChannelGroup group = groups.get(groupKey);
+
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey), listeners);
     ChannelGroupFuture cf = group.writeAndFlush(message, matcher);
     cf.addListeners(all);
   }
@@ -322,16 +398,16 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
       return;
     }
 
-    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelFuture) f, key, message), listeners);
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelFuture) f, key), listeners);
     ChannelFuture f = channel.writeAndFlush(message);
     f.addListeners(all);
   }
 
-  private void log(ChannelGroupFuture e, String groupKey, String message) {
-    e.iterator().forEachRemaining(cf -> log(cf, groupKey, message));
+  private void log(ChannelGroupFuture e, String groupKey) {
+    e.iterator().forEachRemaining(cf -> log(cf, groupKey));
   }
 
-  private void log(ChannelFuture f, Object key, String message) {
+  private void log(ChannelFuture f, Object key) {
     if (f.isSuccess()) {
       log.debug("Successful send to {} on {}", key, f.channel());
     } else {
