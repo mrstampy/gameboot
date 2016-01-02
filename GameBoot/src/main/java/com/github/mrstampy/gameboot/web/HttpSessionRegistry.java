@@ -82,6 +82,12 @@ public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
 
   private Map<Comparable<?>, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
 
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
   @PostConstruct
   public void postConstruct() throws Exception {
     helper.gauge(() -> size(), WEB_CONNECTIONS, getClass(), "web", "connections");
@@ -126,6 +132,12 @@ public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
     return session;
   }
 
+  /**
+   * Restart expiry.
+   *
+   * @param key
+   *          the key
+   */
   public void restartExpiry(AbstractRegistryKey<?> key) {
     HttpSession session = remove(key);
 

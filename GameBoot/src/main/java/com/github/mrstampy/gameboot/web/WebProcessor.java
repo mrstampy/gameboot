@@ -151,6 +151,13 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
     registry.put(key, httpSession);
   }
 
+  /*
+   * (non-Javadoc)
+   * 
+   * @see
+   * com.github.mrstampy.gameboot.util.registry.RegistryCleanerListener#cleanup(
+   * com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey)
+   */
   @Override
   public void cleanup(AbstractRegistryKey<?> key) {
     if (!(key instanceof SystemIdKey)) return;
