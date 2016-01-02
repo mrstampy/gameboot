@@ -52,7 +52,7 @@ import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
-import com.github.mrstampy.gameboot.websocket.WebSocketGroups;
+import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
 
 import io.netty.channel.Channel;
 import io.netty.channel.group.ChannelMatcher;
@@ -79,7 +79,7 @@ public class MessagingGroups {
   private NettyConnectionRegistry nettyRegistry;
 
   @Autowired
-  private WebSocketGroups webSocketGroups;
+  private WebSocketSessionRegistry webSocketRegistry;
 
   /**
    * Adds the to group.
@@ -102,7 +102,7 @@ public class MessagingGroups {
    *          the session
    */
   public void addToGroup(String groupName, WebSocketSession session) {
-    webSocketGroups.putInGroup(groupName, session);
+    webSocketRegistry.putInGroup(groupName, session);
   }
 
   /**
@@ -126,7 +126,7 @@ public class MessagingGroups {
    *          the session
    */
   public void removeFromGroup(String groupName, WebSocketSession session) {
-    webSocketGroups.removeFromGroup(groupName, session);
+    webSocketRegistry.removeFromGroup(groupName, session);
   }
 
   /**
@@ -167,7 +167,7 @@ public class MessagingGroups {
     groupNameCheck(groupName);
     if (isEmpty(message)) throw new IllegalArgumentException("No message");
 
-    webSocketGroups.sendToGroup(groupName, message, except);
+    webSocketRegistry.sendToGroup(groupName, message, except);
     sendToNetty(groupName, message, except);
   }
 
@@ -185,7 +185,7 @@ public class MessagingGroups {
     groupNameCheck(groupName);
     if (message == null || message.length == 0) throw new IllegalArgumentException("No message");
 
-    webSocketGroups.sendToGroup(groupName, message, except);
+    webSocketRegistry.sendToGroup(groupName, message, except);
     sendToNetty(groupName, message, except);
   }
 

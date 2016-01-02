@@ -106,9 +106,6 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   @Autowired
   private GameBootUtils utils;
 
-  @Autowired
-  private WebSocketGroups groups;
-
   /** The system ids. */
   protected Map<String, SystemIdKey> systemIds = new ConcurrentHashMap<>();
 
@@ -141,8 +138,6 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
     setSystemId(session, generator.next());
 
     addToRegistry(session);
-
-    groups.putInAll(getSystemId(session), session);
   }
 
   /**
@@ -153,7 +148,11 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
    */
   protected void addToRegistry(WebSocketSession session) {
     SystemIdKey systemId = getSystemId(session);
-    if (!registry.contains(systemId)) registry.put(systemId, session);
+
+    if (registry.contains(systemId)) return;
+
+    registry.put(systemId, session);
+    registry.putInAll(systemId, session);
   }
 
   /*
