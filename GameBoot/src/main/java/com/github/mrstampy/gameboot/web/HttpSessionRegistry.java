@@ -41,6 +41,7 @@
  */
 package com.github.mrstampy.gameboot.web;
 
+import java.lang.invoke.MethodHandles;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -50,6 +51,8 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -65,7 +68,8 @@ import com.github.mrstampy.gameboot.util.registry.RegistryCleaner;
  */
 @Component
 public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
-  
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
   private static final String WEB_CONNECTIONS = "Web Connections";
 
   @Autowired
@@ -73,12 +77,15 @@ public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
 
   @Autowired
   private MetricsHelper helper;
-  
+
   @Value("${http.session.expiry.seconds}")
   private int expiry;
-  
+
   @Autowired
   private RegistryCleaner cleaner;
+
+  @Autowired
+  private WebProcessor processor;
 
   private Map<Comparable<?>, ScheduledFuture<?>> futures = new ConcurrentHashMap<>();
 
@@ -98,14 +105,14 @@ public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
    */
   @Override
   public void put(AbstractRegistryKey<?> key, HttpSession value) {
-    if(contains(key)) return;
-    
+    if (contains(key)) return;
+
     ScheduledFuture<?> sf = futures.remove(key);
     if (sf != null) sf.cancel(true);
 
     super.put(key, value);
 
-    sf = svc.schedule(() -> cleanup(key), expiry, TimeUnit.SECONDS);
+    sf = svc.schedule(() -> cleanup(key, value), expiry, TimeUnit.SECONDS);
     futures.put(key, sf);
   }
 
@@ -126,10 +133,15 @@ public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
     return session;
   }
 
-  private void cleanup(AbstractRegistryKey<?> key) {
+  private void cleanup(AbstractRegistryKey<?> key, HttpSession value) {
     super.remove(key);
     futures.remove(key);
     cleaner.cleanup(key);
+    try {
+      processor.onDisconnection(value);
+    } catch (Exception e) {
+      log.error("Unexpected exception", e);
+    }
   }
 
 }
