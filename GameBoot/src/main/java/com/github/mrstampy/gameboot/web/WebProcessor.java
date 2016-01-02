@@ -136,6 +136,13 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> {
    */
   @Override
   public void onConnection(HttpSession httpSession) throws Exception {
+    if (registry.containsValue(httpSession)) return;
+
+    if (systemIds.containsValue(httpSession)) {
+      Set<Entry<AbstractRegistryKey<?>, HttpSession>> set = registry.getKeysForValue(httpSession);
+      set.forEach(e -> registry.remove(e.getKey()));
+    }
+
     SystemIdKey key = generator.next();
 
     systemIds.put(httpSession.getId(), key);
