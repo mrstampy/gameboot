@@ -48,7 +48,7 @@ import org.springframework.context.annotation.Profile;
 
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
-import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.netty.AbstractNettyMessageHandler;
 import com.github.mrstampy.gameboot.otp.KeyRegistry;
 import com.github.mrstampy.gameboot.otp.OneTimePad;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
@@ -113,7 +113,7 @@ import io.netty.channel.ChannelPromise;
  */
 @Profile(OtpConfiguration.OTP_PROFILE)
 public class OtpClearNettyHandler
-    extends AbstractGameBootNettyMessageHandler<ChannelHandlerContext, OtpClearNettyProcessor> {
+    extends AbstractNettyMessageHandler<ChannelHandlerContext, OtpClearNettyProcessor> {
 
   /**
    * Post construct.

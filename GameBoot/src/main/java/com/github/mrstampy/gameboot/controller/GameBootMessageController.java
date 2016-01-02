@@ -66,7 +66,7 @@ import com.github.mrstampy.gameboot.messages.context.ResponseContextCodes;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 import com.github.mrstampy.gameboot.messages.finder.MessageClassFinder;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
-import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.netty.AbstractNettyMessageHandler;
 import com.github.mrstampy.gameboot.processor.GameBootProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
@@ -86,7 +86,7 @@ import com.github.mrstampy.gameboot.websocket.AbstractGameBootWebSocketHandler;
  * {@link AbstractGameBootMessage}. Implement a different
  * {@link MessageClassFinder} to process alternative messages.
  * 
- * @see AbstractGameBootNettyMessageHandler
+ * @see AbstractNettyMessageHandler
  * @see AbstractGameBootWebSocketHandler
  */
 @Component

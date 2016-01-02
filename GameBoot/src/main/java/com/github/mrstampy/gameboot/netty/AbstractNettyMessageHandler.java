@@ -64,14 +64,14 @@ import io.netty.channel.ChannelHandlerContext;
  * {@link GameBootMessageController}. Channels are added to the
  * {@link NettyConnectionRegistry#ALL} group and registering the channel against
  * the {@link SystemId#next()} value obtained on connection. (The
- * {@link AbstractGameBootNettyMessageHandler#channelActive(ChannelHandlerContext)}
+ * {@link AbstractNettyMessageHandler#channelActive(ChannelHandlerContext)}
  * and
- * {@link AbstractGameBootNettyMessageHandler#channelInactive(ChannelHandlerContext)}
+ * {@link AbstractNettyMessageHandler#channelInactive(ChannelHandlerContext)}
  * must be called by subclasses overriding them.) <br>
  * <br>
  * 
  * Subclasses should have an annotated {@link PostConstruct} method which calls
- * the {@link AbstractGameBootNettyMessageHandler#postConstruct()}.<br>
+ * the {@link AbstractNettyMessageHandler#postConstruct()}.<br>
  * <br>
  *
  * @param <C>
@@ -80,7 +80,7 @@ import io.netty.channel.ChannelHandlerContext;
  *          the generic type
  * @see GameBootMessageController
  */
-public abstract class AbstractGameBootNettyMessageHandler<C, CP extends ConnectionProcessor<ChannelHandlerContext>>
+public abstract class AbstractNettyMessageHandler<C, CP extends ConnectionProcessor<ChannelHandlerContext>>
     extends ChannelDuplexHandler {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 

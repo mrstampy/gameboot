@@ -66,7 +66,7 @@ import com.github.mrstampy.gameboot.messages.context.ResponseContextLoader;
 import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 import com.github.mrstampy.gameboot.messages.finder.MessageClassFinder;
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
-import com.github.mrstampy.gameboot.netty.AbstractGameBootNettyMessageHandler;
+import com.github.mrstampy.gameboot.netty.AbstractNettyMessageHandler;
 import com.github.mrstampy.gameboot.netty.AbstractNettyProcessor;
 import com.github.mrstampy.gameboot.otp.OtpConfiguration;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
@@ -191,7 +191,7 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * Spring Web Sockets</a> ({@link AbstractGameBootWebSocketHandler} and
  * {@link AbstractWebSocketProcessor})<br>
  * 9. <a href="http://netty.io/">Netty</a> (
- * {@link AbstractGameBootNettyMessageHandler} and
+ * {@link AbstractNettyMessageHandler} and
  * {@link AbstractNettyProcessor})<br>
  * 10. <a href="http://docs.paralleluniverse.co/comsat/">Comsat</a> to assist
  * web application development for high volume messages.<br>

@@ -73,7 +73,7 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
  * creation of {@link ChannelGroup}s. Messages can be sent to individuals or
  * groups.
  * 
- * @see AbstractGameBootNettyMessageHandler
+ * @see AbstractNettyMessageHandler
  */
 @Component
 public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
