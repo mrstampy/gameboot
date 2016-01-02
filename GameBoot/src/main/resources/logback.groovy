@@ -22,7 +22,7 @@
  * 
  *                       http://mrstampy.github.io/gameboot/
  *
- * Copyright (C) 2015 Burton Alexander
+ * Copyright (C) 2015, 2016 Burton Alexander
  * 
  * Default Logback configuration for GameBoot
  *
