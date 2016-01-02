@@ -241,7 +241,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
 
     Response response = super.process(ctx, msg);
 
-    if (ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
+    if (response != null && ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
@@ -260,7 +260,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
 
     Response response = super.process(ctx, msg);
 
-    if (ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
+    if (response != null && ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }

@@ -239,7 +239,7 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
 
     Response response = super.process(httpSession, msg);
 
-    if (ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
+    if (response != null && ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
@@ -256,7 +256,7 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
 
     Response response = super.process(httpSession, msg);
 
-    if (ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
+    if (response != null && ResponseCode.FAILURE == response.getResponseCode()) helper.incr(FAILED_MESSAGE_COUNTER);
 
     return response;
   }
