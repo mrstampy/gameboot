@@ -284,12 +284,8 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
     return r;
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor#
-   * sendMessage(java.lang.Object, java.lang.Object,
-   * com.github.mrstampy.gameboot.messages.Response)
+  /**
+   * Not applicable for web connections.
    */
   @Override
   public void sendMessage(HttpSession httpSession, Object msg, Response response) throws Exception {
@@ -332,23 +328,15 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
   public <AGBM extends AbstractGameBootMessage> void postProcess(HttpSession httpSession, AGBM agbm, Response r) {
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor#
-   * sendError(java.lang.Object,
-   * com.github.mrstampy.gameboot.exception.GameBootThrowable)
+  /**
+   * Not applicable for web connections.
    */
   @Override
   public void sendError(HttpSession httpSession, GameBootThrowable e) {
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see com.github.mrstampy.gameboot.processor.connection.ConnectionProcessor#
-   * sendError(com.github.mrstampy.gameboot.messages.context.ResponseContext,
-   * java.lang.Object, java.lang.String)
+  /**
+   * Not applicable for web connections.
    */
   @Override
   public void sendError(ResponseContext rc, HttpSession httpSession, String message) {
