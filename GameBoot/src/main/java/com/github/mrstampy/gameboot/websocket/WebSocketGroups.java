@@ -57,6 +57,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +68,7 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.messaging.MessagingGroups;
+import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
@@ -79,11 +82,16 @@ import com.github.mrstampy.gameboot.util.registry.RegistryCleanerListener;
 public class WebSocketGroups implements RegistryCleanerListener {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
+  private static final String REGISTRY_SIZE = "Web Socket Connections";
+
   /** The Constant ALL. */
   public static final String ALL = MessagingGroups.ALL;
 
   @Autowired
   private WebSocketSessionRegistry webSocketRegistry;
+
+  @Autowired
+  private MetricsHelper helper;
 
   private Map<String, List<WebSocketSession>> sessionGroups = new ConcurrentHashMap<>();
 
@@ -92,6 +100,17 @@ public class WebSocketGroups implements RegistryCleanerListener {
   private ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
   private ReadLock rLock = rwLock.readLock();
   private WriteLock wLock = rwLock.writeLock();
+
+  /**
+   * Post construct.
+   *
+   * @throws Exception
+   *           the exception
+   */
+  @PostConstruct
+  public void postConstruct() throws Exception {
+    helper.gauge(() -> allConnected(), REGISTRY_SIZE, getClass(), "web", "socket", "connections");
+  }
 
   /*
    * (non-Javadoc)
@@ -352,6 +371,12 @@ public class WebSocketGroups implements RegistryCleanerListener {
     } finally {
       wLock.unlock();
     }
+  }
+
+  private int allConnected() {
+    List<WebSocketSession> group = sessionGroups.get(ALL);
+
+    return group == null ? 0 : group.size();
   }
 
   private void groupAndSessionCheck(String groupName, WebSocketSession session) {

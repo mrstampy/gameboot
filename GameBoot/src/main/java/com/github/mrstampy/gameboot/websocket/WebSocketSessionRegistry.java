@@ -41,13 +41,9 @@
  */
 package com.github.mrstampy.gameboot.websocket;
 
-import javax.annotation.PostConstruct;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.github.mrstampy.gameboot.metrics.MetricsHelper;
 import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
 
 /**
@@ -55,21 +51,5 @@ import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
  */
 @Component
 public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession> {
-
-  private static final String REGISTRY_SIZE = "Web Socket Connections";
-
-  @Autowired
-  private MetricsHelper helper;
-
-  /**
-   * Post construct.
-   *
-   * @throws Exception
-   *           the exception
-   */
-  @PostConstruct
-  public void postConstruct() throws Exception {
-    helper.gauge(() -> size(), REGISTRY_SIZE, getClass(), "web", "socket", "connections");
-  }
 
 }
