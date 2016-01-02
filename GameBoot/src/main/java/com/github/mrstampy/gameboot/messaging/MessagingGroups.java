@@ -191,7 +191,7 @@ public class MessagingGroups {
 
       @Override
       public boolean matches(Channel channel) {
-        return !exceptions.contains(exceptions);
+        return !exceptions.contains(channel);
       }
     };
   }
