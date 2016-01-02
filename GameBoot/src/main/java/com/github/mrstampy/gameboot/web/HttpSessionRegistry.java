@@ -106,13 +106,7 @@ public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
   public void put(AbstractRegistryKey<?> key, HttpSession value) {
     if (contains(key)) return;
 
-    ScheduledFuture<?> sf = futures.remove(key);
-    if (sf != null) sf.cancel(true);
-
-    super.put(key, value);
-
-    sf = svc.schedule(() -> cleanup(key, value), expiry, TimeUnit.SECONDS);
-    futures.put(key, sf);
+    scheduleCleanup(key, value);
   }
 
   /**
@@ -126,8 +120,7 @@ public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
   public HttpSession remove(AbstractRegistryKey<?> key) {
     HttpSession session = super.remove(key);
 
-    ScheduledFuture<?> sf = futures.remove(key);
-    if (sf != null) sf.cancel(true);
+    stopCleanup(key);
 
     return session;
   }
@@ -139,9 +132,26 @@ public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
    *          the key
    */
   public void restartExpiry(AbstractRegistryKey<?> key) {
-    HttpSession session = remove(key);
+    HttpSession session = get(key);
+    
+    stopCleanup(key);
 
-    put(key, session);
+    scheduleCleanup(key, session);
+  }
+
+  private void stopCleanup(AbstractRegistryKey<?> key) {
+    ScheduledFuture<?> sf = futures.remove(key);
+    if (sf != null) sf.cancel(true);
+  }
+
+  private void scheduleCleanup(AbstractRegistryKey<?> key, HttpSession value) {
+    ScheduledFuture<?> sf = futures.remove(key);
+    if (sf != null) sf.cancel(true);
+
+    super.put(key, value);
+
+    sf = svc.schedule(() -> cleanup(key, value), expiry, TimeUnit.SECONDS);
+    futures.put(key, sf);
   }
 
   private void cleanup(AbstractRegistryKey<?> key, HttpSession value) {

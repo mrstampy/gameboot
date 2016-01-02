@@ -140,7 +140,13 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
   public void onConnection(HttpSession httpSession) throws Exception {
     if (systemIds.containsKey(httpSession.getId())) {
       SystemIdKey key = systemIds.get(httpSession.getId());
-      registry.restartExpiry(key);
+
+      if (registry.contains(key)) {
+        registry.restartExpiry(key);
+      } else {
+        registry.put(key, httpSession);
+      }
+
       return;
     }
 
