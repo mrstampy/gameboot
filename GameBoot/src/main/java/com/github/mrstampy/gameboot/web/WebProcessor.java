@@ -138,12 +138,7 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
    */
   @Override
   public void onConnection(HttpSession httpSession) throws Exception {
-    if (registry.containsValue(httpSession)) return;
-
-    if (systemIds.containsValue(httpSession)) {
-      Set<Entry<AbstractRegistryKey<?>, HttpSession>> set = registry.getKeysForValue(httpSession);
-      set.forEach(e -> registry.remove(e.getKey()));
-    }
+    if (systemIds.containsKey(httpSession.getId())) return;
 
     SystemIdKey key = generator.next();
 
@@ -156,7 +151,7 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
   public void cleanup(AbstractRegistryKey<?> key) {
     if (!(key instanceof SystemIdKey)) return;
 
-    systemIds.entrySet().stream().filter(e -> e.getKey().equals(key)).collect(Collectors.toSet())
+    systemIds.entrySet().stream().filter(e -> e.getValue().equals(key)).collect(Collectors.toSet())
         .forEach(e -> systemIds.remove(e.getKey()));
   }
 
