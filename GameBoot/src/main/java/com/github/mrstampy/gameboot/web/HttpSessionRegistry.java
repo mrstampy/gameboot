@@ -126,6 +126,12 @@ public class HttpSessionRegistry extends GameBootRegistry<HttpSession> {
     return session;
   }
 
+  public void restartExpiry(AbstractRegistryKey<?> key) {
+    HttpSession session = remove(key);
+
+    put(key, session);
+  }
+
   private void cleanup(AbstractRegistryKey<?> key, HttpSession value) {
     super.remove(key);
     futures.remove(key);

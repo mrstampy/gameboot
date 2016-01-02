@@ -138,7 +138,11 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
    */
   @Override
   public void onConnection(HttpSession httpSession) throws Exception {
-    if (systemIds.containsKey(httpSession.getId())) return;
+    if (systemIds.containsKey(httpSession.getId())) {
+      SystemIdKey key = systemIds.get(httpSession.getId());
+      registry.restartExpiry(key);
+      return;
+    }
 
     SystemIdKey key = generator.next();
 
