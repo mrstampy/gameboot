@@ -190,9 +190,8 @@ import co.paralleluniverse.springframework.boot.security.autoconfigure.web.Fiber
  * "http://docs.spring.io/spring/docs/current/spring-framework-reference/html/websocket.html">
  * Spring Web Sockets</a> ({@link AbstractGameBootWebSocketHandler} and
  * {@link AbstractWebSocketProcessor})<br>
- * 9. <a href="http://netty.io/">Netty</a> (
- * {@link AbstractNettyMessageHandler} and
- * {@link AbstractNettyProcessor})<br>
+ * 9. <a href="http://netty.io/">Netty</a> ( {@link AbstractNettyMessageHandler}
+ * and {@link AbstractNettyProcessor})<br>
  * 10. <a href="http://docs.paralleluniverse.co/comsat/">Comsat</a> to assist
  * web application development for high volume messages.<br>
  * 11. <a href="http://docs.paralleluniverse.co/quasar/">Quasar</a> to process

@@ -64,8 +64,7 @@ import io.netty.channel.ChannelHandlerContext;
  * {@link GameBootMessageController}. Channels are added to the
  * {@link NettyConnectionRegistry#ALL} group and registering the channel against
  * the {@link SystemId#next()} value obtained on connection. (The
- * {@link AbstractNettyMessageHandler#channelActive(ChannelHandlerContext)}
- * and
+ * {@link AbstractNettyMessageHandler#channelActive(ChannelHandlerContext)} and
  * {@link AbstractNettyMessageHandler#channelInactive(ChannelHandlerContext)}
  * must be called by subclasses overriding them.) <br>
  * <br>

@@ -112,8 +112,7 @@ import io.netty.channel.ChannelPromise;
  * @see OtpConfiguration
  */
 @Profile(OtpConfiguration.OTP_PROFILE)
-public class OtpClearNettyHandler
-    extends AbstractNettyMessageHandler<ChannelHandlerContext, OtpClearNettyProcessor> {
+public class OtpClearNettyHandler extends AbstractNettyMessageHandler<ChannelHandlerContext, OtpClearNettyProcessor> {
 
   /**
    * Post construct.
