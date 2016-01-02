@@ -89,6 +89,12 @@ public class WebProcessorTest {
 
   private Long userId;
 
+  /**
+   * After.
+   *
+   * @throws Exception
+   *           the exception
+   */
   @After
   public void after() throws Exception {
     userRepo.delete(userId);
