@@ -42,6 +42,7 @@
 package com.github.mrstampy.gameboot.systemid;
 
 import com.github.mrstampy.gameboot.netty.AbstractNettyProcessor;
+import com.github.mrstampy.gameboot.web.WebProcessor;
 import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
 
 /**
@@ -50,6 +51,7 @@ import com.github.mrstampy.gameboot.websocket.AbstractWebSocketProcessor;
  * 
  * @see AbstractNettyProcessor#onConnection(io.netty.channel.ChannelHandlerContext)
  * @see AbstractWebSocketProcessor#onConnection(org.springframework.web.socket.WebSocketSession)
+ * @see WebProcessor#onConnection(javax.servlet.http.HttpSession)
  */
 public interface SystemId {
 
