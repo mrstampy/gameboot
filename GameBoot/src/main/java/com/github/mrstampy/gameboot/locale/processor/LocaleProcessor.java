@@ -56,11 +56,15 @@ import org.springframework.stereotype.Component;
 import com.github.mrstampy.gameboot.locale.messages.LocaleMessage;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
+import com.github.mrstampy.gameboot.messages.context.ResponseContextLookup;
 import com.github.mrstampy.gameboot.processor.AbstractGameBootProcessor;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 
 /**
- * The Class LocaleProcessor.
+ * The Class LocaleProcessor allowa a client to switch {@link Locale}s for
+ * internationalization purposes.
+ * 
+ * @see ResponseContextLookup
  */
 @Component
 @Profile(LocaleProcessor.PROFILE)
