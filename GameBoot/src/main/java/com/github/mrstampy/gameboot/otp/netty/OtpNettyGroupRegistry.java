@@ -132,6 +132,30 @@ public class OtpNettyGroupRegistry extends GameBootRegistry<Channel> {
   }
 
   /**
+   * Removes the from group.
+   *
+   * @param groupName
+   *          the group name
+   * @param channel
+   *          the channel
+   */
+  public void removeFromGroup(String groupName, Channel channel) {
+    registry.removeFromGroup(groupName, channel);
+  }
+
+  /**
+   * Removes the from group.
+   *
+   * @param groupName
+   *          the group name
+   * @param key
+   *          the key
+   */
+  public void removeFromGroup(String groupName, AbstractRegistryKey<?> key) {
+    registry.removeFromGroup(groupName, key);
+  }
+
+  /**
    * Send.
    *
    * @param key
@@ -243,28 +267,56 @@ public class OtpNettyGroupRegistry extends GameBootRegistry<Channel> {
   /**
    * Send to group.
    *
-   * @param groupKey
-   *          the group key
+   * @param groupName
+   *          the group name
    * @param message
    *          the message
    * @param listeners
    *          the listeners
    */
-  public void sendToGroup(String groupKey, String message, ChannelFutureListener... listeners) {
+  public void sendToGroup(String groupName, String message, ChannelFutureListener... listeners) {
     if (!messageCheck(message)) return;
 
-    sendToGroup(groupKey, message.getBytes(), listeners);
+    sendToGroup(groupName, message.getBytes(), listeners);
   }
 
-  private ChannelGroup getGroup(String groupKey) {
-    ChannelGroup group = registry.getGroup(groupKey);
+  /**
+   * Gets the group.
+   *
+   * @param groupName
+   *          the group name
+   * @return the group
+   */
+  public ChannelGroup getGroup(String groupName) {
+    ChannelGroup group = registry.getGroup(groupName);
 
     if (group == null) {
-      log.warn("No group {}, cannot send message", groupKey);
+      log.warn("No group {}", groupName);
       return null;
     }
 
     return group;
+  }
+
+  /**
+   * Contains group.
+   *
+   * @param groupName
+   *          the group name
+   * @return true, if successful
+   */
+  public boolean containsGroup(String groupName) {
+    return registry.containsGroup(groupName);
+  }
+
+  /**
+   * Removes the group.
+   *
+   * @param groupName
+   *          the group name
+   */
+  public void removeGroup(String groupName) {
+    registry.removeGroup(groupName);
   }
 
   private boolean messageCheck(String message) {
