@@ -109,6 +109,9 @@ public class OtpClearNettyProcessor extends AbstractNettyProcessor {
   @Autowired
   private OtpNewKeyRegistry newKeyRegistry;
 
+  @Autowired
+  private OtpNettyGroupRegistry nettyGroupRegistry;
+
   /** The expecting key change. */
   protected Map<Integer, Boolean> expectingKeyChange = new ConcurrentHashMap<>();
 
@@ -136,6 +139,8 @@ public class OtpClearNettyProcessor extends AbstractNettyProcessor {
 
   public void onConnection(ChannelHandlerContext ctx) throws Exception {
     super.onConnection(ctx);
+
+    nettyGroupRegistry.put(getSystemId(), ctx.channel());
 
     Response r = new Response(ResponseCode.INFO, new SystemIdResponse(getSystemId().getValue()));
 

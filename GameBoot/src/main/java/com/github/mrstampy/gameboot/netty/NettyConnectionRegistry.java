@@ -113,15 +113,15 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   }
 
   /**
-   * Returns true if the group specified by the groupKey exists.
+   * Returns true if the group specified by the groupName exists.
    *
-   * @param groupKey
+   * @param groupName
    *          the group key
    * @return true, if successful
    */
-  public boolean containsGroup(String groupKey) {
-    groupCheck(groupKey);
-    return groups.containsKey(groupKey);
+  public boolean containsGroup(String groupName) {
+    groupCheck(groupName);
+    return groups.containsKey(groupName);
   }
 
   /**
@@ -191,18 +191,18 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
    * Puts the channel in the specified group, creating the group if it does not
    * yet exist.
    *
-   * @param groupKey
+   * @param groupName
    *          the group key
    * @param channel
    *          the channel
    */
-  public void putInGroup(String groupKey, Channel channel) {
-    groupCheck(groupKey, channel);
+  public void putInGroup(String groupName, Channel channel) {
+    groupCheck(groupName, channel);
 
-    ChannelGroup group = groups.get(groupKey);
+    ChannelGroup group = groups.get(groupName);
     if (group == null) {
-      group = new DefaultChannelGroup(groupKey, ImmediateEventExecutor.INSTANCE);
-      groups.put(groupKey, group);
+      group = new DefaultChannelGroup(groupName, ImmediateEventExecutor.INSTANCE);
+      groups.put(groupName, group);
     }
 
     if (!group.contains(channel)) group.add(channel);
@@ -211,44 +211,44 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   /**
    * Gets the group.
    *
-   * @param groupKey
+   * @param groupName
    *          the group key
    * @return the group
    */
-  public ChannelGroup getGroup(String groupKey) {
-    groupCheck(groupKey);
-    return groups.get(groupKey);
+  public ChannelGroup getGroup(String groupName) {
+    groupCheck(groupName);
+    return groups.get(groupName);
   }
 
   /**
-   * Removes the channel from the group specified by groupKey.
+   * Removes the channel from the group specified by groupName.
    *
-   * @param groupKey
+   * @param groupName
    *          the group key
    * @param channel
    *          the channel
    */
-  public void removeFromGroup(String groupKey, Channel channel) {
-    groupCheck(groupKey, channel);
+  public void removeFromGroup(String groupName, Channel channel) {
+    groupCheck(groupName, channel);
 
-    ChannelGroup group = groups.get(groupKey);
+    ChannelGroup group = groups.get(groupName);
     if (group == null) return;
 
     group.remove(channel);
   }
 
   /**
-   * Removes the channel from group specified by groupKey and the key.
+   * Removes the channel from group specified by groupName and the key.
    *
-   * @param groupKey
+   * @param groupName
    *          the group key
    * @param key
    *          the key
    */
-  public void removeFromGroup(String groupKey, AbstractRegistryKey<?> key) {
+  public void removeFromGroup(String groupName, AbstractRegistryKey<?> key) {
     checkKey(key);
     Channel channel = get(key);
-    if (channel != null) removeFromGroup(groupKey, channel);
+    if (channel != null) removeFromGroup(groupName, channel);
   }
 
   /**
@@ -268,14 +268,14 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   /**
    * Removes the group.
    *
-   * @param groupKey
+   * @param groupName
    *          the group key
    */
-  public void removeGroup(String groupKey) {
-    groupCheck(groupKey);
-    if (!groups.containsKey(groupKey)) return;
+  public void removeGroup(String groupName) {
+    groupCheck(groupName);
+    if (!groups.containsKey(groupName)) return;
 
-    ChannelGroup group = groups.remove(groupKey);
+    ChannelGroup group = groups.remove(groupName);
 
     group.clear();
   }
@@ -335,23 +335,23 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   /**
    * Send the message to a specific group.
    *
-   * @param groupKey
+   * @param groupName
    *          the group key
    * @param message
    *          the message
    * @param listeners
    *          the listeners
    */
-  public void sendToGroup(String groupKey, String message, ChannelFutureListener... listeners) {
-    groupCheck(groupKey);
-    if (!groups.containsKey(groupKey)) {
-      log.warn("No group {} to send message {}", groupKey, message);
+  public void sendToGroup(String groupName, String message, ChannelFutureListener... listeners) {
+    groupCheck(groupName);
+    if (!groups.containsKey(groupName)) {
+      log.warn("No group {} to send message {}", groupName, message);
       return;
     }
 
-    ChannelGroup group = groups.get(groupKey);
+    ChannelGroup group = groups.get(groupName);
 
-    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey), listeners);
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupName), listeners);
     ChannelGroupFuture cf = group.writeAndFlush(message);
     cf.addListeners(all);
   }
@@ -359,23 +359,23 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   /**
    * Send the message to a specific group.
    *
-   * @param groupKey
+   * @param groupName
    *          the group key
    * @param message
    *          the message
    * @param listeners
    *          the listeners
    */
-  public void sendToGroup(String groupKey, byte[] message, ChannelFutureListener... listeners) {
-    groupCheck(groupKey);
-    if (!groups.containsKey(groupKey)) {
-      log.warn("No group {} to send message {}", groupKey, message);
+  public void sendToGroup(String groupName, byte[] message, ChannelFutureListener... listeners) {
+    groupCheck(groupName);
+    if (!groups.containsKey(groupName)) {
+      log.warn("No group {} to send message {}", groupName, message);
       return;
     }
 
-    ChannelGroup group = groups.get(groupKey);
+    ChannelGroup group = groups.get(groupName);
 
-    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey), listeners);
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupName), listeners);
     ChannelGroupFuture cf = group.writeAndFlush(message);
     cf.addListeners(all);
   }
@@ -383,7 +383,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   /**
    * Send to group.
    *
-   * @param groupKey
+   * @param groupName
    *          the group key
    * @param message
    *          the message
@@ -392,16 +392,17 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
    * @param listeners
    *          the listeners
    */
-  public void sendToGroup(String groupKey, String message, ChannelMatcher matcher, ChannelFutureListener... listeners) {
-    groupCheck(groupKey);
-    if (!groups.containsKey(groupKey)) {
-      log.warn("No group {} to send message {}", groupKey, message);
+  public void sendToGroup(String groupName, String message, ChannelMatcher matcher,
+      ChannelFutureListener... listeners) {
+    groupCheck(groupName);
+    if (!groups.containsKey(groupName)) {
+      log.warn("No group {} to send message {}", groupName, message);
       return;
     }
 
-    ChannelGroup group = groups.get(groupKey);
+    ChannelGroup group = groups.get(groupName);
 
-    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey), listeners);
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupName), listeners);
     ChannelGroupFuture cf = group.writeAndFlush(message, matcher);
     cf.addListeners(all);
   }
@@ -409,7 +410,7 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   /**
    * Send to group.
    *
-   * @param groupKey
+   * @param groupName
    *          the group key
    * @param message
    *          the message
@@ -418,18 +419,19 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
    * @param listeners
    *          the listeners
    */
-  public void sendToGroup(String groupKey, byte[] message, ChannelMatcher matcher, ChannelFutureListener... listeners) {
-    groupCheck(groupKey);
+  public void sendToGroup(String groupName, byte[] message, ChannelMatcher matcher,
+      ChannelFutureListener... listeners) {
+    groupCheck(groupName);
     checkMessage(message);
 
-    if (!groups.containsKey(groupKey)) {
-      log.warn("No group {} to send message {}", groupKey, message);
+    if (!groups.containsKey(groupName)) {
+      log.warn("No group {} to send message {}", groupName, message);
       return;
     }
 
-    ChannelGroup group = groups.get(groupKey);
+    ChannelGroup group = groups.get(groupName);
 
-    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupKey), listeners);
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelGroupFuture) f, groupName), listeners);
     ChannelGroupFuture cf = group.writeAndFlush(message, matcher);
     cf.addListeners(all);
   }
@@ -510,8 +512,8 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
     f.addListeners(all);
   }
 
-  private void log(ChannelGroupFuture e, String groupKey) {
-    e.iterator().forEachRemaining(cf -> log(cf, groupKey));
+  private void log(ChannelGroupFuture e, String groupName) {
+    e.iterator().forEachRemaining(cf -> log(cf, groupName));
   }
 
   private void log(ChannelFuture f, Object key) {
@@ -536,12 +538,12 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
     if (message == null || message.length == 0) fail("No message");
   }
 
-  private void groupCheck(String groupKey) {
-    if (isEmpty(groupKey)) fail("groupKey not defined");
+  private void groupCheck(String groupName) {
+    if (isEmpty(groupName)) fail("groupName not defined");
   }
 
-  private void groupCheck(String groupKey, Channel channel) {
-    groupCheck(groupKey);
+  private void groupCheck(String groupName, Channel channel) {
+    groupCheck(groupName);
     checkValue(channel);
   }
 }
