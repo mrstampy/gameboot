@@ -339,7 +339,11 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
     Optional<Entry<AbstractRegistryKey<?>, WebSocketSession>> o = getKeysForValue(session).stream()
         .filter(k -> k instanceof SystemIdKey).findFirst();
 
-    if (o.isPresent()) activeInGroups.put((SystemIdKey) o.get().getKey(), session);
+    if (!o.isPresent()) return;
+
+    SystemIdKey key = (SystemIdKey) o.get().getKey();
+
+    if (!activeInGroups.containsKey(key)) activeInGroups.put(key, session);
   }
 
   private void removeFromGroups(Entry<String, List<WebSocketSession>> e, WebSocketSession session) {
