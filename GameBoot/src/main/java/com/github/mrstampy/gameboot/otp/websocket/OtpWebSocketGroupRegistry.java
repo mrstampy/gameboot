@@ -135,8 +135,6 @@ public class OtpWebSocketGroupRegistry extends GameBootRegistry<WebSocketSession
    *          the key
    * @param message
    *          the message
-   * @param listeners
-   *          the listeners
    * @throws Exception
    *           the exception
    */
@@ -203,8 +201,6 @@ public class OtpWebSocketGroupRegistry extends GameBootRegistry<WebSocketSession
    *          the group name
    * @param message
    *          the message
-   * @param listeners
-   *          the listeners
    */
   public void sendToGroup(String groupName, String message) {
     if (!messageCheck(message)) return;
@@ -219,8 +215,6 @@ public class OtpWebSocketGroupRegistry extends GameBootRegistry<WebSocketSession
    *          the key
    * @param message
    *          the message
-   * @param listeners
-   *          the listeners
    * @throws Exception
    *           the exception
    */
