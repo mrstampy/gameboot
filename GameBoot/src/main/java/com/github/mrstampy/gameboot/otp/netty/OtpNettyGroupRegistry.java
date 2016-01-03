@@ -71,8 +71,10 @@ import io.netty.channel.group.ChannelGroup;
 
 /**
  * The Class OtpNettyGroupRegistry facilitates communication between
- * {@link OtpClearNettyProcessor}-connections, encrypting the message for each
- * connection as required.
+ * {@link OtpClearNettyProcessor} connections, encrypting the message for each
+ * connection as required. For group sending the {@link OtpClearNettyProcessor}
+ * connections must be added to
+ * {@link NettyConnectionRegistry#putInGroup(String, Channel)}
  * 
  * @see NettyConnectionRegistry
  */
