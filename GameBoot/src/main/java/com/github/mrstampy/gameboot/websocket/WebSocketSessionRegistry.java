@@ -369,7 +369,12 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
   private int allConnected() {
     List<WebSocketSession> group = sessionGroups.get(ALL);
 
-    return group == null ? 0 : group.size();
+    rLock.lock();
+    try {
+      return group == null ? 0 : group.size();
+    } finally {
+      rLock.unlock();
+    }
   }
 
   private void groupAndSessionCheck(String groupName, WebSocketSession session) {
