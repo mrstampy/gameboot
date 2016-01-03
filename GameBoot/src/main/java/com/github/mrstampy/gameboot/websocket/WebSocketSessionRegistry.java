@@ -112,12 +112,6 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
    * com.github.mrstampy.gameboot.util.registry.RegistryCleanerListener#cleanup(
    * com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey)
    */
-  /**
-   * Cleanup.
-   *
-   * @param key
-   *          the key
-   */
   @Override
   public void cleanup(AbstractRegistryKey<?> key) {
     if (!(key instanceof SystemIdKey)) return;
