@@ -72,9 +72,7 @@ import io.netty.channel.group.ChannelGroup;
 /**
  * The Class OtpNettyGroupRegistry facilitates communication between
  * {@link OtpClearNettyProcessor} connections, encrypting the message for each
- * connection as required. For group sending the {@link OtpClearNettyProcessor}
- * connections must be added to
- * {@link NettyConnectionRegistry#putInGroup(String, Channel)}
+ * connection as required.
  * 
  * @see NettyConnectionRegistry
  */
@@ -119,6 +117,18 @@ public class OtpNettyGroupRegistry extends GameBootRegistry<Channel> {
   public void put(AbstractRegistryKey<?> key, Channel channel) {
     super.put(key, channel);
     channel.closeFuture().addListener(f -> map.remove(key));
+  }
+
+  /**
+   * Put in group, delegating to the {@link NettyConnectionRegistry}.
+   *
+   * @param groupName
+   *          the group name
+   * @param channel
+   *          the channel
+   */
+  public void putInGroup(String groupName, Channel channel) {
+    registry.putInGroup(groupName, channel);
   }
 
   /**
