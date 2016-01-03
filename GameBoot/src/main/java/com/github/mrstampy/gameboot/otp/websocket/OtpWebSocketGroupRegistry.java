@@ -213,6 +213,24 @@ public class OtpWebSocketGroupRegistry extends GameBootRegistry<WebSocketSession
   }
 
   /**
+   * Send.
+   *
+   * @param key
+   *          the key
+   * @param message
+   *          the message
+   * @param listeners
+   *          the listeners
+   * @throws Exception
+   *           the exception
+   */
+  public void send(AbstractRegistryKey<?> key, String message) throws Exception {
+    if (!messageCheck(message)) return;
+
+    send(key, message.getBytes());
+  }
+
+  /**
    * Gets the group.
    *
    * @param groupName

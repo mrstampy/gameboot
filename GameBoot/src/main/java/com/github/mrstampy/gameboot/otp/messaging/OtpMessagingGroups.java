@@ -39,7 +39,7 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messaging;
+package com.github.mrstampy.gameboot.otp.messaging;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
@@ -48,32 +48,32 @@ import java.lang.invoke.MethodHandles;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
-import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
+import com.github.mrstampy.gameboot.otp.OtpConfiguration;
+import com.github.mrstampy.gameboot.otp.netty.OtpNettyGroupRegistry;
+import com.github.mrstampy.gameboot.otp.websocket.OtpWebSocketGroupRegistry;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
-import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
 
 import io.netty.channel.Channel;
 
 /**
- * MessagingGroups facilitates sending messages to a group of connections,
+ * OtpMessagingGroups facilitates sending messages to a group of connections,
  * either web sockets, Netty connections or a mix of the two.
  */
 @Component
-public class MessagingGroups {
+@Profile(OtpConfiguration.OTP_PROFILE)
+public class OtpMessagingGroups {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  /** Group key for ALL connections. */
-  public static final String ALL = "ALL";
+  @Autowired
+  private OtpNettyGroupRegistry nettyRegistry;
 
   @Autowired
-  private NettyConnectionRegistry nettyRegistry;
-
-  @Autowired
-  private WebSocketSessionRegistry webSocketRegistry;
+  private OtpWebSocketGroupRegistry webSocketRegistry;
 
   /**
    * Finds either the {@link Channel} or {@link WebSocketSession} associated
@@ -83,8 +83,10 @@ public class MessagingGroups {
    *          the key
    * @param message
    *          the message
+   * @throws Exception
+   *           the exception
    */
-  public void send(AbstractRegistryKey<?> key, String message) {
+  public void send(AbstractRegistryKey<?> key, String message) throws Exception {
     if (nettyRegistry.contains(key)) {
       nettyRegistry.send(key, message);
     } else if (webSocketRegistry.contains(key)) {
@@ -102,8 +104,10 @@ public class MessagingGroups {
    *          the key
    * @param message
    *          the message
+   * @throws Exception
+   *           the exception
    */
-  public void send(AbstractRegistryKey<?> key, byte[] message) {
+  public void send(AbstractRegistryKey<?> key, byte[] message) throws Exception {
     if (nettyRegistry.contains(key)) {
       nettyRegistry.send(key, message);
     } else if (webSocketRegistry.contains(key)) {
@@ -170,30 +174,6 @@ public class MessagingGroups {
   public void removeGroup(String groupName) {
     if (nettyRegistry.containsGroup(groupName)) nettyRegistry.removeGroup(groupName);
     if (webSocketRegistry.containsGroup(groupName)) webSocketRegistry.removeGroup(groupName);
-  }
-
-  /**
-   * Send to all.
-   *
-   * @param message
-   *          the message
-   * @param except
-   *          the except
-   */
-  public void sendToAll(String message, SystemIdKey... except) {
-    sendMessage(ALL, message, except);
-  }
-
-  /**
-   * Send to all.
-   *
-   * @param message
-   *          the message
-   * @param except
-   *          the except
-   */
-  public void sendToAll(byte[] message, SystemIdKey... except) {
-    sendMessage(ALL, message, except);
   }
 
   /**
