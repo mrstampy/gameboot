@@ -43,6 +43,10 @@ package com.github.mrstampy.gameboot.messaging;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
+import java.lang.invoke.MethodHandles;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
@@ -60,6 +64,7 @@ import io.netty.channel.Channel;
  */
 @Component
 public class MessagingGroups {
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   /** Group key for ALL connections. */
   public static final String ALL = "ALL";
@@ -80,8 +85,13 @@ public class MessagingGroups {
    *          the message
    */
   public void send(AbstractRegistryKey<?> key, String message) {
-    if (nettyRegistry.contains(key)) nettyRegistry.send(key, message);
-    if (webSocketRegistry.contains(key)) webSocketRegistry.send(key, message);
+    if (nettyRegistry.contains(key)) {
+      nettyRegistry.send(key, message);
+    } else if (webSocketRegistry.contains(key)) {
+      webSocketRegistry.send(key, message);
+    } else {
+      log.warn("No connection for {}, cannot send message", key);
+    }
   }
 
   /**
@@ -94,8 +104,13 @@ public class MessagingGroups {
    *          the message
    */
   public void send(AbstractRegistryKey<?> key, byte[] message) {
-    if (nettyRegistry.contains(key)) nettyRegistry.send(key, message);
-    if (webSocketRegistry.contains(key)) webSocketRegistry.send(key, message);
+    if (nettyRegistry.contains(key)) {
+      nettyRegistry.send(key, message);
+    } else if (webSocketRegistry.contains(key)) {
+      webSocketRegistry.send(key, message);
+    } else {
+      log.warn("No connection for {}, cannot send message", key);
+    }
   }
 
   /**
