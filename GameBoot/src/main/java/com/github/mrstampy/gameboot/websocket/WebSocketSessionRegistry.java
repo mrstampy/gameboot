@@ -113,6 +113,12 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
    * com.github.mrstampy.gameboot.util.registry.RegistryCleanerListener#cleanup(
    * com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey)
    */
+  /**
+   * Cleanup.
+   *
+   * @param key
+   *          the key
+   */
   @Override
   public void cleanup(AbstractRegistryKey<?> key) {
     if (!(key instanceof SystemIdKey)) return;
@@ -164,6 +170,46 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
     }
 
     addToActiveInGroups(session);
+  }
+
+  /**
+   * Gets the group.
+   *
+   * @param groupName
+   *          the group name
+   * @return the group
+   */
+  public List<WebSocketSession> getGroup(String groupName) {
+    groupNameCheck(groupName);
+
+    List<WebSocketSession> list = sessionGroups.get(groupName);
+
+    return list == null ? null : new ArrayList<>(list);
+  }
+
+  /**
+   * Contains group.
+   *
+   * @param groupName
+   *          the group name
+   * @return true, if successful
+   */
+  public boolean containsGroup(String groupName) {
+    groupNameCheck(groupName);
+
+    return sessionGroups.containsKey(groupName);
+  }
+
+  /**
+   * Removes the group.
+   *
+   * @param groupName
+   *          the group name
+   */
+  public void removeGroup(String groupName) {
+    groupNameCheck(groupName);
+
+    sessionGroups.remove(groupName);
   }
 
   /**

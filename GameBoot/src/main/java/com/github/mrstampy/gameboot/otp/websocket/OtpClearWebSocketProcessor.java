@@ -105,6 +105,9 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
   @Autowired
   private OtpNewKeyRegistry newKeyRegistry;
 
+  @Autowired
+  private OtpWebSocketGroupRegistry groupRegistry;
+
   /*
    * (non-Javadoc)
    * 
@@ -132,6 +135,8 @@ public class OtpClearWebSocketProcessor extends AbstractWebSocketProcessor {
    */
   public void onConnection(WebSocketSession session) throws Exception {
     super.onConnection(session);
+
+    groupRegistry.put(getSystemId(session), session);
 
     Response r = new Response(ResponseCode.INFO, new SystemIdResponse(getSystemId(session).getValue()));
 
