@@ -80,8 +80,8 @@ public class MessagingGroups {
    *          the message
    */
   public void send(AbstractRegistryKey<?> key, String message) {
-    nettyRegistry.send(key, message);
-    webSocketRegistry.send(key, message);
+    if (nettyRegistry.contains(key)) nettyRegistry.send(key, message);
+    if (webSocketRegistry.contains(key)) webSocketRegistry.send(key, message);
   }
 
   /**
@@ -94,8 +94,8 @@ public class MessagingGroups {
    *          the message
    */
   public void send(AbstractRegistryKey<?> key, byte[] message) {
-    nettyRegistry.send(key, message);
-    webSocketRegistry.send(key, message);
+    if (nettyRegistry.contains(key)) nettyRegistry.send(key, message);
+    if (webSocketRegistry.contains(key)) webSocketRegistry.send(key, message);
   }
 
   /**
