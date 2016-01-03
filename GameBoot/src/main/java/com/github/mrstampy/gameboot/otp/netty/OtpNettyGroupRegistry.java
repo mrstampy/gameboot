@@ -44,6 +44,7 @@ package com.github.mrstampy.gameboot.otp.netty;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
 import java.util.Map.Entry;
 import java.util.Optional;
 
@@ -136,7 +137,7 @@ public class OtpNettyGroupRegistry extends GameBootRegistry<Channel> {
     byte[] otp = systemId == null ? null : keyRegistry.get(systemId);
 
     if (otp == null) {
-      registry.send(key, message, listeners);
+      registry.send(key, Arrays.copyOf(message, message.length), listeners);
     } else {
       byte[] converted = pad.convert(otp, message);
       registry.send(key, converted, listeners);
