@@ -30,7 +30,7 @@ Specific messages (based on type) can have any additional fields or arrays as re
 	    "description": context around the response, human readable
 	  },
 
-	  "payload" : [array of either JSON strings or plain strings, optional]
+	  "payload" : [array of either JSON strings, plain strings or byte arrays, optional]
 	}
 
 Messages are converted to Java objects based on the implementation of the MessageClassFinder interface.  Inbound messages are processed by an implementation of GameBootProcessor whose type matches the type of the message.

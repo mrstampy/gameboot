@@ -43,6 +43,7 @@ package com.github.mrstampy.gameboot.locale.processor;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Locale;
@@ -56,7 +57,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.github.mrstampy.gameboot.TestConfiguration;
 import com.github.mrstampy.gameboot.exception.GameBootRuntimeException;
+import com.github.mrstampy.gameboot.locale.messages.CurrentLocaleMessage;
 import com.github.mrstampy.gameboot.locale.messages.LocaleMessage;
+import com.github.mrstampy.gameboot.locale.processor.CurrentLocaleProcessor.LocaleBean;
 import com.github.mrstampy.gameboot.messages.Response;
 import com.github.mrstampy.gameboot.messages.Response.ResponseCode;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
@@ -69,12 +72,17 @@ import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 @ActiveProfiles(LocaleProcessor.PROFILE)
 public class LocaleProcessorTest {
 
+  private static final SystemIdKey SYSTEM_ID_KEY = new SystemIdKey(1l);
+
   private static final String FRANCE_CODE = "FR";
 
   private static final String FRENCH_CODE = "fr";
 
   @Autowired
   private LocaleProcessor processor;
+
+  @Autowired
+  private CurrentLocaleProcessor current;
 
   @Autowired
   private LocaleRegistry registry;
@@ -90,8 +98,8 @@ public class LocaleProcessorTest {
     validationFailExpected(null, "Null message");
 
     LocaleMessage msg = new LocaleMessage();
-    msg.setSystemId(new SystemIdKey(1l)); // set by the system on the way to
-                                          // processing
+    msg.setSystemId(SYSTEM_ID_KEY); // set by the system on the way to
+                                    // processing
 
     validationFailExpected(msg, "No lang or country codes");
 
@@ -114,10 +122,10 @@ public class LocaleProcessorTest {
   public void testProcess() throws Exception {
     assertEquals(0, registry.size());
 
-    SystemIdKey systemId = new SystemIdKey(1l);
+    testCurrent(Locale.getDefault());
 
     LocaleMessage msg = new LocaleMessage();
-    msg.setSystemId(systemId);
+    msg.setSystemId(SYSTEM_ID_KEY);
     msg.setLanguageCode(FRENCH_CODE);
 
     Response r = processor.process(msg);
@@ -126,9 +134,28 @@ public class LocaleProcessorTest {
     assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
     assertEquals(1, registry.size());
 
-    Locale locale = registry.get(systemId);
+    Locale fr = new Locale(FRENCH_CODE);
+    testCurrent(fr);
+
+    Locale locale = registry.get(SYSTEM_ID_KEY);
     assertNotNull(locale);
     assertEquals(FRENCH_CODE, locale.getLanguage());
+  }
+
+  private void testCurrent(Locale expected) throws Exception {
+    CurrentLocaleMessage cur = new CurrentLocaleMessage();
+    cur.setSystemId(SYSTEM_ID_KEY);
+
+    Response r = current.process(cur);
+
+    assertEquals(ResponseCode.SUCCESS, r.getResponseCode());
+    assertNotNull(r.getPayload());
+    assertEquals(1, r.getPayload().length);
+    assertTrue(r.getPayload()[0] instanceof LocaleBean);
+
+    LocaleBean lb = (LocaleBean) r.getPayload()[0];
+    assertEquals(expected.getCountry(), lb.getCountryCode());
+    assertEquals(expected.getLanguage(), lb.getLanguageCode());
   }
 
   private void validationFailExpected(LocaleMessage msg, String desc) {

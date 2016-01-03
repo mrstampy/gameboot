@@ -39,55 +39,23 @@
  * Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
  * 
  */
-package com.github.mrstampy.gameboot.messages.finder;
+package com.github.mrstampy.gameboot.locale.messages;
 
-import java.lang.invoke.MethodHandles;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.github.mrstampy.gameboot.controller.GameBootControllerConfiguration;
-import com.github.mrstampy.gameboot.locale.messages.CurrentLocaleMessage;
-import com.github.mrstampy.gameboot.locale.messages.LocaleMessage;
-import com.github.mrstampy.gameboot.otp.messages.OtpKeyRequest;
-import com.github.mrstampy.gameboot.otp.messages.OtpNewKeyAck;
-import com.github.mrstampy.gameboot.systemid.messages.SystemIdMessage;
-import com.github.mrstampy.gameboot.usersession.messages.UserMessage;
+import com.github.mrstampy.gameboot.messages.AbstractGameBootMessage;
 
 /**
- * The default implementation of the {@link MessageClassFinder} interface.
- * 
- * @see GameBootControllerConfiguration
+ * Message used to retrieve the current locale for a connection.
  */
-public class GameBootMessageClassFinder implements MessageClassFinder {
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+public class CurrentLocaleMessage extends AbstractGameBootMessage {
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see
-   * com.github.mrstampy.gameboot.controller.MessageClassFinder#findClass(java.
-   * lang.String)
+  /** The Constant TYPE. */
+  public static final String TYPE = "CurrentLocaleMessage";
+
+  /**
+   * Instantiates a new current locale message.
    */
-  @Override
-  public Class<?> findClass(String type) {
-    switch (type) {
-    case UserMessage.TYPE:
-      return UserMessage.class;
-    case OtpKeyRequest.TYPE:
-      return OtpKeyRequest.class;
-    case OtpNewKeyAck.TYPE:
-      return OtpNewKeyAck.class;
-    case LocaleMessage.TYPE:
-      return LocaleMessage.class;
-    case SystemIdMessage.TYPE:
-      return SystemIdMessage.class;
-    case CurrentLocaleMessage.TYPE:
-      return CurrentLocaleMessage.class;
-    default:
-      log.error("No class defined for type {}", type);
-      return null;
-    }
+  public CurrentLocaleMessage() {
+    super(TYPE);
   }
 
 }
