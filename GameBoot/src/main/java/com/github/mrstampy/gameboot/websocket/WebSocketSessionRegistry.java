@@ -82,6 +82,7 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String REGISTRY_SIZE = "Web Socket Connections";
+  private static final String GROUP_OF_ONE = "SINGLE";
 
   @Autowired
   private MetricsHelper helper;
@@ -203,6 +204,48 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
   }
 
   /**
+   * Sends the message to the {@link WebSocketSession} specified by the
+   * {@link AbstractRegistryKey}.
+   *
+   * @param key
+   *          the key
+   * @param message
+   *          the message
+   */
+  public void send(AbstractRegistryKey<?> key, String message) {
+    checkMessage(message);
+
+    WebSocketSession session = get(key);
+    if (session == null || !session.isOpen()) {
+      log.warn("Cannot send message to {}, no session", key);
+      return;
+    }
+
+    sendText(GROUP_OF_ONE, session, message);
+  }
+
+  /**
+   * Sends the message to the {@link WebSocketSession} specified by the
+   * {@link AbstractRegistryKey}.
+   *
+   * @param key
+   *          the key
+   * @param message
+   *          the message
+   */
+  public void send(AbstractRegistryKey<?> key, byte[] message) {
+    checkMessage(message);
+
+    WebSocketSession session = get(key);
+    if (session == null || !session.isOpen()) {
+      log.warn("Cannot send message to {}, no session", key);
+      return;
+    }
+
+    sendBinary(GROUP_OF_ONE, session, message);
+  }
+
+  /**
    * Send to all.
    *
    * @param message
@@ -237,6 +280,9 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
    *          the except
    */
   public void sendToGroup(String groupName, byte[] message, SystemIdKey... except) {
+    groupNameCheck(groupName);
+    checkMessage(message);
+
     List<WebSocketSession> list = sessionGroups.get(groupName);
     List<WebSocketSession> toSend = null;
 
@@ -264,6 +310,9 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
    *          the except
    */
   public void sendToGroup(String groupName, String message, SystemIdKey... except) {
+    groupNameCheck(groupName);
+    checkMessage(message);
+
     List<WebSocketSession> list = sessionGroups.get(groupName);
     List<WebSocketSession> toSend = null;
 
@@ -282,30 +331,43 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
   }
 
   private void sendMessage(String groupName, WebSocketSession wss, byte[] message) {
-    if (!wss.isOpen()) {
+    if (!sessionCheck(groupName, wss)) return;
+
+    sendBinary(groupName, wss, message);
+  }
+
+  private void sendMessage(String groupName, WebSocketSession wss, String message) {
+    if (!sessionCheck(groupName, wss)) return;
+
+    sendText(groupName, wss, message);
+  }
+
+  private boolean sessionCheck(String groupName, WebSocketSession wss) {
+    boolean open = wss.isOpen();
+
+    if (!open) {
+      log.warn("Session {} is closed in group {}, cannot send message", wss.getId(), groupName);
       removeFromGroup(groupName, wss);
-      return;
     }
 
+    return open;
+  }
+
+  private void sendBinary(String groupName, WebSocketSession wss, byte[] message) {
     BinaryMessage bm = new BinaryMessage(message);
     try {
       wss.sendMessage(bm);
-      log.trace("Sent message to web socket session {} in group {}", wss.getId(), groupName);
+      log.debug("Sent message to web socket session {} in group {}", wss.getId(), groupName);
     } catch (IOException e) {
       log.error("Unexpected exception sending message to web socket session {}", wss.getId(), e);
     }
   }
 
-  private void sendMessage(String groupName, WebSocketSession wss, String message) {
-    if (!wss.isOpen()) {
-      removeFromGroup(groupName, wss);
-      return;
-    }
-
+  private void sendText(String groupName, WebSocketSession wss, String message) {
     TextMessage bm = new TextMessage(message);
     try {
       wss.sendMessage(bm);
-      log.trace("Sent message to web socket session {} in group {}", wss.getId(), groupName);
+      log.debug("Sent message to web socket session {} in group {}", wss.getId(), groupName);
     } catch (IOException e) {
       log.error("Unexpected exception sending message to web socket session {}", wss.getId(), e);
     }
@@ -382,6 +444,14 @@ public class WebSocketSessionRegistry extends GameBootRegistry<WebSocketSession>
 
   private void groupNameCheck(String groupName) {
     if (isEmpty(groupName)) throw new NullPointerException("No groupName");
+  }
+
+  private void checkMessage(String message) {
+    if (isEmpty(message)) fail("No message");
+  }
+
+  private void checkMessage(byte[] message) {
+    if (message == null || message.length == 0) fail("No message");
   }
 
 }

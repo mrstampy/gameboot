@@ -43,19 +43,16 @@ package com.github.mrstampy.gameboot.messaging;
 
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
 import com.github.mrstampy.gameboot.netty.NettyConnectionRegistry;
 import com.github.mrstampy.gameboot.systemid.SystemIdKey;
+import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.websocket.WebSocketSessionRegistry;
 
 import io.netty.channel.Channel;
-import io.netty.channel.group.ChannelMatcher;
 
 /**
  * MessagingGroups facilitates sending messages to a group of connections,
@@ -67,19 +64,39 @@ public class MessagingGroups {
   /** Group key for ALL connections. */
   public static final String ALL = "ALL";
 
-  private static final ChannelMatcher NOOP_MATCHER = new ChannelMatcher() {
-
-    @Override
-    public boolean matches(Channel channel) {
-      return true;
-    }
-  };
-
   @Autowired
   private NettyConnectionRegistry nettyRegistry;
 
   @Autowired
   private WebSocketSessionRegistry webSocketRegistry;
+
+  /**
+   * Finds either the {@link Channel} or {@link WebSocketSession} associated
+   * with the key and sends the message.
+   *
+   * @param key
+   *          the key
+   * @param message
+   *          the message
+   */
+  public void send(AbstractRegistryKey<?> key, String message) {
+    nettyRegistry.send(key, message);
+    webSocketRegistry.send(key, message);
+  }
+
+  /**
+   * Finds either the {@link Channel} or {@link WebSocketSession} associated
+   * with the key and sends the message.
+   *
+   * @param key
+   *          the key
+   * @param message
+   *          the message
+   */
+  public void send(AbstractRegistryKey<?> key, byte[] message) {
+    nettyRegistry.send(key, message);
+    webSocketRegistry.send(key, message);
+  }
 
   /**
    * Adds the to group.
@@ -168,7 +185,7 @@ public class MessagingGroups {
     if (isEmpty(message)) throw new IllegalArgumentException("No message");
 
     webSocketRegistry.sendToGroup(groupName, message, except);
-    sendToNetty(groupName, message, except);
+    nettyRegistry.sendToGroup(groupName, message, except);
   }
 
   /**
@@ -186,41 +203,7 @@ public class MessagingGroups {
     if (message == null || message.length == 0) throw new IllegalArgumentException("No message");
 
     webSocketRegistry.sendToGroup(groupName, message, except);
-    sendToNetty(groupName, message, except);
-  }
-
-  private void sendToNetty(String groupName, byte[] message, SystemIdKey... except) {
-    if (!nettyRegistry.containsGroup(groupName)) return;
-
-    ChannelMatcher exceptions = createMatcher(except);
-
-    nettyRegistry.sendToGroup(groupName, message, exceptions);
-  }
-
-  private void sendToNetty(String groupName, String message, SystemIdKey[] except) {
-    if (!nettyRegistry.containsGroup(groupName)) return;
-
-    ChannelMatcher exceptions = createMatcher(except);
-
-    nettyRegistry.sendToGroup(groupName, message, exceptions);
-  }
-
-  private ChannelMatcher createMatcher(SystemIdKey... except) {
-    if (except == null || except.length == 0) return NOOP_MATCHER;
-
-    List<Channel> exceptions = new ArrayList<>();
-    for (SystemIdKey key : except) {
-      Channel c = nettyRegistry.get(key);
-      if (c != null) exceptions.add(c);
-    }
-
-    return exceptions.isEmpty() ? NOOP_MATCHER : new ChannelMatcher() {
-
-      @Override
-      public boolean matches(Channel channel) {
-        return !exceptions.contains(channel);
-      }
-    };
+    nettyRegistry.sendToGroup(groupName, message, except);
   }
 
   private void groupNameCheck(String groupName) {

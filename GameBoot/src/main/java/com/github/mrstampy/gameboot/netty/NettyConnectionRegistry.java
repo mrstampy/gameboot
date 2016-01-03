@@ -45,6 +45,8 @@ import static com.github.mrstampy.gameboot.messaging.MessagingGroups.ALL;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.lang.invoke.MethodHandles;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -56,6 +58,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.github.mrstampy.gameboot.metrics.MetricsHelper;
+import com.github.mrstampy.gameboot.systemid.SystemIdKey;
 import com.github.mrstampy.gameboot.util.GameBootUtils;
 import com.github.mrstampy.gameboot.util.registry.AbstractRegistryKey;
 import com.github.mrstampy.gameboot.util.registry.GameBootRegistry;
@@ -81,6 +84,14 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   private static final String NETTY_CONNECTIONS = "Netty Connections";
+
+  private static final ChannelMatcher NOOP_MATCHER = new ChannelMatcher() {
+
+    @Override
+    public boolean matches(Channel channel) {
+      return true;
+    }
+  };
 
   @Autowired
   private MetricsHelper helper;
@@ -127,7 +138,8 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
   }
 
   /**
-   * Sends the message to the specified {@link Map}-keyable channel.
+   * Sends the message to the {@link Channel} specified by the
+   * {@link AbstractRegistryKey}.
    *
    * @param key
    *          the key
@@ -138,6 +150,27 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
    */
   public void send(AbstractRegistryKey<?> key, String message, ChannelFutureListener... listeners) {
     checkKey(key);
+    checkMessage(message);
+
+    Channel channel = get(key);
+
+    sendMessage(key, message, channel, listeners);
+  }
+
+  /**
+   * Sends the message to the {@link Channel} specified by the
+   * {@link AbstractRegistryKey}.
+   *
+   * @param key
+   *          the key
+   * @param message
+   *          the message
+   * @param listeners
+   *          the listeners
+   */
+  public void send(AbstractRegistryKey<?> key, byte[] message, ChannelFutureListener... listeners) {
+    checkKey(key);
+    checkMessage(message);
 
     Channel channel = get(key);
 
@@ -387,6 +420,8 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
    */
   public void sendToGroup(String groupKey, byte[] message, ChannelMatcher matcher, ChannelFutureListener... listeners) {
     groupCheck(groupKey);
+    checkMessage(message);
+
     if (!groups.containsKey(groupKey)) {
       log.warn("No group {} to send message {}", groupKey, message);
       return;
@@ -399,8 +434,72 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
     cf.addListeners(all);
   }
 
+  /**
+   * Send to group.
+   *
+   * @param groupName
+   *          the group name
+   * @param message
+   *          the message
+   * @param except
+   *          the except
+   */
+  public void sendToGroup(String groupName, byte[] message, SystemIdKey... except) {
+    if (!containsGroup(groupName)) return;
+
+    ChannelMatcher exceptions = createMatcher(except);
+
+    sendToGroup(groupName, message, exceptions);
+  }
+
+  /**
+   * Send to group.
+   *
+   * @param groupName
+   *          the group name
+   * @param message
+   *          the message
+   * @param except
+   *          the except
+   */
+  public void sendToGroup(String groupName, String message, SystemIdKey... except) {
+    if (!containsGroup(groupName)) return;
+
+    ChannelMatcher exceptions = createMatcher(except);
+
+    sendToGroup(groupName, message, exceptions);
+  }
+
+  private ChannelMatcher createMatcher(SystemIdKey... except) {
+    if (except == null || except.length == 0) return NOOP_MATCHER;
+
+    List<Channel> exceptions = new ArrayList<>();
+    for (SystemIdKey key : except) {
+      Channel c = get(key);
+      if (c != null) exceptions.add(c);
+    }
+
+    return exceptions.isEmpty() ? NOOP_MATCHER : new ChannelMatcher() {
+
+      @Override
+      public boolean matches(Channel channel) {
+        return !exceptions.contains(channel);
+      }
+    };
+  }
+
   private void sendMessage(Comparable<?> key, String message, Channel channel, ChannelFutureListener... listeners) {
-    checkMessage(message);
+    if (channel == null || !channel.isActive()) {
+      log.warn("Cannot send {} to {}", message, channel);
+      return;
+    }
+
+    ChannelFutureListener[] all = utils.prependArray(f -> log((ChannelFuture) f, key), listeners);
+    ChannelFuture f = channel.writeAndFlush(message);
+    f.addListeners(all);
+  }
+
+  private void sendMessage(Comparable<?> key, byte[] message, Channel channel, ChannelFutureListener... listeners) {
     if (channel == null || !channel.isActive()) {
       log.warn("Cannot send {} to {}", message, channel);
       return;
@@ -431,6 +530,10 @@ public class NettyConnectionRegistry extends GameBootRegistry<Channel> {
 
   private void checkMessage(String message) {
     if (isEmpty(message)) fail("No message");
+  }
+
+  private void checkMessage(byte[] message) {
+    if (message == null || message.length == 0) fail("No message");
   }
 
   private void groupCheck(String groupKey) {
