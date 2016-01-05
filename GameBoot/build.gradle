@@ -91,10 +91,6 @@ jar {
           'Website': 'http://mrstampy.github.io/gameboot/'
         )
     }
-    
-    from('src/main/resources') {
-        exclude 'gameboot.sql.init'
-    }
 }
 
 dependencies {
