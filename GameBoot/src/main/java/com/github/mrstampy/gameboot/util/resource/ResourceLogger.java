@@ -55,7 +55,7 @@ class ResourceLogger {
 
   private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
-  private static Map<String, Boolean> loggedResources = new HashMap<>();
+  private static Map<String, String> loggedResources = new HashMap<>();
 
   /**
    * Log.
@@ -64,11 +64,12 @@ class ResourceLogger {
    *          the resource
    */
   static void log(String resource) {
-    Boolean b = loggedResources.get(resource);
-    if (b == null) {
-      log.info("Using resource {}", resource);
-      loggedResources.put(resource, Boolean.TRUE);
-    }
+    String s = loggedResources.get(resource);
+
+    if (s != null && s.equals(resource)) return;
+
+    log.info("Using resource {}", resource);
+    loggedResources.put(resource, resource);
   }
 
   /**
@@ -80,11 +81,12 @@ class ResourceLogger {
    *          the fallback
    */
   static void log(String resource, String fallback) {
-    Boolean b = loggedResources.get(resource);
-    if (b == null) {
-      log.info("Resource {} exists and will be used as an override for {}", resource, fallback);
-      loggedResources.put(resource, Boolean.TRUE);
-    }
+    String s = loggedResources.get(resource);
+
+    if (s != null && s.equals(resource)) return;
+
+    log.info("Resource {} exists and will be used as an override for {}", resource, fallback);
+    loggedResources.put(resource, fallback);
   }
 
   private ResourceLogger() {
