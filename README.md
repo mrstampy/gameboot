@@ -33,7 +33,7 @@ Specific messages (based on type) can have any additional fields or arrays as re
 	  "payload" : [array of either JSON strings, plain strings or byte arrays, optional]
 	}
 
-Messages are converted to Java objects based on the implementation of the [MessageClassFinder](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/messages/finder/MessageClassFinder.java) interface.  Inbound messages are processed by an implementation of GameBootProcessor whose type matches the type of the message.
+Messages are converted to Java objects based on the implementation of the [MessageClassFinder](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/messages/finder/MessageClassFinder.java) interface.  Inbound messages are processed by an implementation of [GameBootProcessor](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/processor/GameBootProcessor.java) whose type matches the type of the message.
 
 That's GameBoot in a nutshell.
 
