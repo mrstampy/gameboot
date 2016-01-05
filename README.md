@@ -82,7 +82,7 @@ As the premiere Java socket library Netty's inclusion in GameBoot is intended to
 
 2. [Registries](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/util/registry) for ease of lookups for connection-transient objects, primarily intended to [facilitate sending messages between connected clients](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/messaging/MessagingGroups.java) but which can be used for any connection-related purpose.
 
-3. Ability to group connections for the purpose of sending messages.
+3. Ability to [group connections](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/messaging/MessagingGroups.java) for the purpose of sending messages.
 
 4. [Runnables and Callables](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/util/concurrent) which preserve the Logback mapped diagnostic context.
 
