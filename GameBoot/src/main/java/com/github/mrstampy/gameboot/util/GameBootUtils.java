@@ -126,20 +126,20 @@ public class GameBootUtils implements ApplicationContextAware {
    *
    * @param <T>
    *          the generic type
-   * @param pre
-   *          the pre
    * @param post
    *          the post
+   * @param pre
+   *          the pre
    * @return the t[]
    */
   @SuppressWarnings("unchecked")
-  public <T> T[] postpendArray(T pre, T... post) {
-    if (pre == null) throw new IllegalArgumentException("Element cannot be null");
-    if (post == null) throw new IllegalArgumentException("Array cannot be null");
+  public <T> T[] postpendArray(T post, T... pre) {
+    if (post == null) throw new IllegalArgumentException("Element cannot be null");
+    if (pre == null) throw new IllegalArgumentException("Array cannot be null");
 
-    T[] array = Arrays.copyOf(post, post.length + 1);
+    T[] array = Arrays.copyOf(pre, pre.length + 1);
 
-    array[post.length] = pre;
+    array[pre.length] = post;
 
     return array;
   }
