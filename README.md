@@ -15,7 +15,7 @@ All GameBoot messages are JSON, delivered to and from the client as strings or b
 	  "type": GameBoot-implementation unique string, mandatory
 	}
 
-Specific messages (based on type) can have any additional fields or arrays as required and are received by the GameBoot implementation from connected clients for processing.  Messages sent to the client are of a single structure, represented by the class Response:
+Specific messages (based on type) can have any additional fields or arrays as required and are received by the GameBoot implementation from connected clients for processing.  Messages sent to the client are of a single structure, represented by the class [Response](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/messages/Response.java):
 
 	{
 	  "id" : integer value, from the received message,
@@ -33,7 +33,7 @@ Specific messages (based on type) can have any additional fields or arrays as re
 	  "payload" : [array of either JSON strings, plain strings or byte arrays, optional]
 	}
 
-Messages are converted to Java objects based on the implementation of the [MessageClassFinder](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/messages/finder/MessageClassFinder.java) interface.  Inbound messages are processed by an implementation of GameBootProcessor whose type matches the type of the message.
+Messages are converted to Java objects based on the implementation of the [MessageClassFinder](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/messages/finder/MessageClassFinder.java) interface.  Inbound messages are processed by an implementation of [GameBootProcessor](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/processor/GameBootProcessor.java) whose type matches the type of the message.
 
 That's GameBoot in a nutshell.
 
@@ -70,11 +70,11 @@ All GameBoot messages received via the web are processed as per this pseudo code
 
 ## [WebSocketProcessor](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/websocket/AbstractWebSocketProcessor.java) Usage
 
-Each GameBoot web socket is a subclass of AbstractWebSocketHandler and uses a subclass of AbstractWebSocketProcessor for message handling.  Wire up the web socket as per the Spring Boot documentation and start the server.  No extra code required.
+Each GameBoot web socket is a subclass of [AbstractWebSocketHandler](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/websocket/AbstractWebSocketHandler.java) and uses a subclass of [AbstractWebSocketProcessor](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/websocket/AbstractWebSocketProcessor.java) for message handling.  Wire up the web socket as per the Spring Boot documentation and start the server.  No extra code required.
 
 ## [NettyProcessor](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/netty/AbstractNettyProcessor.java) Usage
 
-As the premiere Java socket library Netty's inclusion in GameBoot is intended to facilitate both web and non-web connections to the server - UDP, SPDY, async sockets, all that Netty supports.  Each GameBoot Netty connection uses a subclass of AbstractNettyHandler as the last handler in the channel's pipeline.  Like with web sockets it is paired with a subclass of AbstractNettyProcessor.  An understanding of Netty's handlers, pipelines, bootstraps is necessary to use Netty and its use within Spring does require some scaffolding code, however the [Netty OTP unit tests](https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/test/java/com/github/mrstampy/gameboot/otp/netty) for GameBoot demonstrate how this is done.  Once configured start the server and the sockets will process and return responses for received messages.
+As the premiere Java socket library Netty's inclusion in GameBoot is intended to facilitate both web and non-web connections to the server - UDP, SPDY, async sockets, all that Netty supports.  Each GameBoot Netty connection uses a subclass of [AbstractNettyHandler](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/netty/AbstractNettyHandler.java) as the last handler in the channel's pipeline.  Like with web sockets it is paired with a subclass of [AbstractNettyProcessor](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/netty/AbstractNettyProcessor.java).  An understanding of Netty's handlers, pipelines, bootstraps is necessary to use Netty and its use within Spring does require some scaffolding code, however the [Netty OTP unit tests](https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/test/java/com/github/mrstampy/gameboot/otp/netty) for GameBoot demonstrate how this is done.  Once configured start the server and the sockets will process and return responses for received messages.
 
 ## Bells and Whistles
 
@@ -82,7 +82,7 @@ As the premiere Java socket library Netty's inclusion in GameBoot is intended to
 
 2. [Registries](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/util/registry) for ease of lookups for connection-transient objects, primarily intended to [facilitate sending messages between connected clients](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/messaging/MessagingGroups.java) but which can be used for any connection-related purpose.
 
-3. Ability to group connections for the purpose of sending messages.
+3. Ability to [group connections](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/messaging/MessagingGroups.java) for the purpose of sending messages.
 
 4. [Runnables and Callables](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/util/concurrent) which preserve the Logback mapped diagnostic context.
 
@@ -98,7 +98,7 @@ These examples included with GameBoot coupled with the related unit tests concep
 
 1. The ['usersession'](https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/usersession) application processes [UserMessages](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/usersession/messages/UserMessage.java) to manage a simple login/logout/creation/maintenance/game-specific session creation for a client. This mini-app has a backing datastore and uses JSR-107 caching for the retrieval of online user sessions.
 
-2. The ['otp'](https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/otp) application is an implementation of the One Time Pad (https://en.wikipedia.org/wiki/One-time_pad) encryption algorithm designed to provide a high level of encryption on clear channels, bypassing the overhead of SSL/TLS for fast message processing without sacrificing security.
+2. The ['otp'](https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/otp) application is an implementation of the [One Time Pad](https://en.wikipedia.org/wiki/One-time_pad) encryption algorithm designed to provide a high level of encryption on clear channels, bypassing the overhead of SSL/TLS for fast message processing without sacrificing security.
 
 3. The ['locale'](https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/locale) application to demonstrate Locale switching in memory.
 
