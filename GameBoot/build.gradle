@@ -20,6 +20,8 @@
                                      `_-~_.-'
                                       \-~
 
+                        http://mrstampy.github.io/gameboot/
+
   Gradle Build file for GameBoot.
 	
   Create a distribution by invoking 'gradle clean distZip'.
@@ -73,6 +75,25 @@ jacocoTestReport {
         xml.enabled false
         csv.enabled false
         html.destination "${buildDir}/jacocoHtml"
+    }
+}
+
+def now() {
+    return new Date()
+}
+
+jar {
+    manifest {
+        attributes(
+          'Main-Class': 'com.github.mrstampy.gameboot.GameBoot',
+          'Author': 'Burton Alexander',
+          'Build-Date': now(),
+          'Website': 'http://mrstampy.github.io/gameboot/'
+        )
+    }
+    
+    from('src/main/resources') {
+        exclude 'gameboot.sql.init'
     }
 }
 
