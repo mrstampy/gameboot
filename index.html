@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Gameboot by mrstampy</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Gameboot</h1>
+      <h2 class="project-tagline">A totally over-engineered gaming server written in Spring Boot</h2>
+      <a href="https://github.com/mrstampy/gameboot" class="btn">View on GitHub</a>
+      <a href="https://github.com/mrstampy/gameboot/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/mrstampy/gameboot/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="gameboot" class="anchor" href="#gameboot" aria-hidden="true"><span class="octicon octicon-link"></span></a>GameBoot</h1>
+
+<p>The one commonality with servers providing services for many clients is the processing of messages and communication between connected clients.  GameBoot strives to fulfil this requirement by providing an easy to use, robust and consistant framework for message processing - with a few bells and whistles.  JSON messages of any sort*, for any requirement, received via the web, web sockets or a Netty (<a href="http://netty.io">http://netty.io</a>) connection.</p>
+
+<p>Rather than create a generic message processing library GameBoot's dependencies include all the technologies necessary to create a high performant Spring Boot-based (<a href="http://projects.spring.io/spring-boot/">http://projects.spring.io/spring-boot/</a>) server application running with Java 8.  With the exception of Spring Boot any use of GameBoot does not limit one to these technologies, and technologies not required can be excluded.  Refer to the GameBoot Javadoc for detailed information of the included technologies.</p>
+
+<p>An understanding of the Spring Framework and Spring Boot is advantageous for using GameBoot, however there are several implementation examples** within the library itself and the unit tests demonstrate how the major components of GameBoot function.  Further detail on specifics is included in the <a href="https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/GameBoot.java">main class</a></p>
+
+<h2>
+<a id="messages" class="anchor" href="#messages" aria-hidden="true"><span class="octicon octicon-link"></span></a>Messages*</h2>
+
+<p>All GameBoot messages are JSON, delivered to and from the client as strings or byte arrays as required.  GameBoot messages all share the same basic structure, represented by the class AbstractGameBootMessage:</p>
+
+<pre><code>{
+  "id": integer value, optional but recommended to match responses,
+  "type": GameBoot-implementation unique string, mandatory
+}
+</code></pre>
+
+<p>Specific messages (based on type) can have any additional fields or arrays as required and are received by the GameBoot implementation from connected clients for processing.  Messages sent to the client are of a single structure, represented by the class Response:</p>
+
+<pre><code>{
+  "id" : integer value, from the received message,
+
+  "type" : the type of the received message if known, 'RESPONSE' otherwise,
+
+  "responseCode" : one of SUCCESS, FAILURE, WARNING, INFO, ALERT, CRITICAL,
+
+  "context" : { // see error.properties, optional
+    "code": integer value,
+    "function": string identifying function
+    "description": context around the response, human readable
+  },
+
+  "payload" : [array of either JSON strings, plain strings or byte arrays, optional]
+}
+</code></pre>
+
+<p>Messages are converted to Java objects based on the implementation of the MessageClassFinder interface.  Inbound messages are processed by an implementation of GameBootProcessor whose type matches the type of the message.</p>
+
+<p>That's GameBoot in a nutshell.</p>
+
+<h2>
+<a id="transportation" class="anchor" href="#transportation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Transportation</h2>
+
+<p>The function of getting messages to GameBootProcessors and returning responses falls to implementations of ConnectionProcessor.  There are three transport-specific implementations:</p>
+
+<ol>
+<li>
+<a href="https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/web/WebProcessor.java">WebProcessor</a> for messages received via the web.</li>
+<li>
+<a href="https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/websocket/AbstractWebSocketProcessor.java">AbstractWebSocketProcessor</a> for messages received via web sockets.</li>
+<li>
+<a href="https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/netty/AbstractNettyProcessor.java">AbstractNettyProcessor</a> for messages received via Netty.</li>
+</ol>
+
+<h2>
+<a id="webprocessor-usage" class="anchor" href="#webprocessor-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>WebProcessor Usage</h2>
+
+<p>All GameBoot messages received via the web are processed as per this pseudo code:</p>
+
+<pre><code>@RestController
+public class MyRestController {
+
+  @Autowired
+  private WebProcessor processor;
+
+  @Autowired
+  private GameBootMessageConverter converter; // one could use Spring's converters to do this and return the Response
+
+  @AnnotatedMethodToReceivePostedJson
+  public String process(HttpSession session, String message) throws Exception {
+    processor.onConnection(session);
+
+    Response response = processor.process(session, message);
+
+    return converter.toJson(response);
+  }
+}
+</code></pre>
+
+<h2>
+<a id="websocketprocessor-usage" class="anchor" href="#websocketprocessor-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>WebSocketProcessor Usage</h2>
+
+<p>Each GameBoot web socket is a subclass of AbstractWebSocketHandler and uses a subclass of AbstractWebSocketProcessor for message handling.  Wire up the web socket as per the Spring Boot documentation and start the server.  No extra code required.</p>
+
+<h2>
+<a id="nettyprocessor-usage" class="anchor" href="#nettyprocessor-usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>NettyProcessor Usage</h2>
+
+<p>As the premiere Java socket library Netty's inclusion in GameBoot is intended to facilitate both web and non-web connections to the server - UDP, SPDY, async sockets, all that Netty supports.  Each GameBoot Netty connection uses a subclass of AbstractNettyHandler as the last handler in the channel's pipeline.  Like with web sockets it is paired with a subclass of AbstractNettyProcessor.  An understanding of Netty's handlers, pipelines, bootstraps is necessary to use Netty and its use within Spring does require some scaffolding code, however the Netty OTP unit tests for GameBoot demonstrate how this is done.  Once configured start the server and the sockets will process and return responses for received messages.</p>
+
+<h2>
+<a id="bells-and-whistles" class="anchor" href="#bells-and-whistles" aria-hidden="true"><span class="octicon octicon-link"></span></a>Bells and Whistles</h2>
+
+<ol>
+<li><p>Internationalization built in, Locale based.  The 'context' of Responses is created in the default implementation from an 'error.properties' file.  Copies of this file named according to Java's ResourceBundle rules allows GameBoot to support multiple languages.  This functionality also includes parameterization of response context descriptions using Java's MessageFormat class.</p></li>
+<li><p>Registries for ease of lookups for connection-transient objects, primarily intended to facilitate sending messages between connected clients but which can be used for any connection-related purpose.</p></li>
+<li><p>Ability to group connections for the purpose of sending messages.</p></li>
+<li><p>Runnables and Callables which preserve the Logback mapped diagnostic context.</p></li>
+<li><p>MetricsHelper to assist with the creation and usage of Metrics objects.</p></li>
+<li><p>Detailed logging, avoiding logging of sensitive message detail.</p></li>
+</ol>
+
+<h2>
+<a id="implementation-examples" class="anchor" href="#implementation-examples" aria-hidden="true"><span class="octicon octicon-link"></span></a>Implementation Examples**</h2>
+
+<p>These examples included with GameBoot coupled with the related unit tests conceptually demonstrate how the GameBoot architecture can be used, and can be used by any implementation.</p>
+
+<ol>
+<li><p>The <a href="https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/usersession">'usersession'</a> application processes <a href="https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/usersession/messages/UserMessage.java">UserMessages</a> to manage a simple login/logout/creation/maintenance/game-specific session creation for a client. This mini-app has a backing datastore and uses JSR-107 caching for the retrieval of online user sessions.</p></li>
+<li><p>The <a href="https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/otp">'otp'</a> application is an implementation of the One Time Pad (<a href="https://en.wikipedia.org/wiki/One-time_pad">https://en.wikipedia.org/wiki/One-time_pad</a>) encryption algorithm designed to provide a high level of encryption on clear channels, bypassing the overhead of SSL/TLS for fast message processing without sacrificing security.</p></li>
+<li><p>The <a href="https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/locale">'locale'</a> application to demonstrate Locale switching in memory.</p></li>
+</ol>
+
+<p>These applications are available when the profiles ('usersession', 'otp' and 'locale') are active.</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/mrstampy/gameboot">Gameboot</a> is maintained by <a href="https://github.com/mrstampy">mrstampy</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
