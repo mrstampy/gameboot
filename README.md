@@ -15,7 +15,7 @@ All GameBoot messages are JSON, delivered to and from the client as strings or b
 	  "type": GameBoot-implementation unique string, mandatory
 	}
 
-Specific messages (based on type) can have any additional fields or arrays as required and are received by the GameBoot implementation from connected clients for processing.  Messages sent to the client are of a single structure, represented by the class Response:
+Specific messages (based on type) can have any additional fields or arrays as required and are received by the GameBoot implementation from connected clients for processing.  Messages sent to the client are of a single structure, represented by the class [Response](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/messages/Response.java):
 
 	{
 	  "id" : integer value, from the received message,
@@ -98,7 +98,7 @@ These examples included with GameBoot coupled with the related unit tests concep
 
 1. The ['usersession'](https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/usersession) application processes [UserMessages](https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/usersession/messages/UserMessage.java) to manage a simple login/logout/creation/maintenance/game-specific session creation for a client. This mini-app has a backing datastore and uses JSR-107 caching for the retrieval of online user sessions.
 
-2. The ['otp'](https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/otp) application is an implementation of the One Time Pad (https://en.wikipedia.org/wiki/One-time_pad) encryption algorithm designed to provide a high level of encryption on clear channels, bypassing the overhead of SSL/TLS for fast message processing without sacrificing security.
+2. The ['otp'](https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/otp) application is an implementation of the [One Time Pad](https://en.wikipedia.org/wiki/One-time_pad) encryption algorithm designed to provide a high level of encryption on clear channels, bypassing the overhead of SSL/TLS for fast message processing without sacrificing security.
 
 3. The ['locale'](https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/locale) application to demonstrate Locale switching in memory.
 
