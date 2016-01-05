@@ -12,7 +12,7 @@
   <body>
     <section class="page-header">
       <h1 class="project-name">Gameboot</h1>
-      <h2 class="project-tagline">An over-engineered gaming server written in Spring Boot.</h2>
+      <h2 class="project-tagline">An over-engineered archetype gaming server written in Spring Boot.</h2>
       <a href="https://github.com/mrstampy/gameboot" class="btn">View on GitHub</a>
       <a href="https://github.com/mrstampy/gameboot/zipball/master" class="btn">Download .zip</a>
       <a href="https://github.com/mrstampy/gameboot/tarball/master" class="btn">Download .tar.gz</a>
@@ -39,7 +39,7 @@
 }
 </code></pre>
 
-<p>Specific messages (based on type) can have any additional fields or arrays as required and are received by the GameBoot implementation from connected clients for processing.  Messages sent to the client are of a single structure, represented by the class Response:</p>
+<p>Specific messages (based on type) can have any additional fields or arrays as required and are received by the GameBoot implementation from connected clients for processing.  Messages sent to the client are of a single structure, represented by the class <a href="https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/messages/Response.java">Response</a>:</p>
 
 <pre><code>{
   "id" : integer value, from the received message,
@@ -131,7 +131,7 @@ public class MyRestController {
 
 <ol>
 <li><p>The <a href="https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/usersession">'usersession'</a> application processes <a href="https://github.com/mrstampy/gameboot/blob/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/usersession/messages/UserMessage.java">UserMessages</a> to manage a simple login/logout/creation/maintenance/game-specific session creation for a client. This mini-app has a backing datastore and uses JSR-107 caching for the retrieval of online user sessions.</p></li>
-<li><p>The <a href="https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/otp">'otp'</a> application is an implementation of the One Time Pad (<a href="https://en.wikipedia.org/wiki/One-time_pad">https://en.wikipedia.org/wiki/One-time_pad</a>) encryption algorithm designed to provide a high level of encryption on clear channels, bypassing the overhead of SSL/TLS for fast message processing without sacrificing security.</p></li>
+<li><p>The <a href="https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/otp">'otp'</a> application is an implementation of the <a href="https://en.wikipedia.org/wiki/One-time_pad">One Time Pad</a> encryption algorithm designed to provide a high level of encryption on clear channels, bypassing the overhead of SSL/TLS for fast message processing without sacrificing security.</p></li>
 <li><p>The <a href="https://github.com/mrstampy/gameboot/tree/master/GameBoot/src/main/java/com/github/mrstampy/gameboot/locale">'locale'</a> application to demonstrate Locale switching in memory.</p></li>
 </ol>
 
