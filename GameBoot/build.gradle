@@ -85,10 +85,9 @@ def now() {
 jar {
     manifest {
         attributes(
-          'Main-Class': 'com.github.mrstampy.gameboot.GameBoot',
+          'Website': 'http://mrstampy.github.io/gameboot/',
           'Author': 'Burton Alexander',
-          'Build-Date': now(),
-          'Website': 'http://mrstampy.github.io/gameboot/'
+          'Build-Date': now()
         )
     }
 }
