@@ -41,6 +41,8 @@
  */
 package com.github.mrstampy.gameboot.security;
 
+import static org.apache.commons.lang3.StringUtils.isEmpty;
+
 import java.security.SecureRandom;
 
 import javax.annotation.PostConstruct;
@@ -69,6 +71,9 @@ public class SecurityConfiguration {
   @Value("${gameboot.secure.random.seed.size}")
   private int seedSize;
 
+  @Value("${secure.random.algorithm}")
+  private String algorithm;
+
   /**
    * Post construct.
    *
@@ -91,7 +96,7 @@ public class SecurityConfiguration {
    */
   @Bean(name = GAME_BOOT_SECURE_RANDOM)
   public SecureRandom secureRandom() throws Exception {
-    SecureRandom random = SecureRandom.getInstanceStrong();
+    SecureRandom random = isEmpty(algorithm) ? SecureRandom.getInstanceStrong() : SecureRandom.getInstance(algorithm);
 
     byte[] seed = new byte[seedSize];
     random.nextBytes(seed);
