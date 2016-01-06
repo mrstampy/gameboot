@@ -134,7 +134,7 @@ public class NullMetricsHelper implements MetricsHelper {
    */
   @Override
   public boolean containsCounter(String key) {
-    return true; // pants on fire
+    return false;
   }
 
   /*
@@ -146,7 +146,7 @@ public class NullMetricsHelper implements MetricsHelper {
    */
   @Override
   public boolean containsGauge(String key) {
-    return true; // pants on fire
+    return false;
   }
 
   /*
@@ -158,7 +158,7 @@ public class NullMetricsHelper implements MetricsHelper {
    */
   @Override
   public boolean containsTimer(String key) {
-    return true; // pants on fire
+    return false;
   }
 
   /*
