@@ -59,12 +59,16 @@ apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 apply plugin: 'spring-boot' 
-apply plugin: "jacoco"
+apply plugin: 'jacoco'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+group = 'com.github.mrstampy'
+archivesBaseName = 'gameboot'
 
 repositories {
     mavenCentral()
@@ -82,12 +86,31 @@ def now() {
     return new Date()
 }
 
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+signing {
+    sign configurations.archives
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
 jar {
     manifest {
         attributes(
           'Website': 'http://mrstampy.github.io/gameboot/',
           'Author': 'Burton Alexander',
-          'Build-Date': now()
+          'Build-Date': now(),
+          'Version': version
         )
     }
 }
@@ -136,5 +159,50 @@ eclipse {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '2.9'
+    gradleVersion = '2.10'
+}
+
+uploadArchives {
+  repositories {
+    mavenDeployer {
+      beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+      repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+        authentication(userName: ossrhUsername, password: ossrhPassword)
+      }
+
+      pom.project {
+        name 'GameBoot'
+        packaging 'jar'
+        // optionally artifactId can be defined here 
+        description 'An over-engineered archetype gaming server written in Spring Boot.'
+        url 'http://mrstampy.github.io/gameboot/'
+
+        scm {
+          connection 'scm:git:https://github.com/mrstampy/gameboot.git'
+          developerConnection 'scm:git:https://github.com/mrstampy/gameboot/tree/master/GameBoot'
+          url 'https://github.com/mrstampy/gameboot'
+        }
+
+        licenses {
+          license {
+            name 'GNU GENERAL PUBLIC LICENSE, Version 2.0'
+            url 'http://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html'
+          }
+        }
+
+        developers {
+          developer {
+            id 'mrstampy'
+            name 'Burton Alexander'
+            email 'burt.alexander@gmail.com'
+          }
+        }
+      }
+    }
+  }
 }
