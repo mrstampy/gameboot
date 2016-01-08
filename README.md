@@ -1,4 +1,8 @@
 # GameBoot
+	
+### Available at Maven Central
+	
+	com.github.mrstampy:gameboot:0.0.1
 
 The one commonality with servers providing services for many clients is the processing of messages and communication between connected clients.  GameBoot strives to fulfil this requirement by providing an easy to use, robust and consistant framework for message processing - with a few bells and whistles.  JSON messages of any sort*, for any requirement, received via the web, web sockets or a [Netty](http://netty.io) connection.
 
