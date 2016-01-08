@@ -1,4 +1,4 @@
-Note: Entrainer is distributed under the terms of the GNU GPL.
+Note: GameBoot is distributed under the terms of the GNU GPL.
 
 JSyn binaries provided under license from Mobileer Incorporated solely for use with Entrainer.
 
