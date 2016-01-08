@@ -110,6 +110,8 @@ public class WebProcessorTest {
   public void testCreateUser() throws Exception {
     UserMessage m = createUserMessage();
 
+    processor.onConnection(httpSession);
+
     Response r = processor.process(httpSession, converter.toJson(m));
 
     assertResponse(m, r);
@@ -124,6 +126,8 @@ public class WebProcessorTest {
   @Test
   public void testCreateUserBinary() throws Exception {
     UserMessage m = createUserMessage();
+
+    processor.onConnection(httpSession);
 
     Response r = processor.process(httpSession, converter.toJsonArray(m));
 

@@ -254,9 +254,10 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
   }
 
   /**
-   * Sets the system id in the {@link MDC}.
+   * Sets the system id in the {@link MDC} with a key of 'systemId'.
    * 
    * @param ctx
+   *          the context
    */
   protected void setMDC(C ctx) {
     MDC.put("systemId", getSystemId(ctx).toString());
