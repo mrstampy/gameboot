@@ -126,23 +126,27 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
    */
   @Override
   public void onConnection(HttpSession httpSession) throws Exception {
-    if (systemIds.containsKey(httpSession.getId())) {
-      SystemIdKey key = systemIds.get(httpSession.getId());
+    try {
+      if (systemIds.containsKey(httpSession.getId())) {
+        SystemIdKey key = systemIds.get(httpSession.getId());
 
-      if (registry.contains(key)) {
-        registry.restartExpiry(key);
-      } else {
-        registry.put(key, httpSession);
+        if (registry.contains(key)) {
+          registry.restartExpiry(key);
+        } else {
+          registry.put(key, httpSession);
+        }
+
+        return;
       }
 
-      return;
+      SystemIdKey key = generator.next();
+
+      systemIds.put(httpSession.getId(), key);
+
+      registry.put(key, httpSession);
+    } finally {
+      setMDC(httpSession);
     }
-
-    SystemIdKey key = generator.next();
-
-    systemIds.put(httpSession.getId(), key);
-
-    registry.put(key, httpSession);
   }
 
   /*
@@ -186,6 +190,8 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
    */
   @Override
   public void onMessage(HttpSession httpSession, Object msg) throws Exception {
+    setMDC(httpSession);
+
     if (msg instanceof String) {
       onMessageImpl(httpSession, (String) msg);
     } else if (msg instanceof byte[]) {
@@ -235,6 +241,8 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
    */
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(HttpSession httpSession, String msg) throws Exception {
+    setMDC(httpSession);
+
     helper.incr(MESSAGE_COUNTER);
 
     Response response = super.process(httpSession, msg);
@@ -252,6 +260,8 @@ public class WebProcessor extends AbstractConnectionProcessor<HttpSession> imple
    */
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(HttpSession httpSession, byte[] msg) throws Exception {
+    setMDC(httpSession);
+
     helper.incr(MESSAGE_COUNTER);
 
     Response response = super.process(httpSession, msg);

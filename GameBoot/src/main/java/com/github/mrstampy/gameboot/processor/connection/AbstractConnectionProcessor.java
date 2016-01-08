@@ -47,6 +47,7 @@ import java.util.Locale;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.github.mrstampy.gameboot.controller.GameBootMessageController;
@@ -250,6 +251,15 @@ public abstract class AbstractConnectionProcessor<C> implements ConnectionProces
     sendMessage(ctx, r, response);
 
     return response;
+  }
+
+  /**
+   * Sets the system id in the {@link MDC}.
+   * 
+   * @param ctx
+   */
+  protected void setMDC(C ctx) {
+    MDC.put("systemId", getSystemId(ctx).toString());
   }
 
 }

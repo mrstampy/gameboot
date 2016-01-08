@@ -132,6 +132,8 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   public void onConnection(WebSocketSession session) throws Exception {
     setSystemId(session, generator.next());
 
+    setMDC(session);
+
     addToRegistry(session);
   }
 
@@ -178,6 +180,8 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
    */
   @Override
   public void onMessage(WebSocketSession session, Object msg) throws Exception {
+    setMDC(session);
+
     if (!(msg instanceof WebSocketMessage<?>)) throw new IllegalArgumentException("Must be a WebSocketMessage");
 
     Object payload = extractPayload(session, msg);
@@ -215,7 +219,8 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
 
   /**
    * On message impl, implement processing the message using one of the
-   * executors in {@link GameBootConcurrentConfiguration}.
+   * executors in {@link GameBootConcurrentConfiguration} invoking
+   * {@link #process(WebSocketSession, byte[])}.
    *
    * @param session
    *          the session
@@ -228,7 +233,8 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
 
   /**
    * On message impl, implement processing the message using one of the
-   * executors in {@link GameBootConcurrentConfiguration}.
+   * executors in {@link GameBootConcurrentConfiguration} invoking
+   * {@link #process(WebSocketSession, String)}.
    *
    * @param session
    *          the session
@@ -282,6 +288,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session, String msg)
       throws Exception {
+    setMDC(session);
     helper.incr(MESSAGE_COUNTER);
 
     Response response = super.process(session, msg);
@@ -301,6 +308,7 @@ public abstract class AbstractWebSocketProcessor extends AbstractConnectionProce
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(WebSocketSession session, byte[] msg)
       throws Exception {
+    setMDC(session);
     helper.incr(MESSAGE_COUNTER);
 
     Response response = super.process(session, msg);

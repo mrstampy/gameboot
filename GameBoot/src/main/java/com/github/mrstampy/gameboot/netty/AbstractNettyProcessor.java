@@ -129,6 +129,8 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   public void onConnection(ChannelHandlerContext ctx) throws Exception {
     setSystemId(generator.next());
 
+    setMDC(ctx);
+
     log.info("Connected to {}, adding to registry with key {}", ctx.channel(), getSystemId());
 
     registry.put(getSystemId(), ctx.channel());
@@ -158,6 +160,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
    */
   @Override
   public void onMessage(ChannelHandlerContext ctx, Object msg) throws Exception {
+    setMDC(ctx);
     if (msg instanceof String) {
       onMessageImpl(ctx, (String) msg);
     } else if (msg instanceof byte[]) {
@@ -170,7 +173,8 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
 
   /**
    * On message impl, implement processing the message using one of the
-   * executors in {@link GameBootConcurrentConfiguration}.
+   * executors in {@link GameBootConcurrentConfiguration} invoking
+   * {@link #process(ChannelHandlerContext, byte[])}.
    *
    * @param ctx
    *          the ctx
@@ -183,7 +187,8 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
 
   /**
    * On message impl, implement processing the message using one of the
-   * executors in {@link GameBootConcurrentConfiguration}.
+   * executors in {@link GameBootConcurrentConfiguration} invoking
+   * {@link #process(ChannelHandlerContext, String)}.
    *
    * @param ctx
    *          the ctx
@@ -237,6 +242,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, String msg)
       throws Exception {
+    setMDC(ctx);
     helper.incr(MESSAGE_COUNTER);
 
     Response response = super.process(ctx, msg);
@@ -256,6 +262,7 @@ public abstract class AbstractNettyProcessor extends AbstractConnectionProcessor
   @Override
   public <AGBM extends AbstractGameBootMessage> Response process(ChannelHandlerContext ctx, byte[] msg)
       throws Exception {
+    setMDC(ctx);
     helper.incr(MESSAGE_COUNTER);
 
     Response response = super.process(ctx, msg);
